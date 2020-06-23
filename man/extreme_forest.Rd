@@ -10,9 +10,30 @@ extreme_forest(
   X.test,
   alpha,
   alpha.new,
+  min.node.size = 5,
   Y.test = NULL,
   grf = FALSE
 )
+}
+\arguments{
+\item{X.train}{...}
+
+\item{Y}{...}
+
+\item{X.test}{...}
+
+\item{alpha}{...}
+
+\item{alpha.new}{...}
+
+\item{min.node.size}{...}
+
+\item{Y.test}{...}
+
+\item{grf}{...}
+}
+\value{
+...
 }
 \description{
 Computes quantile extreme forest ...
