@@ -16,3 +16,5 @@ RoxygenNote: 7.1.0
 Imports: 
     grf,
     ismev
+URL: https://github.com/nicolagnecco/extremeForest
+BugReports: https://github.com/nicolagnecco/extremeForest/issues
