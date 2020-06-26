@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>erf — extreme_forest • erf</title>
+<title>Predict with a quantile forest — predict.quantile_forest • erf</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,8 @@
 
 
 
-<meta property="og:title" content="erf — extreme_forest" />
-<meta property="og:description" content="Computes quantile extreme forest ..." />
+<meta property="og:title" content="Predict with a quantile forest — predict.quantile_forest" />
+<meta property="og:description" content="Gets estimates of the conditional quantiles of Y given X using a trained forest." />
 
 
 
@@ -108,67 +108,68 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>erf</h1>
+    <h1>Predict with a quantile forest</h1>
     <small class="dont-index">Source: <a href='https://github.com/nicolagnecco/erf/blob/master/R/extremeForest.R'><code>R/extremeForest.R</code></a></small>
-    <div class="hidden name"><code>extreme_forest.Rd</code></div>
+    <div class="hidden name"><code>predict.quantile_forest.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Computes quantile extreme forest ...</p>
+    <p>Gets estimates of the conditional quantiles of Y given X using a trained forest.</p>
     </div>
 
-    <pre class="usage"><span class='fu'><a href='https://rdrr.io/pkg/erf/man/extreme_forest.html'>extreme_forest</a></span>(
-  <span class='kw'>X.train</span>,
-  <span class='kw'>Y</span>,
-  <span class='kw'>X.test</span>,
-  <span class='kw'>alpha</span>,
-  <span class='kw'>alpha.new</span>,
-  min.node.size = <span class='fl'>5</span>,
-  Y.test = <span class='kw'>NULL</span>,
-  grf = <span class='fl'>FALSE</span>
-)</pre>
+    <pre class="usage"><span class='co'># S3 method for quantile_forest</span>
+<span class='fu'><a href='https://rdrr.io/r/stats/predict.html'>predict</a></span>(<span class='kw'>object</span>, newdata = <span class='kw'>NULL</span>, quantiles = <span class='kw'>NULL</span>, num.threads = <span class='kw'>NULL</span>, <span class='kw'>...</span>)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>X.train</th>
-      <td><p>...</p></td>
+      <th>object</th>
+      <td><p>The trained forest.</p></td>
     </tr>
     <tr>
-      <th>Y</th>
-      <td><p>...</p></td>
+      <th>newdata</th>
+      <td><p>Points at which predictions should be made. If NULL, makes out-of-bag
+predictions on the training set instead (i.e., provides predictions at
+Xi using only trees that did not use the i-th training example). Note
+that this matrix should have the number of columns as the training
+matrix, and that the columns must appear in the same order.</p></td>
     </tr>
     <tr>
-      <th>X.test</th>
-      <td><p>...</p></td>
+      <th>quantiles</th>
+      <td><p>Vector of quantiles at which estimates are required. If NULL, the quantiles
+used to train the forest is used. Default is NULL.</p></td>
     </tr>
     <tr>
-      <th>alpha</th>
-      <td><p>...</p></td>
+      <th>num.threads</th>
+      <td><p>Number of threads used in training. If set to NULL, the software
+automatically selects an appropriate amount.</p></td>
     </tr>
     <tr>
-      <th>alpha.new</th>
-      <td><p>...</p></td>
-    </tr>
-    <tr>
-      <th>min.node.size</th>
-      <td><p>...</p></td>
-    </tr>
-    <tr>
-      <th>Y.test</th>
-      <td><p>...</p></td>
-    </tr>
-    <tr>
-      <th>grf</th>
-      <td><p>...</p></td>
+      <th>...</th>
+      <td><p>Additional arguments (currently ignored).</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>...</p>
+    <p>Predictions at each test point for each desired quantile.</p>
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'><span class='co'># \donttest{</span>
+<span class='co'># Train a quantile forest.</span>
+<span class='kw'>n</span> <span class='op'>&lt;-</span> <span class='fl'>50</span>
+<span class='kw'>p</span> <span class='op'>&lt;-</span> <span class='fl'>10</span>
+<span class='kw'>X</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/matrix.html'>matrix</a></span>(<span class='fu'><a href='https://rdrr.io/r/stats/Normal.html'>rnorm</a></span>(<span class='kw'>n</span> <span class='op'>*</span> <span class='kw'>p</span>), <span class='kw'>n</span>, <span class='kw'>p</span>)
+<span class='kw'>Y</span> <span class='op'>&lt;-</span> <span class='kw'>X</span>[, <span class='fl'>1</span>] <span class='op'>*</span> <span class='fu'><a href='https://rdrr.io/r/stats/Normal.html'>rnorm</a></span>(<span class='kw'>n</span>)
+<span class='kw'>q.forest</span> <span class='op'>&lt;-</span> <span class='fu'>quantile_forest</span>(<span class='kw'>X</span>, <span class='kw'>Y</span>, quantiles = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>0.1</span>, <span class='fl'>0.5</span>, <span class='fl'>0.9</span>))</div><div class='output co'>#&gt; <span class='error'>Error in quantile_forest(X, Y, quantiles = c(0.1, 0.5, 0.9)): could not find function "quantile_forest"</span></div><div class='input'>
+<span class='co'># Predict on out-of-bag training samples.</span>
+<span class='kw'>q.pred</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/predict.html'>predict</a></span>(<span class='kw'>q.forest</span>)</div><div class='output co'>#&gt; <span class='error'>Error in predict(q.forest): object 'q.forest' not found</span></div><div class='input'>
+<span class='co'># Predict using the forest.</span>
+<span class='kw'>X.test</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/matrix.html'>matrix</a></span>(<span class='fl'>0</span>, <span class='fl'>101</span>, <span class='kw'>p</span>)
+<span class='kw'>X.test</span>[, <span class='fl'>1</span>] <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span>(<span class='op'>-</span><span class='fl'>2</span>, <span class='fl'>2</span>, length.out = <span class='fl'>101</span>)
+<span class='kw'>q.pred</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/predict.html'>predict</a></span>(<span class='kw'>q.forest</span>, <span class='kw'>X.test</span>)</div><div class='output co'>#&gt; <span class='error'>Error in predict(q.forest, X.test): object 'q.forest' not found</span></div><div class='input'><span class='co'># }</span>
+</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
