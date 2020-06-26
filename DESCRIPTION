@@ -1,4 +1,4 @@
-Package: extremeForest
+Package: erf
 Title: What the Package Does (One Line, Title Case)
 Version: 0.0.0.9000
 Authors@R: 
@@ -16,5 +16,5 @@ RoxygenNote: 7.1.0
 Imports: 
     grf,
     ismev
-URL: https://github.com/nicolagnecco/extremeForest
-BugReports: https://github.com/nicolagnecco/extremeForest/issues
+URL: https://github.com/nicolagnecco/erf
+BugReports: https://github.com/nicolagnecco/erf/issues

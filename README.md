@@ -1,26 +1,26 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-extremeForest
-=============
+erf
+===
 
 <!-- badges: start -->
-[![R build status](https://github.com/nicolagnecco/extremeForest/workflows/R-CMD-check/badge.svg)](https://github.com/nicolagnecco/extremeForest/actions) <!-- badges: end -->
+[![R build status](https://github.com/nicolagnecco/erf/workflows/R-CMD-check/badge.svg)](https://github.com/nicolagnecco/erf/actions) <!-- badges: end -->
 
-The goal of extremeForest is to ...
+The goal of erf is to ...
 
 Installation
 ------------
 
-<!-- You can install the released version of extremeForest from [CRAN](https://CRAN.R-project.org) with: -->
+<!-- You can install the released version of erf from [CRAN](https://CRAN.R-project.org) with: -->
 ``` r
-install.packages("extremeForest")
+install.packages("erf")
 ```
 
 You can install the development version from [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("nicolagnecco/extremeForest")
+devtools::install_github("nicolagnecco/erf")
 ```
 
 Example
@@ -29,7 +29,7 @@ Example
 This is a basic example which shows you how to solve a common problem:
 
 ``` r
-library(extremeForest)
+library(erf)
 ## basic example code
 ```
 
