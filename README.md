@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-erf
-===
+extreme random forest
+=====================
 
 <!-- badges: start -->
 [![R build status](https://github.com/nicolagnecco/erf/workflows/R-CMD-check/badge.svg)](https://github.com/nicolagnecco/erf/actions) <!-- badges: end -->

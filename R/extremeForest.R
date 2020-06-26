@@ -118,3 +118,80 @@ weighted.LLH <- function(data, weights, par) {
 q.GPD <- function(q, alpha, u, sigma, xi){
   (((1-q)/(1-alpha))^{-xi} - 1)*sigma/xi + u
 }
+
+
+#' Predict with a quantile forest
+#'
+#' Gets estimates of the conditional quantiles of Y given X using a trained forest.
+#'
+#' @param object The trained forest.
+#' @param newdata Points at which predictions should be made. If NULL, makes out-of-bag
+#'                predictions on the training set instead (i.e., provides predictions at
+#'                Xi using only trees that did not use the i-th training example). Note
+#'                that this matrix should have the number of columns as the training
+#'                matrix, and that the columns must appear in the same order.
+#' @param quantiles Vector of quantiles at which estimates are required. If NULL, the quantiles
+#'  used to train the forest is used. Default is NULL.
+#' @param num.threads Number of threads used in training. If set to NULL, the software
+#'                    automatically selects an appropriate amount.
+#' @param ... Additional arguments (currently ignored).
+#'
+#' @return Predictions at each test point for each desired quantile.
+#'
+#' @examples
+#' \donttest{
+#' # Train a quantile forest.
+#' n <- 50
+#' p <- 10
+#' X <- matrix(rnorm(n * p), n, p)
+#' Y <- X[, 1] * rnorm(n)
+#' q.forest <- quantile_forest(X, Y, quantiles = c(0.1, 0.5, 0.9))
+#'
+#' # Predict on out-of-bag training samples.
+#' q.pred <- predict(q.forest)
+#'
+#' # Predict using the forest.
+#' X.test <- matrix(0, 101, p)
+#' X.test[, 1] <- seq(-2, 2, length.out = 101)
+#' q.pred <- predict(q.forest, X.test)
+#' }
+#'
+#' @method predict quantile_forest
+#' @export
+predict.quantile_forest <- function(object,
+                                    newdata = NULL,
+                                    quantiles = NULL,
+                                    num.threads = NULL, ...) {
+  if (is.null(quantiles)) {
+    quantiles <- object[["quantiles.orig"]]
+  } else {
+    if (!is.numeric(quantiles) || length(quantiles) < 1) {
+      stop("Error: Must provide numeric quantiles")
+    } else if (min(quantiles) <= 0 || max(quantiles) >= 1) {
+      stop("Error: Quantiles must be in (0, 1)")
+    }
+  }
+
+  # If possible, use pre-computed predictions.
+  quantiles.orig <- object[["quantiles.orig"]]
+  if (is.null(newdata) && identical(quantiles, quantiles.orig) && !is.null(object$predictions)) {
+    return(object$predictions)
+  }
+
+  num.threads <- validate_num_threads(num.threads)
+  forest.short <- object[-which(names(object) == "X.orig")]
+  X <- object[["X.orig"]]
+  train.data <- create_train_matrices(X, outcome = object[["Y.orig"]])
+
+  args <- list(forest.object = forest.short,
+               quantiles = quantiles,
+               num.threads = num.threads)
+
+  if (!is.null(newdata)) {
+    validate_newdata(newdata, object$X.orig, allow.na = TRUE)
+    test.data <- create_test_matrices(newdata)
+    do.call.rcpp(quantile_predict, c(train.data, test.data, args))
+  } else {
+    do.call.rcpp(quantile_predict_oob, c(train.data, args))
+  }
+}

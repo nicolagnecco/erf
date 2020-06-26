@@ -2,7 +2,7 @@
 % Please edit documentation in R/extremeForest.R
 \name{extreme_forest}
 \alias{extreme_forest}
-\title{ExtremeForest}
+\title{erf}
 \usage{
 extreme_forest(
   X.train,
