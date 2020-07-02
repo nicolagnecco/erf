@@ -1,28 +1,52 @@
-#' erf
+#' Extreme predictions with a quantile forest
 #'
-#' Computes quantile extreme forest ...
-#' @param X.train ...
-#' @param Y ...
-#' @param X.test ...
-#' @param alpha ...
-#' @param alpha.new ...
-#' @param min.node.size ...
-#' @param Y.test ...
-#' @param grf ...
-#' @return ...
+#' Gets estimates of the extrapolated conditional quantiles of Y given X
+#' using a trained forest.
+#'
+#' @param object Quantile forest object. The trained forest.
+#'               !! possibly extreme quantile forest
+#' @param newdata Numeric matrix.
+#'                Rows contain observation at which predictions should be made.
+#'                If NULL, makes out-of-bag predictions on the training set
+#'                instead (i.e., provides predictions at Xi using only trees
+#'                that did not use the i-th training example). Note
+#'                that this matrix should have the number of columns as the training
+#'                matrix, and that the columns must appear in the same order.
+#'                Needed if \code{model_assessment = TRUE}.
+#'                Default is \code{NULL}.
+#' @param quantiles Numeric vector (0, 1).
+#'                  Extreme quantiles at which estimates are required.
+#'                  If NULL, the quantiles used to train the forest is used.
+#'                  Default is \code{NULL}.
+#' @param threshold Numeric vector (0, 1). Intermediate quantile used to compute
+#'                  thresholds \eqn{t(x_i)} for the GPD.
+#'                  Default is 0.8.
+#' @param model_assessment Boolean. Assess GPD fit with QQ-plot against
+#'                         exponential distribution?
+#'                         Default is \code{FALSE}.
+#' @param Y.test Numeric vector. Responses for the test set, needed
+#'               if \code{model_assessment = TRUE}.
+#'               Default is \code{NULL}.
+#' @param out_of_bag Boolean. Use out-of-bag observations to compute thresholds
+#'                   \eqn{t(x_i)} for the GPD?
+#'                   Default is \code{FALSE}.
+#'
+#' @return Predictions at each test point for each desired quantile.
 #'
 #' @export
-extreme_forest <- function(X.train, Y, X.test, alpha, alpha.new, min.node.size =5,
-                           Y.test=NULL, grf=FALSE){
+predict_erf <- function(object, newdata = NULL, quantiles = NULL,
+                        threshold = 0.8, model_assessment = FALSE,
+                        Y.test = NULL, out_of_bag = FALSE) {
 
   ntest <- nrow(X.test)
   results <- array(NA, dim = c(ntest, length(alpha.new)))
   EVT.par <- array(NA, dim = c(ntest, 2))
 
   fit.grf = grf::quantile_forest(X.train, Y, quantiles = c(0.1,0.5,0.9),
-                                 min.node.size = min.node.size) #c(0.7, 0.8, alpha, 0.95)
-  q.hat.train = stats::predict(fit.grf, X.train, quantiles = alpha)
-  exc.idx = which(Y - q.hat.train > 0)
+                                 min.node.size = min.node.size, num.trees = 2, honesty = FALSE) #c(0.7, 0.8, alpha, 0.95)
+  q.hat.train2 = stats::predict(fit.grf, X.train, quantiles = alpha)
+  q.hat.train2 = stats::predict(fit.grf, quantiles = alpha)
+    exc.idx = which(Y - q.hat.train > 0)
   exc.data = (Y - q.hat.train)[exc.idx]
 
 
@@ -178,10 +202,10 @@ predict.quantile_forest <- function(object,
     return(object$predictions)
   }
 
-  num.threads <- validate_num_threads(num.threads)
+  num.threads <- grf:::validate_num_threads(num.threads)
   forest.short <- object[-which(names(object) == "X.orig")]
   X <- object[["X.orig"]]
-  train.data <- create_train_matrices(X, outcome = object[["Y.orig"]])
+  train.data <- grf:::create_train_matrices(X, outcome = object[["Y.orig"]])
 
   args <- list(forest.object = forest.short,
                quantiles = quantiles,
