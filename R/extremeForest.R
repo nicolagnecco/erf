@@ -4,15 +4,15 @@
 #' using a trained forest.
 #'
 #' @param object Quantile forest object. The trained forest.
-#'               !! possibly extreme quantile forest
 #' @param newdata Numeric matrix.
 #'                Rows contain observation at which predictions should be made.
 #'                If NULL, makes out-of-bag predictions on the training set
 #'                instead (i.e., provides predictions at Xi using only trees
 #'                that did not use the i-th training example). Note
-#'                that this matrix should have the number of columns as the training
-#'                matrix, and that the columns must appear in the same order.
-#'                Needed if \code{model_assessment = TRUE}.
+#'                that this matrix should have the number of columns as the
+#'                training matrix, and that the columns must appear in the same
+#'                order. This argument is needed if
+#'                \code{model_assessment = TRUE}.
 #'                Default is \code{NULL}.
 #' @param quantiles Numeric vector (0, 1).
 #'                  Extreme quantiles at which estimates are required.
@@ -38,6 +38,78 @@ predict_erf <- function(object, newdata = NULL, quantiles = NULL,
                         threshold = 0.8, model_assessment = FALSE,
                         Y.test = NULL, out_of_bag = FALSE) {
 
+  validate_inputs(...)
+
+  X0 <- set_test_observations(...)
+
+  wi_x0 <-  grf::get_sample_weights(object, newdata = X0, num.threads = NULL)
+
+  t_xi <- compute_thresholds(object, out_of_bag)
+
+  gpd_pars <- fit_conditional_gpd(object, wi_x0, t_xi)
+
+  q_hat <- compute_extreme_quantiles(gpd_pars, X0, quantiles, threshold)
+
+  if (model_assessment){
+    compute_model_assessment(...)
+  }
+}
+
+wishlist <- function(){
+  if (model_assessment){
+    if(is.null(newdata) || is.null(Y.test)){
+      stop("When model_assessment = TRUE, newdata and Y.test must be supplied.")
+    }
+  }
+
+  if (is.null(quantiles)) {
+    quantiles <- object[["quantiles.orig"]]
+  } else {
+    if (!is.numeric(quantiles) || length(quantiles) < 1) {
+      stop("Error: Must provide numeric quantiles")
+    } else if (min(quantiles) <= 0 || max(quantiles) >= 1) {
+      stop("Error: Quantiles must be in (0, 1)")
+    }
+  }
+
+  if (!is.null(newdata)) {
+    validate_newdata(newdata, object$X.orig, allow.na = TRUE)
+    test.data <- create_test_matrices(newdata)
+    do.call.rcpp(quantile_predict, c(train.data, test.data, args))
+  } else {
+    do.call.rcpp(quantile_predict_oob, c(train.data, args))
+  }
+}
+
+
+weighted.LLH <- function(data, weights, par) {
+  sig = par[1] # sigma
+  xi = par[2] # xi
+  y = 1 + (xi/sig) * data
+  if (min(sig) <= 0)
+    nl = 10^6
+  else {
+    if (min(y) <= 0)
+      nl = 10^6
+    else {
+      nl = sum(weights*(log(sig) + (1 + 1/xi)*log(y)))
+    }
+  }
+  return(nl)
+}
+
+q.GPD <- function(q, alpha, u, sigma, xi){
+  (((1-q)/(1-alpha))^{-xi} - 1)*sigma/xi + u
+}
+
+
+draft <- function(){
+
+
+
+
+
+
   ntest <- nrow(X.test)
   results <- array(NA, dim = c(ntest, length(alpha.new)))
   EVT.par <- array(NA, dim = c(ntest, 2))
@@ -46,7 +118,7 @@ predict_erf <- function(object, newdata = NULL, quantiles = NULL,
                                  min.node.size = min.node.size, num.trees = 2, honesty = FALSE) #c(0.7, 0.8, alpha, 0.95)
   q.hat.train2 = stats::predict(fit.grf, X.train, quantiles = alpha)
   q.hat.train2 = stats::predict(fit.grf, quantiles = alpha)
-    exc.idx = which(Y - q.hat.train > 0)
+  exc.idx = which(Y - q.hat.train > 0)
   exc.data = (Y - q.hat.train)[exc.idx]
 
 
@@ -121,28 +193,6 @@ predict_erf <- function(object, newdata = NULL, quantiles = NULL,
                 EVT.par=EVT.par, X.train=X.train, Y=Y, X.test=X.test))
   }
 }
-
-
-weighted.LLH <- function(data, weights, par) {
-  sig = par[1] # sigma
-  xi = par[2] # xi
-  y = 1 + (xi/sig) * data
-  if (min(sig) <= 0)
-    nl = 10^6
-  else {
-    if (min(y) <= 0)
-      nl = 10^6
-    else {
-      nl = sum(weights*(log(sig) + (1 + 1/xi)*log(y)))
-    }
-  }
-  return(nl)
-}
-
-q.GPD <- function(q, alpha, u, sigma, xi){
-  (((1-q)/(1-alpha))^{-xi} - 1)*sigma/xi + u
-}
-
 
 #' Predict with a quantile forest
 #'
