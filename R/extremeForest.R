@@ -181,8 +181,24 @@ compute_thresholds <- function(object, threshold, X, out_of_bag = FALSE){
   return(q_hat)
 }
 
-fit_conditional_gpd <- function(...){
-  # !!! write signature & purpose
+fit_conditional_gpd <- function(object, wi_x0, t_xi){
+  ## quantile_forest numeric_matrix numeric_vector -> matrix
+  ## produce matrix with MLE GPD scale and shape parameter for each test point
+
+  ntest <- nrow(wi_x0)
+  Y <- object$Y.orig
+  exc_idx = which(Y - t_xi > 0)
+  exc_data = (Y - t_xi)[exc_idx]
+
+  init_par <- ismev::gpd.fit(exc_data, 0, show=FALSE)$mle
+  EVT_par <- array(NA, dim = c(ntest, 2))
+
+  for(i in seq_len(ntest)){
+    EVT_par[i,] = stats::optim(par = init_par, fn = weighted_LLH, data=exc_data,
+                               weights=wi_x0[i, exc_idx])$par
+  }
+
+  return(EVT_par)
 }
 
 compute_extreme_quantiles <- function(...){
@@ -193,7 +209,7 @@ compute_model_assessment <- function(...){
   # !!! write signature & purpose
 }
 
-weighted.LLH <- function(data, weights, par) {
+weighted_LLH <- function(data, weights, par) {
   sig = par[1] # sigma
   xi = par[2] # xi
   y = 1 + (xi/sig) * data
@@ -209,7 +225,7 @@ weighted.LLH <- function(data, weights, par) {
   return(nl)
 }
 
-q.GPD <- function(q, alpha, u, sigma, xi){
+q_GPD <- function(q, alpha, u, sigma, xi){
   (((1-q)/(1-alpha))^{-xi} - 1)*sigma/xi + u
 }
 

@@ -50,7 +50,7 @@ n <- 50
 p <- 3
 X <- matrix(rnorm(n * p), n, p)
 Y <- X[, 1] * rnorm(n)
-object <- quantile_forest(X, Y, quantiles = c(0.1, 0.5, 0.9), num.trees = 1)
+object <- quantile_forest(X, Y, quantiles = c(0.1, 0.5, 0.9))
 object2 <- object; class(object2) <- "ciaooo"
 newdata <-  matrix(rnorm(n * p), n, p)
 # newdata <-  matrix(rnorm(n * (p - 1)), n, p - 1)
@@ -65,3 +65,8 @@ validate_inputs(object, quantiles, threshold, newdata, model_assessment, Y.test)
 
 predict_erf(object, quantiles, threshold, newdata, model_assessment, Y.test,
             FALSE)
+
+X.train <- X
+X.test <- newdata
+alpha <- threshold
+alpha.new <- quantiles
