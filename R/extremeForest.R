@@ -51,7 +51,7 @@ predict_erf <- function(object, quantiles, threshold = 0.8,
 
   q_hat <- compute_extreme_quantiles(gpd_pars, X0, quantiles, threshold)
 
-  if (model_assessment) compute_model_assessment(...)
+  if (model_assessment) compute_model_assessment(q_hat, newdata, Y.test)
 }
 
 validate_inputs <- function(object,  quantiles, threshold, newdata,
@@ -182,7 +182,15 @@ compute_thresholds <- function(object, threshold, X, out_of_bag = FALSE){
 }
 
 fit_conditional_gpd <- function(...){
+  # !!! write signature & purpose
+}
 
+compute_extreme_quantiles <- function(...){
+  # !!! write signature & purpose
+}
+
+compute_model_assessment <- function(...){
+  # !!! write signature & purpose
 }
 
 weighted.LLH <- function(data, weights, par) {
@@ -201,16 +209,15 @@ weighted.LLH <- function(data, weights, par) {
   return(nl)
 }
 
+q.GPD <- function(q, alpha, u, sigma, xi){
+  (((1-q)/(1-alpha))^{-xi} - 1)*sigma/xi + u
+}
 
 
-# helpers ###########
+# draft ###########
 
-draft <- function(){
-
-
-
-
-
+draft <- function(X.train, Y, X.test, alpha, alpha.new, Y.test=NULL, grf=FALSE,
+                  min.node.size = 5, q.hat.train = 0){
 
   ntest <- nrow(X.test)
   results <- array(NA, dim = c(ntest, length(alpha.new)))
@@ -297,6 +304,3 @@ draft <- function(){
 }
 
 
-q.GPD <- function(q, alpha, u, sigma, xi){
-  (((1-q)/(1-alpha))^{-xi} - 1)*sigma/xi + u
-}
