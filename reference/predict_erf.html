@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Function reference • erf</title>
+<title>Extreme predictions with a quantile forest — predict_erf • erf</title>
 
 
 <!-- jquery -->
@@ -39,7 +39,9 @@
 
 
 
-<meta property="og:title" content="Function reference" />
+<meta property="og:title" content="Extreme predictions with a quantile forest — predict_erf" />
+<meta property="og:description" content="Gets estimates of the extrapolated conditional quantiles of Y given X
+using a trained forest." />
 
 
 
@@ -58,7 +60,7 @@
   </head>
 
   <body data-spy="scroll" data-target="#toc">
-    <div class="container template-reference-index">
+    <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -105,42 +107,85 @@
       </header>
 
 <div class="row">
-  <div class="contents col-md-9">
+  <div class="col-md-9 contents">
     <div class="page-header">
-      <h1>Reference</h1>
+    <h1>Extreme predictions with a quantile forest</h1>
+    <small class="dont-index">Source: <a href='https://github.com/nicolagnecco/erf/blob/master/R/extremeForest.R'><code>R/extremeForest.R</code></a></small>
+    <div class="hidden name"><code>predict_erf.Rd</code></div>
     </div>
 
-    <table class="ref-index">
+    <div class="ref-description">
+    <p>Gets estimates of the extrapolated conditional quantiles of Y given X
+using a trained forest.</p>
+    </div>
 
-    <colgroup>
-      
-      <col class="alias" />
-      <col class="title" />
-    </colgroup>
+    <pre class="usage"><span class='fu'><a href='https://rdrr.io/pkg/erf/man/predict_erf.html'>predict_erf</a></span>(
+  <span class='kw'>object</span>,
+  <span class='kw'>quantiles</span>,
+  threshold = <span class='fl'>0.8</span>,
+  newdata = <span class='kw'>NULL</span>,
+  model_assessment = <span class='fl'>FALSE</span>,
+  Y.test = <span class='kw'>NULL</span>,
+  out_of_bag = <span class='fl'>FALSE</span>
+)</pre>
 
-    <tbody>
-      <tr>
-        <th colspan="2">
-          <h2 id="section-all-functions" class="hasAnchor"><a href="#section-all-functions" class="anchor"></a>All functions</h2>
-          <p class="section-desc"></p>
-        </th>
-      </tr>
-      
-      
-    </tbody><tbody>
-      
-      
-      <tr>
-        
-        <td>
-          <p><code><a href="predict_erf.html">predict_erf()</a></code> </p>
-        </td>
-        <td><p>Extreme predictions with a quantile forest</p></td>
-      </tr>
-    </tbody>
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>object</th>
+      <td><p>Quantile forest object. The trained forest.</p></td>
+    </tr>
+    <tr>
+      <th>quantiles</th>
+      <td><p>Numeric vector (0, 1).
+Extreme quantiles at which estimates are required.</p></td>
+    </tr>
+    <tr>
+      <th>threshold</th>
+      <td><p>Numeric (0, 1). Intermediate quantile used to compute
+thresholds \(t(x_i)\) for the GPD.
+Default is 0.8.
+Note that <code>threshold</code> &lt; <code>quantiles</code>.</p></td>
+    </tr>
+    <tr>
+      <th>newdata</th>
+      <td><p>Numeric matrix.
+Rows contain observation at which predictions should be made.
+If NULL, makes out-of-bag predictions on the training set
+instead (i.e., provides predictions at Xi using only trees
+that did not use the i-th training example). Note
+that this matrix should have the number of columns as the
+training matrix, and that the columns must appear in the same
+order. This argument is needed if
+<code>model_assessment = TRUE</code>.
+Default is <code>NULL</code>.</p></td>
+    </tr>
+    <tr>
+      <th>model_assessment</th>
+      <td><p>Boolean. Assess GPD fit with QQ-plot against
+exponential distribution?
+Default is <code>FALSE</code>.</p></td>
+    </tr>
+    <tr>
+      <th>Y.test</th>
+      <td><p>Numeric vector. Responses for the test set, needed
+if <code>model_assessment = TRUE</code>.
+Default is <code>NULL</code>.</p></td>
+    </tr>
+    <tr>
+      <th>out_of_bag</th>
+      <td><p>Boolean. Use out-of-bag observations to compute thresholds
+\(t(x_i)\) for the GPD?
+Default is <code>FALSE</code>.</p></td>
+    </tr>
     </table>
-  </div>
 
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+
+    <p>Predictions at each test point for each desired quantile.</p>
+
+  </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
       <h2 data-toc-skip>Contents</h2>
