@@ -43,3 +43,25 @@ W - W2
 W
 W2[, 35]
 W[, 35]
+
+
+# Test
+n <- 50
+p <- 3
+X <- matrix(rnorm(n * p), n, p)
+Y <- X[, 1] * rnorm(n)
+object <- quantile_forest(X, Y, quantiles = c(0.1, 0.5, 0.9), num.trees = 1)
+object2 <- object; class(object2) <- "ciaooo"
+newdata <-  matrix(rnorm(n * p), n, p)
+# newdata <-  matrix(rnorm(n * (p - 1)), n, p - 1)
+# newdata <- NULL
+quantiles <- c(.99, .999)
+threshold <- 0.85
+model_assessment <- TRUE
+Y.test <- newdata[, 1] * rnorm(n)
+# Y.test <- NULL
+# Y.test <- newdata[-1, 1] * rnorm(n - 1)
+validate_inputs(object, quantiles, threshold, newdata, model_assessment, Y.test)
+
+predict_erf(object, quantiles, threshold, newdata, model_assessment, Y.test,
+            FALSE)

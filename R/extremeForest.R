@@ -4,6 +4,12 @@
 #' using a trained forest.
 #'
 #' @param object Quantile forest object. The trained forest.
+#' @param quantiles Numeric vector (0, 1).
+#'                  Extreme quantiles at which estimates are required.
+#' @param threshold Numeric (0, 1). Intermediate quantile used to compute
+#'                  thresholds \eqn{t(x_i)} for the GPD.
+#'                  Default is 0.8.
+#'                  Note that \code{threshold} < \code{quantiles}.
 #' @param newdata Numeric matrix.
 #'                Rows contain observation at which predictions should be made.
 #'                If NULL, makes out-of-bag predictions on the training set
@@ -14,13 +20,6 @@
 #'                order. This argument is needed if
 #'                \code{model_assessment = TRUE}.
 #'                Default is \code{NULL}.
-#' @param quantiles Numeric vector (0, 1).
-#'                  Extreme quantiles at which estimates are required.
-#'                  If NULL, the quantiles used to train the forest is used.
-#'                  Default is \code{NULL}.
-#' @param threshold Numeric vector (0, 1). Intermediate quantile used to compute
-#'                  thresholds \eqn{t(x_i)} for the GPD.
-#'                  Default is 0.8.
 #' @param model_assessment Boolean. Assess GPD fit with QQ-plot against
 #'                         exponential distribution?
 #'                         Default is \code{FALSE}.
@@ -34,53 +33,157 @@
 #' @return Predictions at each test point for each desired quantile.
 #'
 #' @export
-predict_erf <- function(object, newdata = NULL, quantiles = NULL,
-                        threshold = 0.8, model_assessment = FALSE,
+predict_erf <- function(object, quantiles, threshold = 0.8,
+                        newdata = NULL, model_assessment = FALSE,
                         Y.test = NULL, out_of_bag = FALSE) {
 
-  validate_inputs(...)
+  validate_inputs(object, quantiles, threshold, newdata, model_assessment,
+                  Y.test, out_of_bag)
 
-  X0 <- set_test_observations(...)
+  X0 <- set_test_observations(object, newdata)
 
   wi_x0 <-  grf::get_sample_weights(object, newdata = X0, num.threads = NULL)
 
-  t_xi <- compute_thresholds(object, out_of_bag)
+  t_xi <- compute_thresholds(object, threshold = threshold,
+                             X = object$X.orig, out_of_bag = out_of_bag)
 
   gpd_pars <- fit_conditional_gpd(object, wi_x0, t_xi)
 
   q_hat <- compute_extreme_quantiles(gpd_pars, X0, quantiles, threshold)
 
-  if (model_assessment){
-    compute_model_assessment(...)
-  }
+  if (model_assessment) compute_model_assessment(...)
 }
 
-wishlist <- function(){
-  if (model_assessment){
-    if(is.null(newdata) || is.null(Y.test)){
-      stop("When model_assessment = TRUE, newdata and Y.test must be supplied.")
-    }
+validate_inputs <- function(object,  quantiles, threshold, newdata,
+                            model_assessment, Y.test, out_of_bag){
+  ## ... -> boolean
+  ## check whether inputs are well-formed
+
+  check_object(object)
+
+  check_newdata_object(newdata, object)
+
+  check_quantiles_thres(quantiles, threshold)
+
+  check_model_assessment(model_assessment, newdata, Y.test)
+
+  return(TRUE)
+}
+
+check_object <- function(object){
+  ## quantile_forest -> boolean
+  ## check whether object is of class "quantile_forest"
+
+  if(class(object)[1] != "quantile_forest"){
+    stop("object must be of class 'quantile_forest'")
   }
 
-  if (is.null(quantiles)) {
-    quantiles <- object[["quantiles.orig"]]
-  } else {
-    if (!is.numeric(quantiles) || length(quantiles) < 1) {
-      stop("Error: Must provide numeric quantiles")
-    } else if (min(quantiles) <= 0 || max(quantiles) >= 1) {
-      stop("Error: Quantiles must be in (0, 1)")
-    }
-  }
+  return(TRUE)
+}
+
+check_newdata_object <- function(newdata, object){
+  ## numeric_matrix, quantile_forest -> boolean
+  ## check whether newdata and object are well-formed
 
   if (!is.null(newdata)) {
-    validate_newdata(newdata, object$X.orig, allow.na = TRUE)
-    test.data <- create_test_matrices(newdata)
-    do.call.rcpp(quantile_predict, c(train.data, test.data, args))
-  } else {
-    do.call.rcpp(quantile_predict_oob, c(train.data, args))
+    if(class(newdata) != "matrix"){
+      stop("newdata must be of class 'matrix'")
+    }
+
+    if (ncol(newdata) != ncol(object$X.orig)) {
+      stop("newdata must have the same number of columns as the training matrix")
+    }
   }
+
+  return(TRUE)
 }
 
+check_quantiles_thres <- function(quantiles, threshold){
+  ## numeric_vector_(0, 1), numeric_(0, 1) -> boolean
+  ## check whether quantiles and threshold are well-formed
+
+  if (!is.numeric(quantiles) || length(quantiles) < 1) {
+    stop("must provide numeric quantiles")
+  } else if (min(quantiles) <= 0 || max(quantiles) >= 1) {
+    stop("quantiles must be in (0, 1)")
+  }
+
+  if (!is.numeric(threshold) || length(threshold) < 1) {
+    stop("must provide numeric threshold")
+  } else if (min(threshold) <= 0 || max(threshold) >= 1) {
+    stop("threshold must be in (0, 1)")
+  }
+
+  if (any(quantiles < threshold)){
+    stop("all quantiles must be larger than threshold")
+  }
+
+  return(TRUE)
+
+}
+
+check_model_assessment <- function(model_assessment, newdata, Y.test){
+  ## boolean, numeric_matrix, numeric_vector -> boolean
+  ## check whether inputs are well formed
+
+  if (model_assessment){
+    if(is.null(newdata) || is.null(Y.test)){
+      stop("newdata and Y.test must be supplied when model_assessment = TRUE")
+    }
+  }
+
+  if (!is.null(newdata) && !is.null(Y.test)){
+    valid.classes <- c("matrix", "numeric")
+
+    if(!class(Y.test) %in% valid.classes){
+      stop(paste("Y.test must be one of the following classes:",
+           paste(valid.classes, collapse = ", "), sep = " "))
+    }
+
+    n_ytest <- if(class(Y.test) == "numeric"){
+      length(Y.test)
+    } else {
+      nrow(Y.test)
+    }
+
+    if (n_ytest != nrow(newdata)){
+      stop("newdata and Y.test must have the same number of observations")
+    }
+  }
+
+  return(TRUE)
+
+}
+
+set_test_observations <- function(object, newdata){
+  ## quantile_forest numeric_matrix -> numeric_matrix
+  ## set test observation matrix
+
+  if(is.null(newdata)){
+    X0 <- object$X.orig
+  } else {
+    X0 <- newdata
+  }
+
+  return(X0)
+}
+
+compute_thresholds <- function(object, threshold, X, out_of_bag = FALSE){
+  ## quantile_forest numeric(0, 1) numeric_matrix boolean -> numeric_vector
+  ## compute conditional quantile based on quantile_forest object
+
+  if (out_of_bag){
+    q_hat <- stats::predict(object, quantiles = threshold)
+  } else {
+    q_hat <- stats::predict(object, newdata = X, quantiles = threshold)
+  }
+
+  return(q_hat)
+}
+
+fit_conditional_gpd <- function(...){
+
+}
 
 weighted.LLH <- function(data, weights, par) {
   sig = par[1] # sigma
@@ -98,10 +201,9 @@ weighted.LLH <- function(data, weights, par) {
   return(nl)
 }
 
-q.GPD <- function(q, alpha, u, sigma, xi){
-  (((1-q)/(1-alpha))^{-xi} - 1)*sigma/xi + u
-}
 
+
+# helpers ###########
 
 draft <- function(){
 
@@ -194,78 +296,7 @@ draft <- function(){
   }
 }
 
-#' Predict with a quantile forest
-#'
-#' Gets estimates of the conditional quantiles of Y given X using a trained forest.
-#'
-#' @param object The trained forest.
-#' @param newdata Points at which predictions should be made. If NULL, makes out-of-bag
-#'                predictions on the training set instead (i.e., provides predictions at
-#'                Xi using only trees that did not use the i-th training example). Note
-#'                that this matrix should have the number of columns as the training
-#'                matrix, and that the columns must appear in the same order.
-#' @param quantiles Vector of quantiles at which estimates are required. If NULL, the quantiles
-#'  used to train the forest is used. Default is NULL.
-#' @param num.threads Number of threads used in training. If set to NULL, the software
-#'                    automatically selects an appropriate amount.
-#' @param ... Additional arguments (currently ignored).
-#'
-#' @return Predictions at each test point for each desired quantile.
-#'
-#' @examples
-#' \donttest{
-#' # Train a quantile forest.
-#' n <- 50
-#' p <- 10
-#' X <- matrix(rnorm(n * p), n, p)
-#' Y <- X[, 1] * rnorm(n)
-#' q.forest <- quantile_forest(X, Y, quantiles = c(0.1, 0.5, 0.9))
-#'
-#' # Predict on out-of-bag training samples.
-#' q.pred <- predict(q.forest)
-#'
-#' # Predict using the forest.
-#' X.test <- matrix(0, 101, p)
-#' X.test[, 1] <- seq(-2, 2, length.out = 101)
-#' q.pred <- predict(q.forest, X.test)
-#' }
-#'
-#' @method predict quantile_forest
-#' @export
-predict.quantile_forest <- function(object,
-                                    newdata = NULL,
-                                    quantiles = NULL,
-                                    num.threads = NULL, ...) {
-  if (is.null(quantiles)) {
-    quantiles <- object[["quantiles.orig"]]
-  } else {
-    if (!is.numeric(quantiles) || length(quantiles) < 1) {
-      stop("Error: Must provide numeric quantiles")
-    } else if (min(quantiles) <= 0 || max(quantiles) >= 1) {
-      stop("Error: Quantiles must be in (0, 1)")
-    }
-  }
 
-  # If possible, use pre-computed predictions.
-  quantiles.orig <- object[["quantiles.orig"]]
-  if (is.null(newdata) && identical(quantiles, quantiles.orig) && !is.null(object$predictions)) {
-    return(object$predictions)
-  }
-
-  num.threads <- grf:::validate_num_threads(num.threads)
-  forest.short <- object[-which(names(object) == "X.orig")]
-  X <- object[["X.orig"]]
-  train.data <- grf:::create_train_matrices(X, outcome = object[["Y.orig"]])
-
-  args <- list(forest.object = forest.short,
-               quantiles = quantiles,
-               num.threads = num.threads)
-
-  if (!is.null(newdata)) {
-    validate_newdata(newdata, object$X.orig, allow.na = TRUE)
-    test.data <- create_test_matrices(newdata)
-    do.call.rcpp(quantile_predict, c(train.data, test.data, args))
-  } else {
-    do.call.rcpp(quantile_predict_oob, c(train.data, args))
-  }
+q.GPD <- function(q, alpha, u, sigma, xi){
+  (((1-q)/(1-alpha))^{-xi} - 1)*sigma/xi + u
 }
