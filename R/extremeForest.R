@@ -261,7 +261,7 @@ compute_pseudo_observations <- function(exc_data, sigma, xi){
     msg <- paste("Observation", idx, "is not plotted because",
                  "it exceeds its upper end point")
     warning(msg)
-  } else {
+  } else if (length(idx) > 1) {
     msg <- paste("Observations", paste(idx, collapse = ", "),
                  "are not plotted because",
                  "they exceed their upper end points")
@@ -287,14 +287,15 @@ plot_model_assessment <- function(x, y){
 
   ggplot2::ggplot() +
     ggplot2::geom_line(data = dat_random,
-                       ggplot2::aes(x = dat_random$theoretical_quantiles,
-                                    y = dat_random$random_exp,
-                                    group = rep), alpha = 0.2, col = "#D55E00") +
+                       ggplot2::aes_string(x = "theoretical_quantiles",
+                                           y = "random_exp",
+                                           group = "rep"),
+                       alpha = 0.2, col = "#D55E00") +
     ggplot2::geom_abline(slope = 1, intercept = 0,
                          linetype = "dashed", size = 1, col = "#0072B2") +
     ggplot2::geom_point(data = dat_plot,
-                        ggplot2::aes(x = dat_plot$theoretical_quantiles,
-                                     y = dat_plot$observed_quantiles),
+                        ggplot2::aes_string(x = "theoretical_quantiles",
+                                            y = "observed_quantiles"),
                         size = 1) +
 
     ggplot2::ggtitle("QQ-plot") +
