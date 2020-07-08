@@ -1,13 +1,13 @@
 Package: erf
-Title: What the Package Does (One Line, Title Case)
+Title: Extreme Random Forest
 Version: 0.0.0.9000
 Authors@R: 
-    person(given = "Edossa",
-           family = "Merga",
-           role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
+    as.person(c(
+    "Edossa Merga <edossamerga@gmail.com> [aut, cre]",
+    "Nicola Gnecco [aut]",
+    "Sebastian Engelke [aut]"
+    ))
+Description: Extreme quantile prediction for quantile random forest.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true

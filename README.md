@@ -6,7 +6,7 @@ extreme random forest
 <!-- badges: start -->
 [![R build status](https://github.com/nicolagnecco/erf/workflows/R-CMD-check/badge.svg)](https://github.com/nicolagnecco/erf/actions) <!-- badges: end -->
 
-The goal of erf is to ...
+The goal of erf is to predict extreme quantiles within the quantile forest framework of Athey, Tibshirani, and Wager (2019 <https://doi.org/10.1214/18-AOS1709>).
 
 Installation
 ------------
@@ -53,8 +53,6 @@ threshold <- 0.8
 res <- predict_erf(object, quantiles = quantiles, threshold = threshold,
                    newdata = X.test, model_assessment = TRUE,
                    Y.test = Y.test, out_of_bag = FALSE)
-#> Warning in compute_pseudo_observations(exc_data, sigma, xi): Observations
-#> are not plotted because they exceed their upper end points
 
 head(res$predictions)
 #>      quantile =  0.99 quantile =  0.999
@@ -68,3 +66,8 @@ res$plot
 ```
 
 <img src="man/figures/README-example2-1.png" width="100%" />
+
+References
+----------
+
+Athey, Susan, Julie Tibshirani, and Stefan Wager. 2019. “Generalized Random Forests.” *The Annals of Statistics* 47 (2): 1148–78. [	https://doi.org/10.1214/18-AOS1709](	https://doi.org/10.1214/18-AOS1709).
