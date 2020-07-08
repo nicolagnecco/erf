@@ -145,8 +145,8 @@ Extreme quantiles at which estimates are required.</p></td>
       <th>threshold</th>
       <td><p>Numeric (0, 1). Intermediate quantile used to compute
 thresholds \(t(x_i)\) for the GPD.
-Default is 0.8.
-Note that <code>threshold</code> &lt; <code>quantiles</code>.</p></td>
+Note that <code>threshold</code> &lt; <code>quantiles</code>.
+Default is 0.8.</p></td>
     </tr>
     <tr>
       <th>newdata</th>
@@ -183,7 +183,12 @@ Default is <code>FALSE</code>.</p></td>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>Predictions at each test point for each desired quantile.</p>
+    <p>List. The list is made of:</p><ol>
+<li><p>Numeric matrix. Predictions at each test point (on rows) for
+each desired quantile (on columns).</p></li>
+<li><p>Plot if <code>model_assessment = TRUE</code>. QQ-plot for model assessment.</p></li>
+</ol>
+
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
