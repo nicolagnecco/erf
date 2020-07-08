@@ -22,8 +22,8 @@ Extreme quantiles at which estimates are required.}
 
 \item{threshold}{Numeric (0, 1). Intermediate quantile used to compute
 thresholds \eqn{t(x_i)} for the GPD.
-Default is 0.8.
-Note that \code{threshold} < \code{quantiles}.}
+Note that \code{threshold} < \code{quantiles}.
+Default is 0.8.}
 
 \item{newdata}{Numeric matrix.
 Rows contain observation at which predictions should be made.
@@ -49,7 +49,12 @@ Default is \code{NULL}.}
 Default is \code{FALSE}.}
 }
 \value{
-Predictions at each test point for each desired quantile.
+List. The list is made of:
+\enumerate{
+\item Numeric matrix. Predictions at each test point (on rows) for
+each desired quantile (on columns).
+\item Plot if \code{model_assessment = TRUE}. QQ-plot for model assessment.
+}
 }
 \description{
 Gets estimates of the extrapolated conditional quantiles of Y given X
