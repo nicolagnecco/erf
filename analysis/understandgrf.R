@@ -174,3 +174,16 @@ extreme_forest <- function(X.train, Y, X.test, alpha, alpha.new, Y.test=NULL, gr
     return(list(results=results, results.grf=results.grf, EVT.par=EVT.par, X.train=X.train, Y=Y, X.test=X.test))
 }
 
+
+library(qqplotr)
+library(ggplot2)
+dat <- data.frame(y = rexp(50))
+
+di <- "exp" # exponential distribution
+dp <- list(rate = 1) # exponential rate parameter
+
+gg <- ggplot(data = dat, mapping = aes(sample = y)) +
+  stat_qq_band(distribution = di, dparams = dp) +
+  stat_qq_line(distribution = di, dparams = dp) +
+  stat_qq_point(distribution = di, dparams = dp) +
+  labs(x = "Theoretical Quantiles", y = "Sample Quantiles")
