@@ -65,7 +65,7 @@ sim.RF.pred <- function(nsim, n, p, alpha, alpha.new, model, methods, min.node.s
 set.seed(1234)
 undebug(sim.RF.pred)
 
-nsim <- 1
+nsim <- 10
 n = 2000
 p = 40
 alpha = 0.8
