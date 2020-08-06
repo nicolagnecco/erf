@@ -12,7 +12,7 @@ source("reproduce_paper_results/simulation_functions.R")
 log_file <- "reproduce_paper_results/output/sims.txt"
 n <- 2000
 p <- 40
-ntest <- 1000
+ntest <- 100
 threshold <- 0.8
 
 settings <- set_simulations(seed = 42)
