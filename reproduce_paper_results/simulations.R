@@ -21,48 +21,17 @@ rm(settings)
 
 m <- NROW(sims_args)
 
-# Create clusters
-cores <-  if(Sys.info()["user"] == "elvis"){
-  detectCores()
-} else {
-  detectCores() - 1
-}
-cl <- makeCluster(cores, type = "PSOCK", outfile = "")
-registerDoParallel(cl)
-
-# Update each worker's environment
-clusterEvalQ(cl, {
-  library(grf)
-  library(erf)
-  library(doParallel)
-  library(tidyverse)
-  source("reproduce_paper_results/simulation_functions.R")
-})
-
-clusterExport(cl, c("sims_args"), envir = environment())
-
 # Loop through all simulations
 tic()
 sink(file = log_file)
-cat("**** Simulation 1 **** \n")
-
-ll <- foreach(i = 1:m, .combine = bind_rows) %dopar%{
-
-    cat("Simulation", i, "out of", m, "\n", file = log_file, append = TRUE)
-    wrapper_sim(i, sims_args)
-
-  }
+cat("**** Simulation **** \n")
+ll <- map_dfr(1:m, wrapper_sim, sims_args)
 sink()
-toc()
-stopCluster(cl)
 closeAllConnections()
-# Collect results
-ll <- ll %>%
-  ungroup() %>%
-  left_join(sims_args, by = "id")
+toc()
 
 # save results
-saveRDS(ll, file = result_file)
+saveRDS(ll, file = "reproduce_paper_results/output/simulations.rds")
 
 
 # simulation function # !!! ####

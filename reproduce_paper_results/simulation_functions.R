@@ -161,12 +161,12 @@ wrapper_sim <- function(i, sims_args){
 
   # set current simulation variables
   training_id <- sims_args$training_id[i]
-  alphas <- sims_args$alphas[i]
+  alpha <- sims_args$alphas[i]
   model <- sims_args$model[i]
   df <- sims_args$df[i]
 
   # generate training data
-  rng_sims <- sims_args$rng[[1]]
+  rng_sims <- sims_args$rng[[i]]
   rngtools::setRNG(rng_sims)
   dat <- generate_joint_distribution(n = n, p = p, model = model, df = df)
 
