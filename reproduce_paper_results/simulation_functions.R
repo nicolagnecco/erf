@@ -15,11 +15,13 @@ quantile_loss <- function(y, y_hat, alpha){
 }
 
 generate_joint_distribution <- function(n, p,
-                                        model = c("gaussian", "student_t"), df){
-  ## integer integer character integer -> list
+                                        model = c("gaussian", "student_t"),
+                                        scale = 2, df){
+  ## integer integer character numeric integer -> list
   ## generate n iid observations of (X, Y), where X is p-dimensional predictor
   ## and Y is the response. Y has conditional distribution equal to
-  ## model = "gaussian" or "student_t" with df degree of freedom.
+  ## model = "gaussian" or "student_t" with a certain scale and
+  ## with df degree of freedom.
   ## Returns a list with:
   ## - X, nxp matrix, p-dimensional predictor
   ## - Y, vector with n elements, response variable
@@ -29,10 +31,10 @@ generate_joint_distribution <- function(n, p,
 
   switch(model,
          "gaussian" = {
-           Y = ifelse(X[,1] < 0, rnorm(n, 0, 1), rnorm(n, 0, 2))
+           Y = ifelse(X[,1] < 0, rnorm(n, 0, 1), rnorm(n, 0, scale))
          },
          "student_t" = {
-           Y = ifelse(X[,1] < 0, rt(n, df = df),  2 * rt(n, df = df))
+           Y = ifelse(X[,1] < 0, rt(n, df = df),  scale * rt(n, df = df))
          })
 
   return(list(X = X, Y = Y))
@@ -85,13 +87,59 @@ simulation_settings <- function(){
   ## void -> tibble
   ## returns a tibble with simulation settings
 
-  training_id <- 1:50
-  alphas <- c(.99, .999, .9995)
+  # list of arguments
+  ## general
+  # nexp: 20
+  # n: 2000 (500, 1000)
+  # p: 40 (20, 10)
+  # ntest: 100
+  # model, df: gaussian, student_1.5, student_2.5
+  # scale: 2 (4)
+  #
+  ## fit
+  # num.trees: 2000 (500, 1000)
+  # quantiles_fit: c(0.1, 0.5, 0.9)
+  # min.node.size: 5 (2, 10, 20)
+  # honesty: TRUE (FALSE)
+  #
+  ## predict
+  # quantiles_predict: .8, .99, .999, .9995
+  # threshold: 0.8 (.6, .9)
+  # out_of_bag: FALSE (TRUE)
+
+  ## base parameters
+
+
+  ## general
+  nexp <- 1:20
+  n <- c(500, 1000, 2000) #2000
+  p <- c(10, 20, 40) #40
+  ntest <- 100
+  model <- c("gaussian", "student_t")
+  df <- c(1.5, 2.5)
+  scale <- c(2, 4) # 2
+
+  ## fit
+  num.trees <- c(500, 1000, 2000) #2000
+  quantiles_fit <- c(0.1, 0.5, 0.9)
+  min.node.sizec <- c(2, 5, 10, 20) #5
+  honesty <- c(TRUE, FALSE) #TRUE
+
+  ## predict
+  quantiles_predict <- c(.8, .99, .999, .9995)
+  threshold <- c(.5, .8, .9) #.8
+  out_of_bag <- c(TRUE, FALSE) #FALSE
+
+  # create tibble with base parameters (define a base set of parameters)
+  # and then change one parameter at a time
+  # one possibility to do that is to create the cartesian product of the hyperparameters,
+  # and then only retain the ones that are in the base set
+  quantiles_predict <- c(.8, .99, .999, .9995)
   model <- c("gaussian", "student_t")
   df <- c(1.5, 2.5)
 
-  tb1 <- expand_grid(training_id, alphas) %>%
-    arrange(desc(alphas)) %>%
+  tb1 <- expand_grid(nexp, quantiles_predict) %>%
+    arrange(desc(quantiles_predict)) %>%
     mutate(id = 1)
 
   tb2 <- expand_grid(model, df) %>%
@@ -160,8 +208,8 @@ wrapper_sim <- function(i, sims_args){
 
 
   # set current simulation variables
-  training_id <- sims_args$training_id[i]
-  alpha <- sims_args$alphas[i]
+  nexp <- sims_args$nexp[i]
+  quantiles_predict <- sims_args$quantiles_predict[i]
   model <- sims_args$model[i]
   df <- sims_args$df[i]
 
@@ -178,41 +226,41 @@ wrapper_sim <- function(i, sims_args){
   fit_grf <- quantile_forest(dat$X, dat$Y, quantiles = c(0.1, 0.5, 0.9))
 
   # predict quantile regression function
-  predictions_grf <- predict(fit_grf, x_test, quantiles = alpha)
-  predictions_erf <- predict_erf(fit_grf, quantiles = alpha,
+  predictions_grf <- predict(fit_grf, x_test, quantiles = quantiles_predict)
+  predictions_erf <- predict_erf(fit_grf, quantiles = quantiles_predict,
                                  threshold = 0.8,
                                  newdata = x_test, model_assessment = FALSE,
                                  Y.test = NULL,
                                  out_of_bag = FALSE)$predictions
-  predictions_true <- generate_theoretical_quantiles(alpha = alpha,
+  predictions_true <- generate_theoretical_quantiles(alpha = quantiles_predict,
                                                      x = x_test[, 1],
                                                      model = model, df = df)
 
 
   # collect results
-  tb1 <- tibble(training_id = training_id,
+  tb1 <- tibble(nexp = nexp,
                 model = model,
-                alpha = alpha,
+                quantiles_predict = quantiles_predict,
                 df = df)
 
-  tb_erf <- tibble(training_id = training_id,
+  tb_erf <- tibble(nexp = nexp,
                    x = x_test[, 1],
                    method = "erf",
                    predictions = predictions_erf[, 1])
 
-  tb_grf <- tibble(training_id = training_id,
+  tb_grf <- tibble(nexp = nexp,
                    x = x_test[, 1],
                    method = "grf",
                    predictions = predictions_grf[, 1])
 
-  tb_true <- tibble(training_id = training_id,
+  tb_true <- tibble(nexp = nexp,
                     x = x_test[, 1],
                     method = "true",
                     predictions = predictions_true[, 1])
 
 
   res <- bind_rows(tb_true, tb_grf, tb_erf) %>%
-    left_join(tb1, by = "training_id")
+    left_join(tb1, by = "nexp")
 
 
   # return value
