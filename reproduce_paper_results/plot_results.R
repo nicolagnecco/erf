@@ -3,7 +3,9 @@ library(tidyverse)
 source("reproduce_paper_results/simulation_functions.R")
 
 # plot results
-dat <- read_rds("reproduce_paper_results/output/simulations.rds") %>%
+dat <- read_rds("reproduce_paper_results/output/simulations.rds")
+
+%>%
   mutate(method = factor(method),
          # training_id = factor(training_id),
          model = if_else(model == "gaussian", model,
