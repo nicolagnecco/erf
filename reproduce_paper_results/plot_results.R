@@ -3,7 +3,7 @@ library(tidyverse)
 source("reproduce_paper_results/simulation_functions.R")
 
 # plot results
-dat <- read_rds("reproduce_paper_results/output/simulations.rds")
+dat <- read_rds("reproduce_paper_results/output/simulations2.rds")
 
 n0 <- 2e3
 p0 <- 40
@@ -23,12 +23,26 @@ aa <- dat %>%
          # training_id = factor(training_id),
          model = if_else(model == "gaussian", model,
                          paste(model, "_", df, sep = ""))) %>%
-  select(method, model, alpha, n, x) %>%
-  group_by(method, x, model, alpha) %>%
-  summarise(mean_quantile = mean(predictions),
-            lb = quantile(predictions, .05),
-            ub = quantile(predictions, .95))
+  select(nexp, method, model, quantiles_predict, predictions, n, x) %>%
+  unnest(cols = c(quantiles_predict, predictions)) %>%
+  pivot_wider(names_from = "method",
+              values_from = "predictions") %>%
+  mutate(grf = (grf - true)^2,
+         erf = (erf - true)^2) %>%
+  select(-true) %>%
+  pivot_longer(cols = c("grf", "erf"),
+               names_to = "method", values_to = "se") %>%
+  group_by(model, quantiles_predict, n, method, x) %>%
+  summarise(mse = mean(se)) %>%     # mean across nexp
+  summarise(rimse = sqrt(mean(mse)))  %>%  # mean across x's
+  mutate(method = factor(method))
 
+
+ggplot(aa, aes(x = n, y = rimse, col = method)) +
+  facet_grid(model ~ quantiles_predict, scale = "free") +
+  geom_line(size = 1, alpha = .5) +
+  geom_point(size = 3) +
+  scale_color_manual(values = c("#D55E00","#0072B2", "#CC79A7"))
 
 
 models <- unique(dat$model)
