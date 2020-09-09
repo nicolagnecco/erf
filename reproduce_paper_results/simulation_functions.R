@@ -250,21 +250,27 @@ wrapper_sim <- function(i, sims_args){
   tb_erf <- tibble(id = id,
                    x = x_test[, 1],
                    method = "erf",
-                   predictions = predictions_erf[, 1])
+                   predictions = matrix2list(predictions_erf))
 
   tb_grf <- tibble(id = id,
                    x = x_test[, 1],
                    method = "grf",
-                   predictions = predictions_grf[, 1])
+                   predictions = matrix2list(predictions_grf))
 
   tb_true <- tibble(id = id,
                     x = x_test[, 1],
                     method = "true",
-                    predictions = predictions_true[, 1])
+                    predictions = matrix2list(predictions_true))
 
 
   res <- bind_rows(tb_true, tb_grf, tb_erf)
 
   # return value
   return(res)
+}
+
+matrix2list <- function(mat){
+  ## numeric_matrix -> list
+  ## produces a list with elements corresponding to rows of mat
+  split(mat, rep(1:nrow(mat), times = ncol(mat)))
 }
