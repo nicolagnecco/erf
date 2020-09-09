@@ -107,28 +107,77 @@ simulation_settings <- function(){
   # threshold: 0.8 (.6, .9)
   # out_of_bag: FALSE (TRUE)
 
-  ## base parameters
+  ## base parameter values
+  n0 <- 2e3
+  p0 <- 40
+  scale0 <- 2
+  num.trees0 <- 2e3
+  min.node.sizec0 <- 5
+  honesty0 <- TRUE
+  threshold0 <- 0.8
+  out_of_bag0 <- FALSE
 
-
+  ## other parameter values
   ## general
   nexp <- 1:20
-  n <- c(500, 1000, 2000) #2000
-  p <- c(10, 20, 40) #40
+  n <- c(n0, 500, 1000)
+  p <- c(p0, 10, 20)
   ntest <- 100
   model <- c("gaussian", "student_t")
   df <- c(1.5, 2.5)
-  scale <- c(2, 4) # 2
+  scale <- c(scale0, 4)
 
   ## fit
-  num.trees <- c(500, 1000, 2000) #2000
+  num.trees <- c(num.trees0, 500, 1000)
   quantiles_fit <- c(0.1, 0.5, 0.9)
-  min.node.sizec <- c(2, 5, 10, 20) #5
-  honesty <- c(TRUE, FALSE) #TRUE
+  min.node.sizec <- c(5, 2, 10, 20)
+  honesty <- c(honesty0, FALSE)
 
   ## predict
   quantiles_predict <- c(.8, .99, .999, .9995)
-  threshold <- c(.5, .8, .9) #.8
-  out_of_bag <- c(TRUE, FALSE) #FALSE
+  threshold <- c(threshold0, .5, .9)
+  out_of_bag <- c(out_of_bag0, TRUE)
+
+
+  ## create parameter grid
+  ## tibble 1
+  tbl1 <- expand_grid(n, p, scale, num.trees,min.node.sizec, honesty, threshold,
+                      out_of_bag) %>%
+    filter(n %in% n0 + p %in% p0 + scale %in% scale0 +
+             num.trees %in% num.trees0 + min.node.sizec %in% min.node.sizec0 +
+             honesty %in% honesty0 + threshold %in% threshold0 +
+             out_of_bag %in% out_of_bag0 >= 7)
+
+  3 * 3 * 2 * 3 * 4 * 2 * 3 * 2 # cardinality of cartesian product
+  1 + 2 + 2 + 1 + 2 + 3 + 1 + 2 + 1 # cardinality of set of interest
+
+  AA <- expand_grid(nexp = nexp, n = n, p =  p, scale =scale)
+
+  AA2 <-  AA %>%
+    filter((n == n[1]) + (p == p[1]) + (scale == scale[1]) == 2)
+
+  view(AA2)
+  id <- AA$n %in% n[1] + AA$p %in% p[1] + AA$scale %in% scale[1] == 3
+  AA[id, ]
+
+  # basic example
+  A <- c("a1", "a2", "a3")
+  B <- c("b1", "b2")
+  A1 <- A[1:2]
+  B1 <- B[1]
+  A2 <- A[3]
+  B2 <- B[2]
+
+  A_cross_B <- expand_grid(A, B)
+  A2_cross_B2 <- expand_grid(A2, B2) %>%
+    rename(A = A2, B = B2)
+
+  # solution 1
+  setdiff(A_cross_B, A2_cross_B2)
+
+  # solution 2
+  A_cross_B %>%
+    filter(A %in% A1 | B %in% B1)
 
   # create tibble with base parameters (define a base set of parameters)
   # and then change one parameter at a time
@@ -150,7 +199,7 @@ simulation_settings <- function(){
   my_args <- full_join(tb1, tb2) %>%
     select(-id) %>%
     rowwise() %>%
-    mutate(id = group_indices()) %>%
+    mutate(id = cur_group_id()) %>%
     select(id, everything())
 
   return(my_args)
