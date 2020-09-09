@@ -97,7 +97,7 @@ check_newdata_object <- function(newdata, object){
   ## check whether newdata and object are well-formed
 
   if (!is.null(newdata)) {
-    if(not("matrix" %in% class(newdata))){
+    if(!("matrix" %in% class(newdata))){
       stop("newdata must be of class 'matrix'")
     }
 
