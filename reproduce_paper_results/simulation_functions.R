@@ -55,30 +55,31 @@ generate_conditional_distribution <- function(n, p, x,
   return(matrix(NA, nrow = n, ncol = 1))
 }
 
-generate_theoretical_quantiles <- function(alpha, x, model, df){
-  ## numeric numeric_vector character integer -> numeric_matrix
-  ## produce conditional alpha-quantile at the x values for model = "gaussian"
-  ## or "student_t" with df degree of freedom
+generate_theoretical_quantiles <- function(alpha, x, model, df, scale){
+  ## numeric_vector numeric_vector character integer numeric -> numeric_matrix
+  ## produce conditional alpha-quantiles at the x values for model = "gaussian"
+  ## or "student_t" with df degree of freedom and relative scale
 
   ntest <- length(x)
+  nalphas <- length(alpha)
   ntest_negative <- length(which(x < 0))
   ntest_nonnegative <- ntest - ntest_negative
 
   if(model == "gaussian"){
     q1function <-  function(p) qnorm(p, mean=0, sd=1)
-    q2function <-  function(p) qnorm(p, mean=0, sd=2)
+    q2function <-  function(p) qnorm(p, mean=0, sd=scale)
   }
   if(model == "student_t"){
     q1function <- function(p) qt(p, df = df)
-    q2function <- function(p) 2 * qt(p, df = df)
+    q2function <- function(p) scale * qt(p, df = df)
   }
 
 
-  q_true <- matrix(NA, nrow = ntest, ncol = 1)
-  q_true[which(x < 0)] <- matrix(q1function(alpha), nrow = ntest_negative,
-                                 ncol = 1)
-  q_true[which(x >= 0)] <- matrix(q2function(alpha), nrow = ntest_nonnegative,
-                                 ncol = 1)
+  q_true <- matrix(NA, nrow = ntest, ncol = nalphas)
+  q_true[which(x < 0), ] <- matrix(q1function(alpha), nrow = ntest_negative,
+                                 ncol = nalphas, byrow = TRUE)
+  q_true[which(x >= 0), ] <- matrix(q2function(alpha), nrow = ntest_nonnegative,
+                                 ncol = nalphas, byrow = TRUE)
 
   return(q_true)
 }
@@ -87,32 +88,12 @@ simulation_settings <- function(){
   ## void -> tibble
   ## returns a tibble with simulation settings
 
-  # list of arguments
-  ## general
-  # nexp: 20
-  # n: 2000 (500, 1000)
-  # p: 40 (20, 10)
-  # ntest: 100
-  # model, df: gaussian, student_1.5, student_2.5
-  # scale: 2 (4)
-  #
-  ## fit
-  # num.trees: 2000 (500, 1000)
-  # quantiles_fit: c(0.1, 0.5, 0.9)
-  # min.node.size: 5 (2, 10, 20)
-  # honesty: TRUE (FALSE)
-  #
-  ## predict
-  # quantiles_predict: .8, .99, .999, .9995
-  # threshold: 0.8 (.6, .9)
-  # out_of_bag: FALSE (TRUE)
-
   ## base parameter values
   n0 <- 2e3
   p0 <- 40
   scale0 <- 2
   num.trees0 <- 2e3
-  min.node.sizec0 <- 5
+  min.node.size0 <- 5
   honesty0 <- TRUE
   threshold0 <- 0.8
   out_of_bag0 <- FALSE
@@ -130,7 +111,7 @@ simulation_settings <- function(){
   ## fit
   num.trees <- c(num.trees0, 500, 1000)
   quantiles_fit <- c(0.1, 0.5, 0.9)
-  min.node.sizec <- c(5, 2, 10, 20)
+  min.node.size <- c(5, 2, 10, 20)
   honesty <- c(honesty0, FALSE)
 
   ## predict
@@ -141,62 +122,26 @@ simulation_settings <- function(){
 
   ## create parameter grid
   ## tibble 1
-  tbl1 <- expand_grid(n, p, scale, num.trees,min.node.sizec, honesty, threshold,
+  tbl1 <- expand_grid(n, p, scale, num.trees, min.node.size, honesty, threshold,
                       out_of_bag) %>%
     filter(n %in% n0 + p %in% p0 + scale %in% scale0 +
-             num.trees %in% num.trees0 + min.node.sizec %in% min.node.sizec0 +
+             num.trees %in% num.trees0 + min.node.size %in% min.node.size0 +
              honesty %in% honesty0 + threshold %in% threshold0 +
-             out_of_bag %in% out_of_bag0 >= 7)
-
-  3 * 3 * 2 * 3 * 4 * 2 * 3 * 2 # cardinality of cartesian product
-  1 + 2 + 2 + 1 + 2 + 3 + 1 + 2 + 1 # cardinality of set of interest
-
-  AA <- expand_grid(nexp = nexp, n = n, p =  p, scale =scale)
-
-  AA2 <-  AA %>%
-    filter((n == n[1]) + (p == p[1]) + (scale == scale[1]) == 2)
-
-  view(AA2)
-  id <- AA$n %in% n[1] + AA$p %in% p[1] + AA$scale %in% scale[1] == 3
-  AA[id, ]
-
-  # basic example
-  A <- c("a1", "a2", "a3")
-  B <- c("b1", "b2")
-  A1 <- A[1:2]
-  B1 <- B[1]
-  A2 <- A[3]
-  B2 <- B[2]
-
-  A_cross_B <- expand_grid(A, B)
-  A2_cross_B2 <- expand_grid(A2, B2) %>%
-    rename(A = A2, B = B2)
-
-  # solution 1
-  setdiff(A_cross_B, A2_cross_B2)
-
-  # solution 2
-  A_cross_B %>%
-    filter(A %in% A1 | B %in% B1)
-
-  # create tibble with base parameters (define a base set of parameters)
-  # and then change one parameter at a time
-  # one possibility to do that is to create the cartesian product of the hyperparameters,
-  # and then only retain the ones that are in the base set
-  quantiles_predict <- c(.8, .99, .999, .9995)
-  model <- c("gaussian", "student_t")
-  df <- c(1.5, 2.5)
-
-  tb1 <- expand_grid(nexp, quantiles_predict) %>%
-    arrange(desc(quantiles_predict)) %>%
+             out_of_bag %in% out_of_bag0 >= 7) %>%
     mutate(id = 1)
 
-  tb2 <- expand_grid(model, df) %>%
+  tbl2 <- expand_grid(nexp, ntest) %>%
+    mutate(quantiles_fit = list(quantiles_fit),
+           quantiles_predict = list(quantiles_predict),
+           id = 1)
+
+  tbl3 <- expand_grid(model, df) %>%
     mutate(df = if_else(model == "gaussian", NaN, df)) %>%
     mutate(id = 1) %>%
     distinct()
 
-  my_args <- full_join(tb1, tb2) %>%
+  my_args <- full_join(tbl2, tbl3) %>%
+    full_join(tbl1) %>%
     select(-id) %>%
     rowwise() %>%
     mutate(id = cur_group_id()) %>%
@@ -257,10 +202,22 @@ wrapper_sim <- function(i, sims_args){
 
 
   # set current simulation variables
+  id <- sims_args$id[i]
   nexp <- sims_args$nexp[i]
-  quantiles_predict <- sims_args$quantiles_predict[i]
+  ntest <- sims_args$ntest[i]
+  quantiles_fit <- sims_args$quantiles_fit[[i]]
+  quantiles_predict <- sims_args$quantiles_predict[[i]]
   model <- sims_args$model[i]
   df <- sims_args$df[i]
+  n <- sims_args$n[i]
+  p <- sims_args$p[i]
+  scale <- sims_args$scale[i]
+  num.trees <- sims_args$num.trees[i]
+  min.node.size <- sims_args$min.node.size[i]
+  honesty <- sims_args$honesty[i]
+  threshold <- sims_args$threshold[i]
+  out_of_bag <- sims_args$out_of_bag[i]
+
 
   # generate training data
   rng_sims <- sims_args$rng[[i]]
@@ -272,45 +229,41 @@ wrapper_sim <- function(i, sims_args){
   x_test[, 1] <- seq(-1, 1, length.out = ntest)
 
   # fit quantile regression function
-  fit_grf <- quantile_forest(dat$X, dat$Y, quantiles = c(0.1, 0.5, 0.9))
+  fit_grf <- quantile_forest(dat$X, dat$Y, quantiles = quantiles_fit,
+                             num.trees = num.trees,
+                             min.node.size = min.node.size, honesty = honesty)
 
   # predict quantile regression function
   predictions_grf <- predict(fit_grf, x_test, quantiles = quantiles_predict)
   predictions_erf <- predict_erf(fit_grf, quantiles = quantiles_predict,
-                                 threshold = 0.8,
+                                 threshold = threshold,
                                  newdata = x_test, model_assessment = FALSE,
                                  Y.test = NULL,
-                                 out_of_bag = FALSE)$predictions
+                                 out_of_bag = out_of_bag)$predictions
   predictions_true <- generate_theoretical_quantiles(alpha = quantiles_predict,
                                                      x = x_test[, 1],
-                                                     model = model, df = df)
+                                                     model = model, df = df,
+                                                     scale = scale)
 
 
   # collect results
-  tb1 <- tibble(nexp = nexp,
-                model = model,
-                quantiles_predict = quantiles_predict,
-                df = df)
-
-  tb_erf <- tibble(nexp = nexp,
+  tb_erf <- tibble(id = id,
                    x = x_test[, 1],
                    method = "erf",
                    predictions = predictions_erf[, 1])
 
-  tb_grf <- tibble(nexp = nexp,
+  tb_grf <- tibble(id = id,
                    x = x_test[, 1],
                    method = "grf",
                    predictions = predictions_grf[, 1])
 
-  tb_true <- tibble(nexp = nexp,
+  tb_true <- tibble(id = id,
                     x = x_test[, 1],
                     method = "true",
                     predictions = predictions_true[, 1])
 
 
-  res <- bind_rows(tb_true, tb_grf, tb_erf) %>%
-    left_join(tb1, by = "nexp")
-
+  res <- bind_rows(tb_true, tb_grf, tb_erf)
 
   # return value
   return(res)
