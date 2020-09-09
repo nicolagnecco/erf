@@ -23,7 +23,6 @@ ff <- file(log_file, open="wt")
 sink(ff)
 sink(ff, type="message")
 cat("**** Simulation **** \n")
-assd
 ll <- map_dfr(1:m, wrapper_sim, sims_args)
 sink(type="message")
 sink()
