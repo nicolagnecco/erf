@@ -97,21 +97,23 @@ simulation_settings <- function(){
   honesty0 <- TRUE
   threshold0 <- 0.8
   out_of_bag0 <- FALSE
+  test_data0 <- "zero"
 
   ## other parameter values
   ## general
-  nexp <- 1:20
+  nexp <- 1:100
   n <- c(n0, 500, 1000)
   p <- c(p0, 10, 20)
   ntest <- 100
   model <- c("gaussian", "student_t")
-  df <- c(1.5, 2.5)
+  df <- c(1.5, 2.5, 4)
   scale <- c(scale0, 4)
+  test_data <- c(test_data0, "uniform")
 
   ## fit
-  num.trees <- c(num.trees0, 500, 1000)
+  num.trees <- c(num.trees0, 500, 1000, 4000)
   quantiles_fit <- c(0.1, 0.5, 0.9)
-  min.node.size <- c(5, 2, 10, 20)
+  min.node.size <- c(5, 2, 10, 20, 40)
   honesty <- c(honesty0, FALSE)
 
   ## predict
@@ -123,11 +125,11 @@ simulation_settings <- function(){
   ## create parameter grid
   ## tibble 1
   tbl1 <- expand_grid(n, p, scale, num.trees, min.node.size, honesty, threshold,
-                      out_of_bag) %>%
+                      out_of_bag, test_data) %>%
     filter(n %in% n0 + p %in% p0 + scale %in% scale0 +
              num.trees %in% num.trees0 + min.node.size %in% min.node.size0 +
              honesty %in% honesty0 + threshold %in% threshold0 +
-             out_of_bag %in% out_of_bag0 >= 7) %>%
+             out_of_bag %in% out_of_bag0 + test_data %in% test_data0 >= 8) %>%
     mutate(id = 1)
 
   tbl2 <- expand_grid(nexp, ntest) %>%
@@ -217,6 +219,7 @@ wrapper_sim <- function(i, sims_args){
   honesty <- sims_args$honesty[i]
   threshold <- sims_args$threshold[i]
   out_of_bag <- sims_args$out_of_bag[i]
+  test_data <- sims_args$test_data[i]
 
 
   # generate training data
@@ -225,8 +228,15 @@ wrapper_sim <- function(i, sims_args){
   dat <- generate_joint_distribution(n = n, p = p, model = model, df = df)
 
   # generate test data
-  x_test <- matrix(0, nrow = ntest, ncol = p)
+  if (test_data == "zero"){
+    x_test <- matrix(0, nrow = ntest, ncol = p)
+  } else if(test_data == "uniform") {
+    x_test <-  matrix(runif(n * p, min = -1, max = 1), n, p)
+  } else {
+    stop("The column 'test_data' must be one of 'zero' and 'uniform'.")
+  }
   x_test[, 1] <- seq(-1, 1, length.out = ntest)
+
 
   # fit quantile regression function
   fit_grf <- quantile_forest(dat$X, dat$Y, quantiles = quantiles_fit,
@@ -278,3 +288,4 @@ matrix2list <- function(mat){
   ## produces a list with elements corresponding to rows of mat
   split(mat, rep(1:nrow(mat), times = ncol(mat)))
 }
+
