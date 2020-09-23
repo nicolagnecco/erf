@@ -102,24 +102,26 @@ simulation_settings <- function(){
   ## other parameter values
   ## general
   nexp <- 1:100
-  n <- c(n0, 500, 1000)
-  p <- c(p0, 10, 20)
+  n <- c(n0) #, 500, 1000)
+  p <- c(p0) #, 10, 20)
   ntest <- 100
-  model <- c("gaussian", "student_t")
-  df <- c(1.5, 2.5, 4)
-  scale <- c(scale0, 4)
+  # model <- c("gaussian", "student_t")
+  model <- c("student_t")
+  # df <- c(1.5, 2.5, 4)
+  df <- c(4)
+  scale <- c(scale0) #, 4)
   test_data <- c(test_data0, "uniform")
 
   ## fit
-  num.trees <- c(num.trees0, 500, 1000, 4000)
+  num.trees <- c(num.trees0, 4e3) #500, 1000, 4000)
   quantiles_fit <- c(0.1, 0.5, 0.9)
-  min.node.size <- c(5, 2, 10, 20, 40)
-  honesty <- c(honesty0, FALSE)
+  min.node.size <- c(5, 20, 40)#2, 10, 20, 40)
+  honesty <- c(honesty0) #, FALSE)
 
   ## predict
   quantiles_predict <- c(.9, .99, .999, .9995)
-  threshold <- c(threshold0, .5, .9)
-  out_of_bag <- c(out_of_bag0, TRUE)
+  threshold <- c(threshold0) #, .5, .9)
+  out_of_bag <- c(out_of_bag0) #, TRUE)
 
 
   ## create parameter grid
