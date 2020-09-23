@@ -9,7 +9,7 @@ source("reproduce_paper_results/simulation_functions.R")
 
 
 # Simulation arguments
-log_file <- "reproduce_paper_results/output/sims.txt"
+log_file <- "reproduce_paper_results/output/sims2.txt"
 
 settings <- set_simulations(seed = 42)
 sims_args <- settings$simulation_arguments
