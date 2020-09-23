@@ -16,6 +16,7 @@ sims_args <- settings$simulation_arguments
 rm(settings)
 
 m <- NROW(sims_args)
+m <- 2
 
 # Loop through all simulations
 tic()
@@ -23,7 +24,7 @@ ff <- file(log_file, open="wt")
 sink(ff)
 sink(ff, type="message")
 cat("**** Simulation **** \n")
-ll <- map_dfr(1:m, wrapper_sim, sims_args)
+ll <- map_dfr(2, wrapper_sim, sims_args)
 sink(type="message")
 sink()
 closeAllConnections()

@@ -3,6 +3,103 @@ library(tidyverse)
 source("reproduce_paper_results/simulation_functions.R")
 
 # plot results ####
+dat <- read_rds("reproduce_paper_results/output/simulations_092320.rds")
+
+n0 <- 2e3
+p0 <- 40
+scale0 <- 2
+num.trees0 <- 2e3
+min.node.size0 <- 5
+honesty0 <- TRUE
+threshold0 <- 0.8
+out_of_bag0 <- FALSE
+test_data0 <- "zero"
+
+## min.node.size ####
+dat_plot <- dat %>%
+  filter(num.trees == num.trees0 , test_data == test_data0) %>%
+  mutate(method = factor(method),
+         model = if_else(model == "gaussian", model,
+                         paste(model, "_", df, sep = ""))) %>%
+  select(nexp, method, model, quantiles_predict, predictions, min.node.size, x) %>%
+  unnest(cols = c(quantiles_predict, predictions)) %>%
+  pivot_wider(names_from = "method",
+              values_from = "predictions") %>%
+  mutate(grf = (grf - true)^2,
+         erf = (erf - true)^2) %>%
+  select(-true) %>%
+  pivot_longer(cols = c("grf", "erf"),
+               names_to = "method", values_to = "se") %>%
+  group_by(model, quantiles_predict, method, min.node.size, nexp) %>%
+  summarise(ise = mean(se)) %>% # mean across x's
+  # filter(method == "erf", quantiles_predict == .9995, min.node.size==40)
+  # filter(method == "grf", quantiles_predict == .999)
+  summarise(mise = mean(ise),
+            upper_bound = quantile(ise, .9),
+            lower_bound = quantile(ise, .1)) %>%
+            # lower_bound = sqrt(max(mise - 1 * sd(ise), 0))) %>%
+  mutate(method = factor(method))
+
+
+gg <- ggplot(dat_plot %>% filter(quantiles_predict == .9995),
+             aes(x = min.node.size, y = mise, col = method)) +
+  facet_grid(model ~ quantiles_predict, scale = "free") +
+  geom_line(size = 1, alpha = .5) +
+  geom_point(size = 3) +
+  geom_ribbon(aes(ymin=lower_bound, ymax=upper_bound, x=min.node.size, fill = method), alpha = 0.3)+
+  scale_color_manual(values = c("#D55E00","#0072B2", "#CC79A7")) +
+  scale_fill_manual(values = c("#D55E00","#0072B2", "#CC79A7")); gg
+
+ggsave(paste("reproduce_paper_results/output/simulation_", "min_node_size", ".pdf", sep = ""),
+       gg, width = 10, height = 7.5, units = c("in"))
+
+# !!! look at the unconditional very high quantile (higher min.node.size)
+
+## num.trees ####
+dat_plot <- dat %>%
+  filter(min.node.size == min.node.size0 , test_data == test_data0) %>%
+  mutate(method = factor(method),
+         model = if_else(model == "gaussian", model,
+                         paste(model, "_", df, sep = ""))) %>%
+  select(nexp, method, model, quantiles_predict, predictions, num.trees, x) %>%
+  unnest(cols = c(quantiles_predict, predictions)) %>%
+  pivot_wider(names_from = "method",
+              values_from = "predictions") %>%
+  mutate(grf = (grf - true)^2,
+         erf = (erf - true)^2) %>%
+  select(-true) %>%
+  pivot_longer(cols = c("grf", "erf"),
+               names_to = "method", values_to = "se") %>%
+  group_by(model, quantiles_predict, method, num.trees, nexp) %>%
+  summarise(ise = mean(se)) %>% # mean across x's
+  # filter(method == "grf", quantiles_predict == .999)
+  summarise(mise = mean(ise),
+            upper_bound = quantile(ise, .9),
+            lower_bound = quantile(ise, .1)) %>%
+  mutate(method = factor(method))
+
+
+gg <- ggplot(dat_plot %>% filter(quantiles_predict == .9995),
+             aes(x = num.trees, y = mise, col = method)) +
+  facet_grid(model ~ quantiles_predict, scale = "free") +
+  geom_line(size = 1, alpha = .5) +
+  geom_point(size = 3) +
+  geom_ribbon(aes(ymin=lower_bound, ymax=upper_bound, x=num.trees,
+                  fill = method), alpha = 0.2)+
+  scale_color_manual(values = c("#D55E00","#0072B2", "#CC79A7")) +
+  scale_fill_manual(values = c("#D55E00","#0072B2", "#CC79A7")); gg
+
+ggsave(paste("reproduce_paper_results/output/simulation_", "num_trees", ".pdf", sep = ""),
+       gg, width = 10, height = 7.5, units = c("in"))
+
+
+dat_plot <- dat %>%
+  filter(min.node.size == 5 , num.trees == 2e3)
+
+table(dat_plot$test_data)
+
+
+# plot results ####
 dat <- read_rds("reproduce_paper_results/output/simulations.rds")
 
 n0 <- 2e3

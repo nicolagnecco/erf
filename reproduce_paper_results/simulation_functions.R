@@ -233,7 +233,8 @@ wrapper_sim <- function(i, sims_args){
   if (test_data == "zero"){
     x_test <- matrix(0, nrow = ntest, ncol = p)
   } else if(test_data == "uniform") {
-    x_test <-  matrix(runif(n * p, min = -1, max = 1), n, p)
+    x_test <-  matrix(runif(ntest * p, min = -1, max = 1), nrow = ntest,
+                      ncol = p)
   } else {
     stop("The column 'test_data' must be one of 'zero' and 'uniform'.")
   }
