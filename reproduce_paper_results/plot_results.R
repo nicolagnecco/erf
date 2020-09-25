@@ -3,7 +3,7 @@ library(tidyverse)
 source("reproduce_paper_results/simulation_functions.R")
 # !!! look at the unconditional very high quantile (higher min.node.size)
 
-GRAPH_TYPE <- "lines"
+GRAPH_TYPE <- "line"
 
 # function defintions ####
 extract_params <- function(tbl, param, methods){

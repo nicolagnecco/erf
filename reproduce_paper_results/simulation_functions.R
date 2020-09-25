@@ -233,13 +233,15 @@ wrapper_sim <- function(i, sims_args, meins = FALSE){
   # generate test data
   if (test_data == "zero"){
     x_test <- matrix(0, nrow = ntest, ncol = p)
+    x_test[, 1] <- seq(-1, 1, length.out = ntest)
+
   } else if(test_data == "uniform") {
     x_test <-  matrix(runif(ntest * p, min = -1, max = 1), nrow = ntest,
                       ncol = p)
   } else {
     stop("The column 'test_data' must be one of 'zero' and 'uniform'.")
   }
-  x_test[, 1] <- seq(-1, 1, length.out = ntest)
+
 
 
   if (!meins){
@@ -280,6 +282,11 @@ wrapper_sim <- function(i, sims_args, meins = FALSE){
                       predictions = matrix2list(predictions_true))
 
     res <- bind_rows(tb_true, tb_grf, tb_erf)
+
+    # !!! take integral over x's ()
+    # !!! ntest = ?? -> (wait for answer)
+    # !!! more complex function
+    # !!! try to compare with gbex experiment
 
   } else {
 
