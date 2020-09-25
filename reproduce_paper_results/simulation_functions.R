@@ -198,7 +198,10 @@ set_simulations <- function(experiment_ids=1:NROW(simulation_settings()),
 
 }
 
-wrapper_sim <- function(i, sims_args){
+wrapper_sim <- function(i, sims_args, meins = FALSE){
+  ## integer tibble boolean -> tibble
+  ## run simulations over arguments of row i in sims_args
+
   m <- nrow(sims_args)
   cat("Simulation", i, "out of", m, "\n")
 
@@ -239,46 +242,66 @@ wrapper_sim <- function(i, sims_args){
   x_test[, 1] <- seq(-1, 1, length.out = ntest)
 
 
-  # fit quantile regression function
-  fit_grf <- quantile_forest(dat$X, dat$Y, quantiles = quantiles_fit,
-                             num.trees = num.trees,
-                             min.node.size = min.node.size, honesty = honesty)
+  if (!meins){
+    # fit quantile regression function w/ grf
+    fit_grf <- quantile_forest(dat$X, dat$Y, quantiles = quantiles_fit,
+                               num.trees = num.trees,
+                               min.node.size = min.node.size, honesty = honesty)
 
-  # fit meinshausen #!!!
+    # predict quantile regression functions w/ grf
+    predictions_grf <- predict(fit_grf, x_test, quantiles = quantiles_predict)
 
-  # predict quantile regression function
-  predictions_grf <- predict(fit_grf, x_test, quantiles = quantiles_predict)
-  predictions_erf <- predict_erf(fit_grf, quantiles = quantiles_predict,
-                                 threshold = threshold,
-                                 newdata = x_test, model_assessment = FALSE,
-                                 Y.test = NULL,
-                                 out_of_bag = out_of_bag)$predictions
+    # predict quantile regression functions w/ erf
+    predictions_erf <- predict_erf(fit_grf, quantiles = quantiles_predict,
+                                   threshold = threshold,
+                                   newdata = x_test, model_assessment = FALSE,
+                                   Y.test = NULL,
+                                   out_of_bag = out_of_bag)$predictions
 
-  # predict meinshausen #!!!
-  predictions_true <- generate_theoretical_quantiles(alpha = quantiles_predict,
-                                                     x = x_test[, 1],
-                                                     model = model, df = df,
-                                                     scale = scale)
+    predictions_true <- generate_theoretical_quantiles(alpha = quantiles_predict,
+                                                       x = x_test[, 1],
+                                                       model = model, df = df,
+                                                       scale = scale)
 
+    # collect results
+    tb_erf <- tibble(id = id,
+                     x = x_test[, 1],
+                     method = "erf",
+                     predictions = matrix2list(predictions_erf))
 
-  # collect results
-  tb_erf <- tibble(id = id,
-                   x = x_test[, 1],
-                   method = "erf",
-                   predictions = matrix2list(predictions_erf))
+    tb_grf <- tibble(id = id,
+                     x = x_test[, 1],
+                     method = "grf",
+                     predictions = matrix2list(predictions_grf))
 
-  tb_grf <- tibble(id = id,
-                   x = x_test[, 1],
-                   method = "grf",
-                   predictions = matrix2list(predictions_grf))
+    tb_true <- tibble(id = id,
+                      x = x_test[, 1],
+                      method = "true",
+                      predictions = matrix2list(predictions_true))
 
-  tb_true <- tibble(id = id,
-                    x = x_test[, 1],
-                    method = "true",
-                    predictions = matrix2list(predictions_true))
+    res <- bind_rows(tb_true, tb_grf, tb_erf)
 
+  } else {
 
-  res <- bind_rows(tb_true, tb_grf, tb_erf)
+    # fit quantile regression functions w/ meinshausen
+    fit_meins <- quantile_forest(dat$X, dat$Y, quantiles = quantiles_fit,
+                                 num.trees = num.trees,
+                                 regression.splitting = TRUE,
+                                 min.node.size = min.node.size,
+                                 honesty = honesty)
+
+    # predict quantile regression functions w/ meinshausen
+    predictions_meins <- predict(fit_meins, x_test,
+                                 quantiles = quantiles_predict)
+
+    # collect results
+    tb_meins <- tibble(id = id,
+                     x = x_test[, 1],
+                     method = "meins",
+                     predictions = matrix2list(predictions_meins))
+
+    res <- tb_meins
+  }
 
   # return value
   return(res)

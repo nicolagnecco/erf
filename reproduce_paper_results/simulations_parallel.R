@@ -2,14 +2,16 @@ rm(list = ls())
 library(tidyverse)
 library(grf)
 library(erf)
+library(rngtools)
 library(foreach)
 library(doSNOW)
 library(Rmpi)
-# source("reproduce_paper_results/simulation_functions.R")
+source("reproduce_paper_results/simulation_functions.R")
 
 
-# Simulation arguments
+## set cluster arguments
 args = commandArgs(trailingOnly=TRUE)
+args = list(5, "reproduce_paper_results/output/sims4.txt")
 
 cl <- makeCluster(args[1], type="MPI")
 sprintf("start with %s workers", args[1])
@@ -17,62 +19,44 @@ sprintf("start with %s workers", args[1])
 numworkers = as.integer(args[1])
 nst = 1000/numworkers
 
-# running time
+
+## set simulation arguments
+settings <- set_simulations(seed = 42)
+sims_args <- settings$simulation_arguments
+rm(settings)
+m <- NROW(sims_args)
+
+
+## running time
 ptm<-proc.time()
 
-clusterExport(cl, list = list())
+clusterExport(cl, list = c("sims_args"))
+clusterEvalQ(cl, {
+  library(tidyverse);
+  library(grf);
+  library(erf);
+  library(rngtools)
+  })
 registerDoSNOW(cl)
 
-# progress bar
-# pb <- txtProgressBar(max=100, style=3)
-# progress <- function(n) setTxtProgressBar(pb, n)
-# opts <- list(progress=progress)
-
-# sink(file = args[[2]])
 cat("**** Simulation 1 **** \n", file = args[2])
-m <- 50
-# results <- foreach(i = 1:m, .options.snow=opts) %dopar% {
-results <- foreach(i = 1:m) %dopar% {
-  cat("Simulation", i, "out of", m, "\n", file = args[2], append = TRUE)
-  # cat("Simulation", i, "out of", m, "\n")
-  Sys.sleep(.1)
-  rnorm(1)
+# m <- 2
+ll <- foreach(i = 1:m) %dopar% {
+  cat("Simulation", i, "out of", m, "\n", file = args[[2]], append = TRUE)
+  wrapper_sim(i, sims_args)
 }
 
 
+## close connections and show computing time
 # stopCluster(cl)
 # mpi.exit()
 sink(file = args[[2]], append = TRUE)
-print(results)
+print(proc.time() - ptm)
 sink()
 
 
+## collect and save results
+ll <- purrr::reduce(ll, bind_rows)
+  left_join(sims_args, by = "id")
 
-# #####
-# settings <- set_simulations(seed = 42)
-# sims_args <- settings$simulation_arguments
-# rm(settings)
-#
-# # print(proc.time() - ptm)
-#
-#
-# m <- NROW(sims_args)
-# m <- 2
-#
-# # Loop through all simulations
-# tic()
-# ff <- file(log_file, open="wt")
-# sink(ff)
-# sink(ff, type="message")
-# cat("**** Simulation **** \n")
-# ll <- map_dfr(2, wrapper_sim, sims_args)
-# sink(type="message")
-# sink()
-# closeAllConnections()
-# toc()
-#
-# ll <- ll %>%
-#   left_join(sims_args, by = "id")
-#
-# # save results
-# saveRDS(ll, file = "reproduce_paper_results/output/simulations_092320.rds")
+saveRDS(ll, file = "reproduce_paper_results/output/simulations_092320.rds")

@@ -3,6 +3,8 @@ library(tidyverse)
 source("reproduce_paper_results/simulation_functions.R")
 # !!! look at the unconditional very high quantile (higher min.node.size)
 
+GRAPH_TYPE <- "lines"
+
 # function defintions ####
 extract_params <- function(tbl, param, methods){
   ## dat character character_v -> tibble
@@ -62,6 +64,8 @@ plot_sims <- function(tbl, param){
   quant_pred <- tbl$quantiles_predict %>% unique()
   lop <- list()
 
+  if (GRAPH_TYPE == "boxplot"){
+
   for (i in seq_along(quant_pred)){
     g <- ggplot(tbl %>% filter(quantiles_predict == quant_pred[i])) +
       facet_grid(model ~ quantiles_predict, scale = "free") +
@@ -77,6 +81,32 @@ plot_sims <- function(tbl, param){
 
   }
 
+  } else {
+
+    tbl <- tbl %>% summarise(mise = mean(ise))
+
+    for (i in seq_along(quant_pred)){
+      g <- ggplot(tbl %>% filter(quantiles_predict == quant_pred[i]),
+             aes_string(x = param,
+                 y = "mise",
+                 col = "method",
+                 group = "method")) +
+        facet_grid(model ~ quantiles_predict, scale = "free") +
+        stat_summary(fun=sum, geom="line", size = 1, alpha = .5) +
+        scale_color_manual(values = c("#D55E00","#0072B2", "#CC79A7")) +
+        ylab("MISE")
+
+
+      ggsave(paste("reproduce_paper_results/output/simulation_", param,
+                   "_quantile_", quant_pred[i], ".pdf", sep = ""),
+             g, width = 10, height = 7.5, units = c("in"))
+
+      lop[[i]] <- g
+
+    }
+
+  }
+
   return(lop)
 }
 
@@ -88,37 +118,37 @@ dat <- read_rds("reproduce_paper_results/output/simulations_092420.rds")
 dat_plot <- extract_params(dat, "n", c("grf", "erf"))
 lop <- plot_sims(dat_plot, "n")
 
-  # p
-  dat_plot <- extract_params(dat, "p", c("grf", "erf"))
-  lop <- plot_sims(dat_plot, "p")
+# p
+dat_plot <- extract_params(dat, "p", c("grf", "erf"))
+lop <- plot_sims(dat_plot, "p")
 
-  # scale
-  dat_plot <- extract_params(dat, "scale", c("grf", "erf"))
-  lop <- plot_sims(dat_plot, "scale")
+# scale
+dat_plot <- extract_params(dat, "scale", c("grf", "erf"))
+lop <- plot_sims(dat_plot, "scale")
 
-  # test_data
-  dat_plot <- extract_params(dat, "test_data", c("grf", "erf"))
-  lop <- plot_sims(dat_plot, "test_data")
+# test_data
+dat_plot <- extract_params(dat, "test_data", c("grf", "erf"))
+lop <- plot_sims(dat_plot, "test_data")
 
-  # num.trees
-  dat_plot <- extract_params(dat, "num.trees", c("grf", "erf"))
-  lop <- plot_sims(dat_plot, "num.trees")
+# num.trees
+dat_plot <- extract_params(dat, "num.trees", c("grf", "erf"))
+lop <- plot_sims(dat_plot, "num.trees")
 
-  # min.node.size
-  dat_plot <- extract_params(dat, "min.node.size", c("grf", "erf"))
-  lop <- plot_sims(dat_plot, "min.node.size")
+# min.node.size
+dat_plot <- extract_params(dat, "min.node.size", c("grf", "erf"))
+lop <- plot_sims(dat_plot, "min.node.size")
 
-  # honesty
-  dat_plot <- extract_params(dat, "honesty", c("grf", "erf"))
-  lop <- plot_sims(dat_plot, "honesty")
+# honesty
+dat_plot <- extract_params(dat, "honesty", c("grf", "erf"))
+lop <- plot_sims(dat_plot, "honesty")
 
-  # threshold
-  dat_plot <- extract_params(dat, "threshold", c("grf", "erf"))
-  lop <- plot_sims(dat_plot, "threshold")
+# threshold
+dat_plot <- extract_params(dat, "threshold", c("grf", "erf"))
+lop <- plot_sims(dat_plot, "threshold")
 
-  # out_of_bag
-  dat_plot <- extract_params(dat, "out_of_bag", c("grf", "erf"))
-  lop <- plot_sims(dat_plot, "out_of_bag")
+# out_of_bag
+dat_plot <- extract_params(dat, "out_of_bag", c("grf", "erf"))
+lop <- plot_sims(dat_plot, "out_of_bag")
 
 # old plots #####
 # models <- unique(dat$model)
