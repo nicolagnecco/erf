@@ -6,17 +6,25 @@ library(rngtools)
 library(foreach)
 library(doSNOW)
 library(Rmpi)
-source("reproduce_paper_results/simulation_functions.R")
+source("simulation_functions.R")
+
+# args
+# - number of nodes
+# - output log file
+# - output rds file
+# - run meinshausen option?
+# example: Rscript simulations_parallel.R 5 output/sims.txt output/results.rds TRUE
 
 
 ## set cluster arguments
 args = commandArgs(trailingOnly=TRUE)
-args = list(5, "reproduce_paper_results/output/sims4.txt")
+# args = list(5, "reproduce_paper_results/output/sims4.txt",
+#"reproduce_paper_results/output/test.rds", FALSE)
 
-cl <- makeCluster(args[1], type="MPI")
-sprintf("start with %s workers", args[1])
+cl <- makeCluster(args[[1]], type="MPI")
+sprintf("start with %s workers", args[[1]])
 
-numworkers = as.integer(args[1])
+numworkers = as.integer(args[[1]])
 nst = 1000/numworkers
 
 
@@ -39,11 +47,11 @@ clusterEvalQ(cl, {
   })
 registerDoSNOW(cl)
 
-cat("**** Simulation 1 **** \n", file = args[2])
+cat("**** Simulation 1 **** \n", file = args[[2]])
 # m <- 2
 ll <- foreach(i = 1:m) %dopar% {
   cat("Simulation", i, "out of", m, "\n", file = args[[2]], append = TRUE)
-  wrapper_sim(i, sims_args)
+  wrapper_sim(i, sims_args, args[[4]])
 }
 
 
@@ -59,4 +67,4 @@ sink()
 ll <- purrr::reduce(ll, bind_rows)
   left_join(sims_args, by = "id")
 
-saveRDS(ll, file = "reproduce_paper_results/output/simulations_092320.rds")
+saveRDS(ll, file = args[[3]])
