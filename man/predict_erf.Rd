@@ -53,7 +53,8 @@ List. The list is made of:
 \enumerate{
 \item Numeric matrix. Predictions at each test point (on rows) for
 each desired quantile (on columns).
-\item Plot if \code{model_assessment = TRUE}. QQ-plot for model assessment.
+\item Plot if \code{model_assessment = TRUE}. QQ-plot for model assessment.!!! return also t(x_0), sigma(x_0), csi(x_0), for all x_0 in test_data
+
 }
 }
 \description{

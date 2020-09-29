@@ -12,10 +12,15 @@ License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1
 Imports: 
     grf,
     ismev,
-    ggplot2
+    ggplot2,
+    Rcpp
 URL: https://github.com/nicolagnecco/erf
 BugReports: https://github.com/nicolagnecco/erf/issues
+LinkingTo: 
+    Rcpp,
+    RcppArmadillo,
+    roptim
