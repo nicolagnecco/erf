@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Extreme predictions with a quantile forest — predict_erf • erf</title>
+<title>erf: Extreme Random Forest — erf-package • erf</title>
 
 
 <!-- jquery -->
@@ -39,9 +39,8 @@
 
 
 
-<meta property="og:title" content="Extreme predictions with a quantile forest — predict_erf" />
-<meta property="og:description" content="Gets estimates of the extrapolated conditional quantiles of Y given X
-using a trained forest." />
+<meta property="og:title" content="erf: Extreme Random Forest — erf-package" />
+<meta property="og:description" content="Extreme quantile prediction for quantile random forest." />
 
 
 
@@ -103,85 +102,33 @@ using a trained forest." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Extreme predictions with a quantile forest</h1>
-    <small class="dont-index">Source: <a href='https://github.com/nicolagnecco/erf/blob/master/R/extremeForest.R'><code>R/extremeForest.R</code></a></small>
-    <div class="hidden name"><code>predict_erf.Rd</code></div>
+    <h1>erf: Extreme Random Forest</h1>
+    <small class="dont-index">Source: <a href='https://github.com/nicolagnecco/erf/blob/master/R/erf-package.R'><code>R/erf-package.R</code></a></small>
+    <div class="hidden name"><code>erf-package.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Gets estimates of the extrapolated conditional quantiles of Y given X
-using a trained forest.</p>
+    <p>Extreme quantile prediction for quantile random forest.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>predict_erf</span>(
-  <span class='kw'>object</span>,
-  <span class='kw'>quantiles</span>,
-  threshold = <span class='fl'>0.8</span>,
-  newdata = <span class='kw'>NULL</span>,
-  model_assessment = <span class='fl'>FALSE</span>,
-  Y.test = <span class='kw'>NULL</span>,
-  out_of_bag = <span class='fl'>FALSE</span>
-)</pre>
 
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
-    <table class="ref-arguments">
-    <colgroup><col class="name" /><col class="desc" /></colgroup>
-    <tr>
-      <th>object</th>
-      <td><p>Quantile forest object. The trained forest.</p></td>
-    </tr>
-    <tr>
-      <th>quantiles</th>
-      <td><p>Numeric vector (0, 1).
-Extreme quantiles at which estimates are required.</p></td>
-    </tr>
-    <tr>
-      <th>threshold</th>
-      <td><p>Numeric (0, 1). Intermediate quantile used to compute
-thresholds \(t(x_i)\) for the GPD.
-Note that <code>threshold</code> &lt; <code>quantiles</code>.
-Default is 0.8.</p></td>
-    </tr>
-    <tr>
-      <th>newdata</th>
-      <td><p>Numeric matrix.
-Rows contain observation at which predictions should be made.
-If NULL, makes out-of-bag predictions on the training set
-instead (i.e., provides predictions at Xi using only trees
-that did not use the i-th training example). Note
-that this matrix should have the number of columns as the
-training matrix, and that the columns must appear in the same
-order. This argument is needed if
-<code>model_assessment = TRUE</code>.
-Default is <code>NULL</code>.</p></td>
-    </tr>
-    <tr>
-      <th>model_assessment</th>
-      <td><p>Boolean. Assess GPD fit with QQ-plot against
-exponential distribution?
-Default is <code>FALSE</code>.</p></td>
-    </tr>
-    <tr>
-      <th>Y.test</th>
-      <td><p>Numeric vector. Responses for the test set, needed
-if <code>model_assessment = TRUE</code>.
-Default is <code>NULL</code>.</p></td>
-    </tr>
-    <tr>
-      <th>out_of_bag</th>
-      <td><p>Boolean. Use out-of-bag observations to compute thresholds
-\(t(x_i)\) for the GPD?
-Default is <code>FALSE</code>.</p></td>
-    </tr>
-    </table>
 
-    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <p>List. The list is made of:</p><ol>
-<li><p>Numeric matrix. Predictions at each test point (on rows) for
-each desired quantile (on columns).</p></li>
-<li><p>Plot if <code>model_assessment = TRUE</code>. QQ-plot for model assessment.!!! return also t(x_0), sigma(x_0), csi(x_0), for all x_0 in test_data</p></li>
-</ol>
+    <div class='dont-index'><p>Useful links:</p><ul>
+<li><p><a href='https://github.com/nicolagnecco/erf'>https://github.com/nicolagnecco/erf</a></p></li>
+<li><p>Report bugs at <a href='https://github.com/nicolagnecco/erf/issues'>https://github.com/nicolagnecco/erf/issues</a></p></li>
+</ul>
+
+</div>
+    <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
+
+    <p><strong>Maintainer</strong>: Edossa Merga <a href='mailto:edossamerga@gmail.com'>edossamerga@gmail.com</a></p>
+<p>Authors:</p><ul>
+<li><p>Nicola Gnecco</p></li>
+<li><p>Sebastian Engelke</p></li>
+</ul>
+
 
 
   </div>
