@@ -201,26 +201,20 @@ fit_conditional_gpd <- function(object, wi_x0, t_xi){
   Y <- object$Y.orig
   exc_idx = which(Y - t_xi > 0)
   exc_data = (Y - t_xi)[exc_idx]
-
+  browser()
   init_par <- ismev::gpd.fit(exc_data, 0, show=FALSE)$mle
-  EVT_par <- array(NA, dim = c(ntest, 2))
-
-  # for(i in seq_len(ntest)){
-  #   EVT_par[i,] = stats::optim(par = init_par, fn = weighted_LLH, data=exc_data,
-  #                              weights=wi_x0[i, exc_idx])$par
-  # }
-  EVT_par <- purrr::map_dfr(1:ntest, my_temp,
-                            init_par, weighted_LLH, exc_data, exc_idx, wi_x0)
-
+  EVT_par <- purrr::map_dfr(1:ntest, optim_wrap1,init_par, weighted_llh,
+                            exc_data, exc_idx, wi_x0)
 
   return(as.matrix(EVT_par))
 }
 
-my_temp <- function(i, init_par, obj_fun, exc_data, exc_idx, wi_x0){
-  a <- stats::optim(par = init_par, fn = obj_fun, data=exc_data,
-               weights=wi_x0[i, exc_idx])$par
-  names(a) <- c("par1", "par2")
-  return(a)
+optim_wrap1 <- function(i, init_par, obj_fun, exc_data, exc_idx, wi_x0){
+  res <- stats::optim(par = init_par, fn = obj_fun, data=exc_data,
+                    weights=wi_x0[i, exc_idx])$par
+  names(res) <- c("par1", "par2")
+  cat("Simulation", i, "\r")
+  return(res)
 }
 
 compute_extreme_quantiles <- function(gpd_pars, t_x0, quantiles, threshold){
@@ -351,23 +345,6 @@ weighted_LLH <- function(par, data, weights) {
       nl = 10^6
     else {
       nl = sum(weights*(log(sig) + (1 + 1/xi)*log(y)))
-    }
-  }
-  return(nl)
-}
-
-weighted_LLH2 <- function(par, data, weights) {
-  ## numeric_vector numeric_matrix numeric_vector -> numeric
-  ## returns the weighted GPD log-likelihood
-
-  if (min(par[1]) <= 0)
-    nl = 10^6
-  else {
-    if (min(1 + (par[2]/par[1]) * data) <= 0)
-      nl = 10^6
-    else {
-      nl = sum(weights*(log(par[1]) + (1 + 1/par[2])
-                        * log(1 + (par[2]/par[1]) * data)))
     }
   }
   return(nl)

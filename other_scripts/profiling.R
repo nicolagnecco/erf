@@ -38,6 +38,37 @@ generate_joint_distribution <- function(n, p,
 
 }
 
+
+generate_theoretical_quantiles <- function(alpha, x, model, df, scale){
+  ## numeric_vector numeric_vector character integer numeric -> numeric_matrix
+  ## produce conditional alpha-quantiles at the x values for model = "gaussian"
+  ## or "student_t" with df degree of freedom and relative scale
+
+  ntest <- length(x)
+  nalphas <- length(alpha)
+  ntest_negative <- length(which(x < 0))
+  ntest_nonnegative <- ntest - ntest_negative
+
+  if(model == "gaussian"){
+    q1function <-  function(p) qnorm(p, mean=0, sd=1)
+    q2function <-  function(p) qnorm(p, mean=0, sd=scale)
+  }
+  if(model == "student_t"){
+    q1function <- function(p) qt(p, df = df)
+    q2function <- function(p) scale * qt(p, df = df)
+  }
+
+
+  q_true <- matrix(NA, nrow = ntest, ncol = nalphas)
+  q_true[which(x < 0), ] <- matrix(q1function(alpha), nrow = ntest_negative,
+                                   ncol = nalphas, byrow = TRUE)
+  q_true[which(x >= 0), ] <- matrix(q2function(alpha), nrow = ntest_nonnegative,
+                                    ncol = nalphas, byrow = TRUE)
+
+  return(q_true)
+}
+
+
 # generate training data
 dat <- generate_joint_distribution(n = n, p = p, model = model, df = df)
 
@@ -56,6 +87,7 @@ profvis(
                                  Y.test = NULL,
                                  out_of_bag = FALSE)$predictions
 )
+
 
 
 # C++
