@@ -205,29 +205,18 @@ fit_conditional_gpd <- function(object, wi_x0, t_xi){
   init_par <- ismev::gpd.fit(exc_data, 0, show=FALSE)$mle
 
   wi_x0 <- wi_x0[, exc_idx]
-  EVT_par <- purrr::map_dfr(1:ntest, optim_wrap2,init_par, weighted_llh,
+  EVT_par <- purrr::map_dfr(1:ntest, optim_wrap,init_par, weighted_llh,
                             exc_data, wi_x0)
 
   return(as.matrix(EVT_par))
 }
 
-optim_wrap1 <- function(i, init_par, obj_fun, exc_data, exc_idx, wi_x0){
-
-  ww <- wi_x0[i, exc_idx]
-  res <- stats::optim(par = init_par, fn = obj_fun, data=exc_data,
-                    weights=ww)$par
-  names(res) <- c("par1", "par2")
-  cat("Simulation", i, "\r")
-  return(res)
-}
-
-optim_wrap2 <- function(i, init_par, obj_fun, exc_data, wi_x0){
+optim_wrap <- function(i, init_par, obj_fun, exc_data, wi_x0){
 
   curr_wi_x0 <- wi_x0[i, ]
   res <- stats::optim(par = init_par, fn = obj_fun, data=exc_data,
                       weights=curr_wi_x0)$par
   names(res) <- c("par1", "par2")
-  cat("Simulation", i, "\r")
   return(res)
 }
 

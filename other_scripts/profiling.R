@@ -8,8 +8,8 @@ n <- 2e3
 p <- 40
 model <- "gaussian"
 df <- 2.5
-ntest <- 1e2
-quantiles_predict <- c(.9, .99, .999, .9995)
+ntest <- 1e4
+quantiles_predict <- c(.99, .995, .999, .9995)
 
 # helpers
 generate_joint_distribution <- function(n, p,
