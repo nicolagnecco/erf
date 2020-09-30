@@ -6,18 +6,6 @@
 
 using namespace Rcpp;
 
-// optim_cpp
-arma::vec optim_cpp(const arma::vec& par, const arma::vec& data, const arma::vec& weights);
-RcppExport SEXP _erf_optim_cpp(SEXP parSEXP, SEXP dataSEXP, SEXP weightsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< const arma::vec& >::type par(parSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type data(dataSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type weights(weightsSEXP);
-    rcpp_result_gen = Rcpp::wrap(optim_cpp(par, data, weights));
-    return rcpp_result_gen;
-END_RCPP
-}
 // weighted_llh
 double weighted_llh(const arma::vec& par, const arma::vec& data, const arma::vec& weights);
 RcppExport SEXP _erf_weighted_llh(SEXP parSEXP, SEXP dataSEXP, SEXP weightsSEXP) {
@@ -32,7 +20,6 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_erf_optim_cpp", (DL_FUNC) &_erf_optim_cpp, 3},
     {"_erf_weighted_llh", (DL_FUNC) &_erf_weighted_llh, 3},
     {NULL, NULL, 0}
 };
