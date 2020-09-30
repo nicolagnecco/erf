@@ -48,7 +48,8 @@ predict_erf <- function(object, quantiles, threshold = 0.8,
 
   X0 <- set_test_observations(object, newdata)
 
-  wi_x0 <-  grf::get_sample_weights(object, newdata = X0, num.threads = NULL)
+  wi_x0 <-  as.matrix(grf::get_sample_weights(object, newdata = X0,
+                                              num.threads = NULL))
 
   t_xi <- compute_thresholds(object, threshold = threshold,
                              X = object$X.orig, out_of_bag = out_of_bag)
@@ -201,17 +202,30 @@ fit_conditional_gpd <- function(object, wi_x0, t_xi){
   Y <- object$Y.orig
   exc_idx = which(Y - t_xi > 0)
   exc_data = (Y - t_xi)[exc_idx]
-  browser()
   init_par <- ismev::gpd.fit(exc_data, 0, show=FALSE)$mle
-  EVT_par <- purrr::map_dfr(1:ntest, optim_wrap1,init_par, weighted_llh,
-                            exc_data, exc_idx, wi_x0)
+
+  wi_x0 <- wi_x0[, exc_idx]
+  EVT_par <- purrr::map_dfr(1:ntest, optim_wrap2,init_par, weighted_llh,
+                            exc_data, wi_x0)
 
   return(as.matrix(EVT_par))
 }
 
 optim_wrap1 <- function(i, init_par, obj_fun, exc_data, exc_idx, wi_x0){
+
+  ww <- wi_x0[i, exc_idx]
   res <- stats::optim(par = init_par, fn = obj_fun, data=exc_data,
-                    weights=wi_x0[i, exc_idx])$par
+                    weights=ww)$par
+  names(res) <- c("par1", "par2")
+  cat("Simulation", i, "\r")
+  return(res)
+}
+
+optim_wrap2 <- function(i, init_par, obj_fun, exc_data, wi_x0){
+
+  curr_wi_x0 <- wi_x0[i, ]
+  res <- stats::optim(par = init_par, fn = obj_fun, data=exc_data,
+                      weights=curr_wi_x0)$par
   names(res) <- c("par1", "par2")
   cat("Simulation", i, "\r")
   return(res)

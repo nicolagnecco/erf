@@ -3,11 +3,12 @@ library(grf)
 library(erf)
 
 # params
+set.seed(42)
 n <- 2e3
 p <- 40
 model <- "gaussian"
 df <- 2.5
-ntest <- 1e3
+ntest <- 1e2
 quantiles_predict <- c(.9, .99, .999, .9995)
 
 # helpers
@@ -80,6 +81,18 @@ x_test[, 1] <- seq(-1, 1, length.out = ntest)
 # fit quantile regression function w/ grf
 fit_grf <- quantile_forest(dat$X, dat$Y)
 
+predictions_erf <- predict_erf(fit_grf, quantiles = quantiles_predict,
+                               threshold = .8,
+                               newdata = x_test, model_assessment = FALSE,
+                               Y.test = NULL,
+                               out_of_bag = FALSE)$predictions
+
+predictions_true <- generate_theoretical_quantiles(alpha = quantiles_predict,
+                                                   x = x_test[, 1],
+                                                   model = model, df = df,
+                                                   scale = 2)
+
+# profile predict_erf
 profvis(
   predictions_erf <- predict_erf(fit_grf, quantiles = quantiles_predict,
                                  threshold = .8,
@@ -89,6 +102,23 @@ profvis(
 )
 
 
+
+# very large test set
+load("other_scripts/cpp_test_data2.Rdata")
+profvis(
+  purrr::map_dfr(1:200, optim_wrap1,init_par, weighted_llh,
+                 exc_data, exc_idx, wi_x0)
+
+)
+
+profvis(
+  expr = {
+  wi_x0_mat <- as.matrix(wi_x0)
+  ww <- wi_x0_mat[, exc_idx]
+  purrr::map_dfr(1:200, optim_wrap2,init_par, weighted_llh,
+                 exc_data, exc_idx, ww)
+  }
+)
 
 # C++
 library(Rcpp)
