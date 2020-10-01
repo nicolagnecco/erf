@@ -40,8 +40,8 @@
 
 
 <meta property="og:title" content="Extreme predictions with a quantile forest — predict_erf" />
-<meta property="og:description" content="Gets estimates of the extrapolated conditional quantiles of Y given X
-using a trained forest." />
+<meta property="og:description" content="Predicts high conditional quantiles of Y given X using a quantile forest
+fitted using quantile_forest." />
 
 
 
@@ -109,8 +109,8 @@ using a trained forest." />
     </div>
 
     <div class="ref-description">
-    <p>Gets estimates of the extrapolated conditional quantiles of Y given X
-using a trained forest.</p>
+    <p>Predicts high conditional quantiles of Y given X using a quantile forest
+fitted using <code><a href='https://rdrr.io/pkg/grf/man/quantile_forest.html'>quantile_forest</a></code>.</p>
     </div>
 
     <pre class="usage"><span class='fu'>predict_erf</span>(
@@ -128,7 +128,8 @@ using a trained forest.</p>
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>object</th>
-      <td><p>Quantile forest object. The trained forest.</p></td>
+      <td><p>Quantile forest object. The trained forest obtained with
+<code><a href='https://rdrr.io/pkg/grf/man/quantile_forest.html'>quantile_forest</a></code>.</p></td>
     </tr>
     <tr>
       <th>quantiles</th>
@@ -177,11 +178,16 @@ Default is <code>FALSE</code>.</p></td>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>List. The list is made of:</p><ol>
-<li><p>Numeric matrix. Predictions at each test point (on rows) for
+    <p>Named list. The list is made of:</p><ul>
+<li><p><code>predictions</code> --- Numeric matrix. Predictions at each test point (on rows) for
 each desired quantile (on columns).</p></li>
-<li><p>Plot if <code>model_assessment = TRUE</code>. QQ-plot for model assessment.!!! return also t(x_0), sigma(x_0), csi(x_0), for all x_0 in test_data</p></li>
-</ol>
+<li><p><code>pars</code> --- Numeric matrix. Estimated parameters at each test point (on rows).
+The columns contain the estimates for the \(\sigma\) and
+\(\xi\) parameter, respectively.</p></li>
+<li><p><code>threshold</code> --- Numeric matrix. Estimated intermediate threshold at each test point
+(on rows).</p></li>
+<li><p><code>plot</code> (if <code>model_assessment = TRUE</code>). QQ-plot for model assessment.</p></li>
+</ul>
 
 
   </div>
