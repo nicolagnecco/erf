@@ -362,7 +362,7 @@ weighted_LLH <- function(par, data, weights) {
 q_GPD <- function(p, p0, t_x0, sigma, xi){
   ## numeric(0, 1) numeric(0, 1) numeric_matrix numeric_vector
   ## numeric_vector -> numeric_vector
-  ## produce the estimated extreme quantiles for the test samples
+  ## produce the estimated extreme quantiles of GPD
 
   (((1-p)/(1-p0))^{-xi} - 1) * (sigma / xi) + t_x0
 }

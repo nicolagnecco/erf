@@ -14,77 +14,174 @@ quantile_loss <- function(y, y_hat, alpha){
   }
 }
 
+predict_unconditional_quantiles <- function(threshold, alpha, Y){
+  ## numeric numeric_vector -> numeric_vector
+  ## predict high unconditional quantiles
+
+  # helper
+  q_GPD <- function(p, p0, t_x0, sigma, xi){
+    ## numeric(0, 1) numeric(0, 1) numeric_matrix numeric_vector
+    ## numeric_vector -> numeric_vector
+    ## produce the estimated extreme quantiles of GPD
+
+    (((1-p)/(1-p0))^{-xi} - 1) * (sigma / xi) + t_x0
+  }
+
+  # body
+  p0 <- threshold
+  t0 <- quantile(Y, p0)
+  pars <- ismev::gpd.fit(Y, t0, show = FALSE)$mle
+  sigma <- pars[1]
+  xi <- pars[1]
+
+  return(q_GPD(alpha, p0, t0, sigma, xi))
+
+}
+
 generate_joint_distribution <- function(n, p,
-                                        model = c("gaussian", "student_t"),
-                                        scale = 2, df){
-  ## integer integer character numeric integer -> list
+                                        model = c("step", "periodic"),
+                                        distr = c("gaussian", "student_t"),
+                                        df){
+  ## integer (x2) character (x2) integer -> list
   ## generate n iid observations of (X, Y), where X is p-dimensional predictor
-  ## and Y is the response. Y has conditional distribution equal to
-  ## model = "gaussian" or "student_t" with a certain scale and
-  ## with df degree of freedom.
+  ## and Y is the response following the given model with the
+  ## given distribution.
   ## Returns a list with:
   ## - X, nxp matrix, p-dimensional predictor
   ## - Y, vector with n elements, response variable
 
+  # helpers
+  step_model <- function(X, distr, df){
+    ## numeric_matrix charachter integer -> numeric_vector
+    ## produce response Y for the step model
+
+    n <- nrow(X)
+    p <- ncol(X)
+
+    switch(distr,
+           "gaussian" = {
+             Y_tilde <- rnorm(n)
+           },
+           "student_t" = {
+             Y_tilde <- rt(n, df = df)
+           })
+
+    sigma_x <- 1 + 1 * (X[, 1] > 0)
+    Y <- sigma_x * Y_tilde
+
+    return(Y)
+  }
+
+  periodic_model <- function(X, distr){
+    ## numeric_matrix charachter -> numeric_vector
+    ## produce response Y for the periodic model
+
+    n <- nrow(X)
+    p <- ncol(X)
+
+    switch(distr,
+           "gaussian" = {
+             Y_tilde <- rnorm(n)
+           },
+           "student_t" = {
+             df_x <- 3 - cos(X[, 1] * 3/2 * pi)
+             Y_tilde <- rt(n, df = df_x)
+           })
+
+    sigma_x <- 3/2 + 1/2 * cos((X[, 1]^2 + X[, 2]^2) * 3/2 * pi)
+    Y <- sigma_x * Y_tilde
+
+    return(Y)
+  }
+
+  # body
   model <- match.arg(model)
+  distr <- match.arg(distr)
   X <- matrix(runif(n * p, min = -1, max = 1), n, p)
 
   switch(model,
-         "gaussian" = {
-           Y = ifelse(X[,1] < 0, rnorm(n, 0, 1), rnorm(n, 0, scale))
+         "step" = {
+           Y <- step_model(X, distr, df)
          },
-         "student_t" = {
-           Y = ifelse(X[,1] < 0, rt(n, df = df),  scale * rt(n, df = df))
+         "periodic" = {
+           Y <- periodic_model(X, distr)
          })
 
   return(list(X = X, Y = Y))
 
 }
 
-generate_conditional_distribution <- function(n, p, x,
-                                              model = c("gaussian", "student_t"),
-                                              df){
-  ## integer integer numeric_vector character integer -> numeric_matrix
-  ## generate n iid observations of the conditional response Y at values x.
-  ## Y has conditional distribution equal to model = "gaussian" or "student_t"
-  ## with df degree of freedom.
-  ## Returns Y, vector with n elements, response variable
+generate_theoretical_quantiles <- function(alpha, X, model = c("step", "periodic"),
+                                           distr = c("gaussian", "student_t"),
+                                           df){
+  ## numeric_vector numeric_matrix character (x2) integer -> numeric_matrix
+  ## produce theoretical quantiles for the given model and distribution
+  ## for the different observations (rows of X)
 
-  # !!!
+  # helpers
+  step_model_quantiles <- function(alpha, X, distr, df){
+    ## numeric_vector numeric_matrix charachter integer -> numeric_vector
+    ## produce theoretical quantiles Y for the step model
 
-  return(matrix(NA, nrow = n, ncol = 1))
-}
+    n <- nrow(X)
+    p <- ncol(X)
 
-generate_theoretical_quantiles <- function(alpha, x, model, df, scale){
-  ## numeric_vector numeric_vector character integer numeric -> numeric_matrix
-  ## produce conditional alpha-quantiles at the x values for model = "gaussian"
-  ## or "student_t" with df degree of freedom and relative scale
+    switch(distr,
+           "gaussian" = {
+             Y_tilde <- qnorm(alpha)
+           },
+           "student_t" = {
+             Y_tilde <- qt(alpha, df = df)
+           })
 
-  ntest <- length(x)
-  nalphas <- length(alpha)
-  ntest_negative <- length(which(x < 0))
-  ntest_nonnegative <- ntest - ntest_negative
+    sigma_x <- 1 + 1 * (X[, 1] > 0)
+    q <- as.matrix(sigma_x) %*% t(q_tilde)
 
-  if(model == "gaussian"){
-    q1function <-  function(p) qnorm(p, mean=0, sd=1)
-    q2function <-  function(p) qnorm(p, mean=0, sd=scale)
-  }
-  if(model == "student_t"){
-    q1function <- function(p) qt(p, df = df)
-    q2function <- function(p) scale * qt(p, df = df)
+    return(q)
   }
 
+  periodic_model_quantiles <- function(alpha, X, distr){
+    ## numeric_vector numeric_matrix charachter -> numeric_vector
+    ## produce theoretical quantiles for the periodic model
 
-  q_true <- matrix(NA, nrow = ntest, ncol = nalphas)
-  q_true[which(x < 0), ] <- matrix(q1function(alpha), nrow = ntest_negative,
-                                 ncol = nalphas, byrow = TRUE)
-  q_true[which(x >= 0), ] <- matrix(q2function(alpha), nrow = ntest_nonnegative,
-                                 ncol = nalphas, byrow = TRUE)
+    n <- nrow(X)
+    p <- ncol(X)
 
-  return(q_true)
+    switch(distr,
+           "gaussian" = {
+             q_tilde <- qnorm(alpha)
+           },
+           "student_t" = {
+             df_x <- 3 - cos(X[, 1] * 3/2 * pi)
+             q_tilde <- qt(alpha, df = df_x)
+           })
+
+    sigma_x <- 3/2 + 1/2 * cos((X[, 1]^2 + X[, 2]^2) * 3/2 * pi)
+    q <- as.matrix(sigma_x) %*% t(q_tilde)
+
+    return(q)
+  }
+
+  # body
+  model <- match.arg(model)
+  distr <- match.arg(distr)
+  n <- nrow(X)
+  p <- ncol(X)
+
+
+  switch(model,
+         "step" = {
+           quantiles <- step_model_quantiles(alpha, X, distr, df)
+         },
+         "periodic" = {
+           quantiles <- periodic_model_quantiles(alpha, X, distr)
+         })
+
+  return(quantiles)
+
 }
 
-simulation_settings <- function(){
+simulation_settings_1 <- function(){
   ## void -> tibble
   ## returns a tibble with simulation settings
 
@@ -101,11 +198,11 @@ simulation_settings <- function(){
 
   ## other parameter values
   ## general
-  nexp <- 1:100
+  nexp <- 1:1e3
   n <- c(n0, 500, 1000)
   p <- c(p0, 10, 20)
-  ntest <- 100
-  model <- c("gaussian", "student_t")
+  ntest <- 1e3
+  distr <- c("gaussian", "student_t")
   df <- c(1.5, 2.5, 4)
   scale <- c(scale0, 4)
   test_data <- c(test_data0, "uniform")
@@ -117,7 +214,7 @@ simulation_settings <- function(){
   honesty <- c(honesty0, FALSE)
 
   ## predict
-  quantiles_predict <- c(.9, .99, .999, .9995)
+  quantiles_predict <- c(.99, .995, .999, .9995)
   threshold <- c(threshold0, .5, .9)
   out_of_bag <- c(out_of_bag0, TRUE)
 
@@ -137,8 +234,8 @@ simulation_settings <- function(){
            quantiles_predict = list(quantiles_predict),
            id = 1)
 
-  tbl3 <- expand_grid(model, df) %>%
-    mutate(df = if_else(model == "gaussian", NaN, df)) %>%
+  tbl3 <- expand_grid(distr, df) %>%
+    mutate(df = if_else(distr == "gaussian", NaN, df)) %>%
     mutate(id = 1) %>%
     distinct()
 
@@ -152,13 +249,14 @@ simulation_settings <- function(){
   return(my_args)
 }
 
-set_simulations <- function(experiment_ids=1:NROW(simulation_settings()),
+set_simulations <- function(simulation_func,
+                            experiment_ids=NULL,
                             seed){
-  ## numeric_vector character_vector integer -> list
+  ## function numeric_vector character_vector integer -> list
   ## prepares the settings for the simulations
   ## INPUTS:
   ## - experiment_ids: a numeric vector that specifies the rows of the tibble generated
-  ## by calling the function simulation_settings().
+  ## by calling the function simulation_func(). If NULL, all rows are considered.
   ## - seed: an integer seed that determines the outcome of the simulation.
   ##
   ## RETURNS:
@@ -173,8 +271,14 @@ set_simulations <- function(experiment_ids=1:NROW(simulation_settings()),
   ## L'Ecuyer RNG method and are independent of each other.
 
   # set simulation options
-  simulation_arguments <- simulation_settings()
-  m <- NROW(simulation_arguments)
+  simulation_arguments <- simulation_func()
+  m <- nrow(simulation_arguments)
+
+  if (is.null(experiment_ids)){
+    experiment_ids <- 1:m
+  }
+
+
   if (any(!(experiment_ids %in% 1:m))){
     stop(paste("Argument experiment_ids must contain integers between 1 and ",
                m, ".", sep = ""))
@@ -212,103 +316,95 @@ wrapper_sim <- function(i, sims_args, meins = FALSE){
   ntest <- sims_args$ntest[i]
   quantiles_fit <- sims_args$quantiles_fit[[i]]
   quantiles_predict <- sims_args$quantiles_predict[[i]]
-  model <- sims_args$model[i]
+  model <- sims_args$model[i] #!!!
+  distr <- sims_args$distr[i]
   df <- sims_args$df[i]
   n <- sims_args$n[i]
   p <- sims_args$p[i]
-  scale <- sims_args$scale[i]
+
+  # scale <- sims_args$scale[i]
   num.trees <- sims_args$num.trees[i]
   min.node.size <- sims_args$min.node.size[i]
   honesty <- sims_args$honesty[i]
   threshold <- sims_args$threshold[i]
   out_of_bag <- sims_args$out_of_bag[i]
-  test_data <- sims_args$test_data[i]
+  # test_data <- sims_args$test_data[i]
 
 
   # generate training data
   rng_sims <- sims_args$rng[[i]]
   rngtools::setRNG(rng_sims)
-  dat <- generate_joint_distribution(n = n, p = p, model = model, df = df)
+  dat <- generate_joint_distribution(n = n, p = p, model = model,
+                                     distr = distr, df = df)
 
   # generate test data
-  if (test_data == "zero"){
-    x_test <- matrix(0, nrow = ntest, ncol = p)
-    x_test[, 1] <- seq(-1, 1, length.out = ntest)
-
-  } else if(test_data == "uniform") {
-    x_test <-  matrix(runif(ntest * p, min = -1, max = 1), nrow = ntest,
-                      ncol = p)
-  } else {
-    stop("The column 'test_data' must be one of 'zero' and 'uniform'.")
-  }
+  X_test <- randtoolbox::halton(ntest, p) * 2 - 1
 
 
 
-  if (!meins){
-    # fit quantile regression function w/ grf
-    fit_grf <- quantile_forest(dat$X, dat$Y, quantiles = quantiles_fit,
+  # fit models
+  # fit quantile regression function w/ grf
+  fit_grf <- quantile_forest(dat$X, dat$Y, quantiles = quantiles_fit,
+                             num.trees = num.trees,
+                             min.node.size = min.node.size, honesty = honesty)
+
+
+  # fit quantile regression functions w/ meinshausen
+  fit_meins <- quantile_forest(dat$X, dat$Y, quantiles = quantiles_fit,
                                num.trees = num.trees,
-                               min.node.size = min.node.size, honesty = honesty)
+                               regression.splitting = TRUE,
+                               min.node.size = min.node.size,
+                               honesty = honesty)
 
-    # predict quantile regression functions w/ grf
-    predictions_grf <- predict(fit_grf, x_test, quantiles = quantiles_predict)
+  # predict models
+  # predict quantile regression functions w/ grf
+  predictions_grf <- predict(fit_grf, X_test, quantiles = quantiles_predict)
 
-    # predict quantile regression functions w/ erf
-    predictions_erf <- predict_erf(fit_grf, quantiles = quantiles_predict,
-                                   threshold = threshold,
-                                   newdata = x_test, model_assessment = FALSE,
-                                   Y.test = NULL,
-                                   out_of_bag = out_of_bag)$predictions
+  # predict quantile regression functions w/ erf
+  predictions_erf <- predict_erf(fit_grf, quantiles = quantiles_predict,
+                                 threshold = threshold,
+                                 newdata = X_test, model_assessment = FALSE,
+                                 Y.test = NULL,
+                                 out_of_bag = out_of_bag)$predictions
 
-    predictions_true <- generate_theoretical_quantiles(alpha = quantiles_predict,
-                                                       x = x_test[, 1],
-                                                       model = model, df = df,
-                                                       scale = scale)
+  # predict quantile regression functions w/ meinshausen
+  predictions_meins <- predict(fit_meins, X_test,
+                               quantiles = quantiles_predict)
 
-    # collect results
-    tb_erf <- tibble(id = id,
-                     x = x_test[, 1],
-                     method = "erf",
-                     predictions = matrix2list(predictions_erf))
 
-    tb_grf <- tibble(id = id,
-                     x = x_test[, 1],
-                     method = "grf",
-                     predictions = matrix2list(predictions_grf))
+  #!!! predict constant quantile
+  # ...
 
-    tb_true <- tibble(id = id,
-                      x = x_test[, 1],
-                      method = "true",
-                      predictions = matrix2list(predictions_true))
+  # predict true quantile regression functions
+  predictions_true <- generate_theoretical_quantiles(alpha = quantiles_predict,
+                                                     x = X_test[, 1],
+                                                     distr = distr, df = df,
+                                                     scale = scale)
 
-    res <- bind_rows(tb_true, tb_grf, tb_erf)
+  # collect results   # !!! take integral over x's ()
+  tb_erf <- tibble(id = id,
+                   method = "erf",
+                   predictions = matrix2list(predictions_erf))
 
-    # !!! take integral over x's ()
-    # !!! ntest = ?? -> (wait for answer)
-    # !!! more complex function
-    # !!! try to compare with gbex experiment
+  tb_grf <- tibble(id = id,
+                   method = "grf",
+                   predictions = matrix2list(predictions_grf))
 
-  } else {
+  tb_true <- tibble(id = id,
+                    method = "true",
+                    predictions = matrix2list(predictions_true))
 
-    # fit quantile regression functions w/ meinshausen
-    fit_meins <- quantile_forest(dat$X, dat$Y, quantiles = quantiles_fit,
-                                 num.trees = num.trees,
-                                 regression.splitting = TRUE,
-                                 min.node.size = min.node.size,
-                                 honesty = honesty)
+  tb_constant <- tibble(id = id,
+                        x = ...)
 
-    # predict quantile regression functions w/ meinshausen
-    predictions_meins <- predict(fit_meins, x_test,
-                                 quantiles = quantiles_predict)
-
-    # collect results
-    tb_meins <- tibble(id = id,
-                     x = x_test[, 1],
+  tb_meins <- tibble(id = id,
+                     x = X_test[, 1],
                      method = "meins",
                      predictions = matrix2list(predictions_meins))
 
-    res <- tb_meins
-  }
+
+  res <- bind_rows(tb_true, tb_grf, tb_erf, tb_constant, tb_meins)
+
 
   # return value
   return(res)
@@ -320,3 +416,8 @@ matrix2list <- function(mat){
   split(mat, rep(1:nrow(mat), times = ncol(mat)))
 }
 
+
+dat <- generate_joint_distribution(n = 1e4, p = p, model = "step",
+                                   distr = "student_t", df = 4)
+df <- data.frame(X1 = dat$X[, 1], X2 = dat$X[, 2], Y = dat$Y)
+plot_ly(df, x = ~X1, y = ~X2, z = ~Y, marker = list(color = ~Y, colorscale = c('#FFE1A1', '#683531'), showscale = TRUE))

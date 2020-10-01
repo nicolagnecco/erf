@@ -35,10 +35,10 @@ extract_params <- function(tbl, param, methods){
     filter(base_params == cond)
 
   dd2 <- dd %>%
-    mutate(model = if_else(model == "gaussian", model,
-                           paste(model, "_", df, sep = ""))) %>%
+    mutate(distr = if_else(distr == "gaussian", distr,
+                           paste(distr, "_", df, sep = ""))) %>%
     mutate(!!param_enquo := factor(!!param_enquo)) %>%
-    select(nexp, method, model, quantiles_predict, predictions,
+    select(nexp, method, distr, quantiles_predict, predictions,
            !!param_enquo, x) %>%
     unnest(cols = c(quantiles_predict, predictions)) %>%
     pivot_wider(names_from = "method",
@@ -49,7 +49,7 @@ extract_params <- function(tbl, param, methods){
     select(-true) %>%
     pivot_longer(cols = all_of(methods),
                  names_to = "method", values_to = "se") %>%
-    group_by(model, quantiles_predict, method, !! param_enquo, nexp) %>%
+    group_by(distr, quantiles_predict, method, !! param_enquo, nexp) %>%
     summarise(ise = sqrt(mean(se))) %>% # mean across x's
     mutate(method = factor(method))
 
@@ -68,7 +68,7 @@ plot_sims <- function(tbl, param){
 
   for (i in seq_along(quant_pred)){
     g <- ggplot(tbl %>% filter(quantiles_predict == quant_pred[i])) +
-      facet_grid(model ~ quantiles_predict, scale = "free") +
+      facet_grid(distr ~ quantiles_predict, scale = "free") +
       geom_boxplot(aes_string(x = param, y = "ise", col = "method")) +
       scale_color_manual(values = c("#D55E00","#0072B2", "#CC79A7")) +
       ylab("ISE")
@@ -91,7 +91,7 @@ plot_sims <- function(tbl, param){
                  y = "mise",
                  col = "method",
                  group = "method")) +
-        facet_grid(model ~ quantiles_predict, scale = "free") +
+        facet_grid(distr ~ quantiles_predict, scale = "free") +
         stat_summary(fun=sum, geom="line", size = 1, alpha = .5) +
         scale_color_manual(values = c("#D55E00","#0072B2", "#CC79A7")) +
         ylab("MISE")
@@ -151,15 +151,15 @@ dat_plot <- extract_params(dat, "out_of_bag", c("grf", "erf"))
 lop <- plot_sims(dat_plot, "out_of_bag")
 
 # old plots #####
-# models <- unique(dat$model)
+# distrs <- unique(dat$distr)
 # i <- 1
 #
 #
-# for (i in seq_along(models)){
-#   m <- models[i]
+# for (i in seq_along(distrs)){
+#   m <- distrs[i]
 #
 #   dat_plot <- dat %>%
-#     filter(model == m)
+#     filter(distr == m)
 #
 #   dat_methods <- dat_plot %>%
 #     filter(method != "true")
