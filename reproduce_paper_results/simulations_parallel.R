@@ -4,33 +4,39 @@ library(grf)
 library(erf)
 library(rngtools)
 library(randtoolbox)
+library(tictoc)
 library(foreach)
 library(doSNOW)
 library(Rmpi)
 source("simulation_functions.R")
 
 # args
+# - simulation_settings
 # - number of nodes
-# - output log file
-# - output rds file
-# - run meinshausen option?
-# example: Rscript simulations_parallel.R 5 output/sims.txt output/results.rds TRUE
+# example: Rscript simulations_parallel.R simulations_settings_1 5
 
 
 ## set cluster arguments
 args = commandArgs(trailingOnly=TRUE)
-# args = list(5, "reproduce_paper_results/output/sims4.txt",
-#"reproduce_paper_results/output/test.rds", FALSE)
+# args = list("simulation_settings_1", 5)
 
-cl <- makeCluster(args[[1]], type="MPI")
-sprintf("start with %s workers", args[[1]])
 
-numworkers = as.integer(args[[1]])
+cl <- makeCluster(args[[2]], type="MPI")
+sprintf("start with %s workers", args[[2]])
+
+numworkers = as.integer(args[[2]])
 nst = 1000/numworkers
 
 
+## set file names
+dttime <- gsub(pattern = " |:", x = Sys.time(), replacement = "_")
+file_log <- paste("output/", args[[1]], "-", dttime, ".txt", sep = "")
+file_rds <- paste("output/", args[[1]],  "-", dttime, ".rds", sep = "")
+
+
 ## set simulation arguments
-settings <- set_simulations(seed = 42)
+func <- eval(as.name(args[[1]]))
+settings <- set_simulations(simulation_func = func, seed = 42)
 sims_args <- settings$simulation_arguments
 rm(settings)
 m <- NROW(sims_args)
@@ -48,24 +54,24 @@ clusterEvalQ(cl, {
   })
 registerDoSNOW(cl)
 
-cat("**** Simulation 1 **** \n", file = args[[2]])
-# m <- 2
+cat("**** Simulation ---", args[[1]] , "**** \n", file = file_log)
 ll <- foreach(i = 1:m) %dopar% {
-  cat("Simulation", i, "out of", m, "\n", file = args[[2]], append = TRUE)
-  wrapper_sim(i, sims_args, args[[4]])
+  cat("Simulation", i, "out of", m, "\n", file = file_log, append = TRUE)
+  wrapper_sim(i, sims_args)
 }
 
 
 ## close connections and show computing time
 # stopCluster(cl)
 # mpi.exit()
-sink(file = args[[2]], append = TRUE)
+sink(file = file_log, append = TRUE)
 print(proc.time() - ptm)
 sink()
 
 
 ## collect and save results
-ll <- purrr::reduce(ll, bind_rows)
+ll <- purrr::reduce(ll, bind_rows) %>%
+  nest(perf = c(method, quantiles_predict, ise)) %>%
   left_join(sims_args, by = "id")
 
-saveRDS(ll, file = args[[3]])
+saveRDS(ll, file = file_rds)

@@ -14,8 +14,8 @@ quantile_loss <- function(y, y_hat, alpha){
   }
 }
 
-predict_unconditional_quantiles <- function(threshold, alpha, Y){
-  ## numeric numeric_vector -> numeric_vector
+predict_unconditional_quantiles <- function(threshold, alpha, Y, ntest){
+  ## numeric numeric_vector integer-> numeric_matrix
   ## predict high unconditional quantiles
 
   # helper
@@ -32,9 +32,11 @@ predict_unconditional_quantiles <- function(threshold, alpha, Y){
   t0 <- quantile(Y, p0)
   pars <- ismev::gpd.fit(Y, t0, show = FALSE)$mle
   sigma <- pars[1]
-  xi <- pars[1]
+  xi <- pars[2]
 
-  return(q_GPD(alpha, p0, t0, sigma, xi))
+  q_hat <- q_GPD(alpha, p0, t0, sigma, xi)
+  return(matrix(q_hat, nrow = ntest,
+                ncol = length(alpha), byrow = T))
 
 }
 
@@ -128,10 +130,10 @@ generate_theoretical_quantiles <- function(alpha, X, model = c("step", "periodic
 
     switch(distr,
            "gaussian" = {
-             Y_tilde <- qnorm(alpha)
+             q_tilde <- qnorm(alpha)
            },
            "student_t" = {
-             Y_tilde <- qt(alpha, df = df)
+             q_tilde <- qt(alpha, df = df)
            })
 
     sigma_x <- 1 + 1 * (X[, 1] > 0)
@@ -188,13 +190,11 @@ simulation_settings_1 <- function(){
   ## base parameter values
   n0 <- 2e3
   p0 <- 40
-  scale0 <- 2
   num.trees0 <- 2e3
   min.node.size0 <- 5
   honesty0 <- TRUE
   threshold0 <- 0.8
   out_of_bag0 <- FALSE
-  test_data0 <- "zero"
 
   ## other parameter values
   ## general
@@ -202,13 +202,12 @@ simulation_settings_1 <- function(){
   n <- c(n0, 500, 1000)
   p <- c(p0, 10, 20)
   ntest <- 1e3
+  model <- c("step")
   distr <- c("gaussian", "student_t")
-  df <- c(1.5, 2.5, 4)
-  scale <- c(scale0, 4)
-  test_data <- c(test_data0, "uniform")
+  df <- c(2, 3, 4)
 
   ## fit
-  num.trees <- c(num.trees0, 3000, 5000)
+  num.trees <- c(num.trees0, 500, 3000, 5000)
   quantiles_fit <- c(0.1, 0.5, 0.9)
   min.node.size <- c(5, 20, 40, n0)
   honesty <- c(honesty0, FALSE)
@@ -221,15 +220,18 @@ simulation_settings_1 <- function(){
 
   ## create parameter grid
   ## tibble 1
-  tbl1 <- expand_grid(n, p, scale, num.trees, min.node.size, honesty, threshold,
-                      out_of_bag, test_data) %>%
-    filter(n %in% n0 + p %in% p0 + scale %in% scale0 +
-             num.trees %in% num.trees0 + min.node.size %in% min.node.size0 +
-             honesty %in% honesty0 + threshold %in% threshold0 +
-             out_of_bag %in% out_of_bag0 + test_data %in% test_data0 >= 8) %>%
+  tbl1 <- expand_grid(n, p, num.trees, min.node.size, honesty, threshold,
+                      out_of_bag) %>%
+    filter(n %in% n0
+           + p %in% p0
+           + num.trees %in% num.trees0
+           + min.node.size %in% min.node.size0
+           + honesty %in% honesty0
+           + threshold %in% threshold0
+           + out_of_bag %in% out_of_bag0  >= 6) %>%
     mutate(id = 1)
 
-  tbl2 <- expand_grid(nexp, ntest) %>%
+  tbl2 <- expand_grid(nexp, ntest, model) %>%
     mutate(quantiles_fit = list(quantiles_fit),
            quantiles_predict = list(quantiles_predict),
            id = 1)
@@ -239,8 +241,8 @@ simulation_settings_1 <- function(){
     mutate(id = 1) %>%
     distinct()
 
-  my_args <- full_join(tbl2, tbl3) %>%
-    full_join(tbl1) %>%
+  my_args <- full_join(tbl2, tbl3, by = "id") %>%
+    full_join(tbl1, by = "id") %>%
     select(-id) %>%
     rowwise() %>%
     mutate(id = cur_group_id()) %>%
@@ -294,8 +296,10 @@ set_simulations <- function(simulation_func,
   simulation_arguments$rng <- sims_rng_stream
 
   # filter simulations
-  simulation_arguments <- simulation_arguments %>%
-    filter(id %in% experiment_ids)
+  if(length(experiment_ids) < m){
+    simulation_arguments <- simulation_arguments %>%
+      filter(id %in% experiment_ids)
+  }
 
   # return list
   list(simulation_arguments=simulation_arguments)
@@ -341,7 +345,6 @@ wrapper_sim <- function(i, sims_args, meins = FALSE){
   X_test <- randtoolbox::halton(ntest, p) * 2 - 1
 
 
-
   # fit models
   # fit quantile regression function w/ grf
   fit_grf <- quantile_forest(dat$X, dat$Y, quantiles = quantiles_fit,
@@ -372,39 +375,58 @@ wrapper_sim <- function(i, sims_args, meins = FALSE){
                                quantiles = quantiles_predict)
 
 
-  #!!! predict constant quantile
-  # ...
+  #predict unconditional quantile
+  predictions_unconditional <- predict_unconditional_quantiles(threshold = threshold,
+                                                           alpha = quantiles_predict,
+                                                           Y = dat$Y,
+                                                           ntest = ntest)
 
   # predict true quantile regression functions
   predictions_true <- generate_theoretical_quantiles(alpha = quantiles_predict,
-                                                     x = X_test[, 1],
-                                                     distr = distr, df = df,
-                                                     scale = scale)
+                                                     X = X_test,
+                                                     model = model,
+                                                     distr = distr, df = df)
 
   # collect results   # !!! take integral over x's ()
   tb_erf <- tibble(id = id,
                    method = "erf",
-                   predictions = matrix2list(predictions_erf))
+                   predictions = matrix2list(predictions_erf)) %>%
+    rowid_to_column()
 
   tb_grf <- tibble(id = id,
                    method = "grf",
-                   predictions = matrix2list(predictions_grf))
+                   predictions = matrix2list(predictions_grf)) %>%
+    rowid_to_column()
 
   tb_true <- tibble(id = id,
                     method = "true",
-                    predictions = matrix2list(predictions_true))
+                    predictions = matrix2list(predictions_true)) %>%
+    rowid_to_column()
 
-  tb_constant <- tibble(id = id,
-                        x = ...)
+  tb_unconditional <- tibble(id = id,
+                        method = "unconditional",
+                        predictions = matrix2list(predictions_unconditional)) %>%
+    rowid_to_column()
 
   tb_meins <- tibble(id = id,
-                     x = X_test[, 1],
                      method = "meins",
-                     predictions = matrix2list(predictions_meins))
+                     predictions = matrix2list(predictions_meins)) %>%
+    rowid_to_column()
+
+  method <- c("erf", "grf", "meins", "unconditional")
 
 
-  res <- bind_rows(tb_true, tb_grf, tb_erf, tb_constant, tb_meins)
-
+  res <- bind_rows(tb_true, tb_grf, tb_erf, tb_unconditional, tb_meins) %>%
+    mutate(quantiles_predict = list(quantiles_predict)) %>%
+    unnest(cols = c(quantiles_predict, predictions)) %>%
+    pivot_wider(names_from = "method",
+                values_from = "predictions") %>%
+    mutate(across(all_of(method), function(x){(x - true)^2})) %>%
+    select(-"true") %>%
+    pivot_longer(cols = all_of(method),
+                 names_to = "method", values_to = "se") %>%
+    group_by(id, method, quantiles_predict) %>%
+    summarise(ise = mean(se))
 
   # return value
   return(res)
@@ -415,9 +437,3 @@ matrix2list <- function(mat){
   ## produces a list with elements corresponding to rows of mat
   split(mat, rep(1:nrow(mat), times = ncol(mat)))
 }
-
-
-dat <- generate_joint_distribution(n = 1e4, p = p, model = "step",
-                                   distr = "student_t", df = 4)
-df <- data.frame(X1 = dat$X[, 1], X2 = dat$X[, 2], Y = dat$Y)
-plot_ly(df, x = ~X1, y = ~X2, z = ~Y, marker = list(color = ~Y, colorscale = c('#FFE1A1', '#683531'), showscale = TRUE))
