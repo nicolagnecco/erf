@@ -92,6 +92,9 @@ predictions_true <- generate_theoretical_quantiles(alpha = quantiles_predict,
                                                    model = model, df = df,
                                                    scale = 2)
 
+predictions_grf <- predict(fit_grf, x_test, quantiles = quantiles_predict)
+
+
 # profile predict_erf
 profvis(
   predictions_erf <- predict_erf(fit_grf, quantiles = quantiles_predict,
@@ -99,6 +102,11 @@ profvis(
                                  newdata = x_test, model_assessment = FALSE,
                                  Y.test = NULL,
                                  out_of_bag = FALSE)$predictions
+)
+
+profvis(
+  predictions_grf <- predict(fit_grf, x_test, quantiles = quantiles_predict)
+
 )
 
 

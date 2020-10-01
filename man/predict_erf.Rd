@@ -15,7 +15,8 @@ predict_erf(
 )
 }
 \arguments{
-\item{object}{Quantile forest object. The trained forest.}
+\item{object}{Quantile forest object. The trained forest obtained with
+\code{\link[grf]{quantile_forest}}.}
 
 \item{quantiles}{Numeric vector (0, 1).
 Extreme quantiles at which estimates are required.}
@@ -49,15 +50,19 @@ Default is \code{NULL}.}
 Default is \code{FALSE}.}
 }
 \value{
-List. The list is made of:
-\enumerate{
-\item Numeric matrix. Predictions at each test point (on rows) for
+Named list. The list is made of:
+\itemize{
+\item \code{predictions} --- Numeric matrix. Predictions at each test point (on rows) for
 each desired quantile (on columns).
-\item Plot if \code{model_assessment = TRUE}. QQ-plot for model assessment.!!! return also t(x_0), sigma(x_0), csi(x_0), for all x_0 in test_data
-
+\item \code{pars} --- Numeric matrix. Estimated parameters at each test point (on rows).
+The columns contain the estimates for the \eqn{\sigma}{sigma} and
+\eqn{\xi}{csi} parameter, respectively.
+\item \code{threshold} --- Numeric matrix. Estimated intermediate threshold at each test point
+(on rows).
+\item \code{plot} (if \code{model_assessment = TRUE}). QQ-plot for model assessment.
 }
 }
 \description{
-Gets estimates of the extrapolated conditional quantiles of Y given X
-using a trained forest.
+Predicts high conditional quantiles of Y given X using a quantile forest
+fitted using \code{\link[grf]{quantile_forest}}.
 }
