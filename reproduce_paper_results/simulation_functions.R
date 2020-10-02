@@ -213,7 +213,7 @@ simulation_settings_0 <- function(){
   honesty <- c(honesty0)
 
   ## predict
-  quantiles_predict <- c(.99, .995, .999, .9995)
+  quantiles_predict <- c(.99, .995, .999, .9995, .9999)
   threshold <- c(threshold0)
   out_of_bag <- c(out_of_bag0)
 
