@@ -112,7 +112,7 @@ plot_sims <- function(tbl, param){
 
 
 # plot results ####
-dat <- read_rds("reproduce_paper_results/output/simulations_092420.rds")
+dat <- read_rds("output/simulation_settings_0-2020-10-02_11_58_51.rds")
 
 # n
 dat_plot <- extract_params(dat, "n", c("grf", "erf"))
