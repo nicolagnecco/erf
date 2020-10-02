@@ -201,7 +201,7 @@ simulation_settings_0 <- function(){
   nexp <- 1:1e3
   n <- c(n0)
   p <- c(p0)
-  ntest <- 1e3
+  ntest <- 1e4
   model <- c("step")
   distr <- c("student_t")
   df <- c(4)

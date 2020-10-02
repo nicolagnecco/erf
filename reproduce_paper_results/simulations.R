@@ -15,7 +15,7 @@ source("simulation_functions.R")
 
 ## set cluster arguments
 args = commandArgs(trailingOnly=TRUE)
-args = list("simulation_settings_0", 5)
+# args = list("simulation_settings_0")
 
 
 ## set file names
@@ -30,7 +30,7 @@ settings <- set_simulations(simulation_func = func, seed = 42)
 sims_args <- settings$simulation_arguments
 rm(settings)
 m <- NROW(sims_args)
-
+m <- 2
 
 # Loop through all simulations
 tic()
