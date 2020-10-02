@@ -15,7 +15,7 @@ source("simulation_functions.R")
 
 ## set cluster arguments
 args = commandArgs(trailingOnly=TRUE)
-# args = list("simulation_settings_1", 5)
+args = list("simulation_settings_0", 5)
 
 
 ## set file names

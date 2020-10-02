@@ -183,6 +183,74 @@ generate_theoretical_quantiles <- function(alpha, X, model = c("step", "periodic
 
 }
 
+simulation_settings_0 <- function(){
+  ## void -> tibble
+  ## returns a tibble with simulation settings
+
+  ## base parameter values
+  n0 <- 2e3
+  p0 <- 40
+  num.trees0 <- 2e3
+  min.node.size0 <- 5
+  honesty0 <- TRUE
+  threshold0 <- 0.8
+  out_of_bag0 <- FALSE
+
+  ## other parameter values
+  ## general
+  nexp <- 1:1e3
+  n <- c(n0)
+  p <- c(p0)
+  ntest <- 1e3
+  model <- c("step")
+  distr <- c("student_t")
+  df <- c(4)
+
+  ## fit
+  num.trees <- c(num.trees0)
+  quantiles_fit <- c(0.1, 0.5, 0.9)
+  min.node.size <- c(min.node.size0)
+  honesty <- c(honesty0)
+
+  ## predict
+  quantiles_predict <- c(.99, .995, .999, .9995)
+  threshold <- c(threshold0)
+  out_of_bag <- c(out_of_bag0)
+
+
+  ## create parameter grid
+  ## tibble 1
+  tbl1 <- expand_grid(n, p, num.trees, min.node.size, honesty, threshold,
+                      out_of_bag) %>%
+    filter(n %in% n0
+           + p %in% p0
+           + num.trees %in% num.trees0
+           + min.node.size %in% min.node.size0
+           + honesty %in% honesty0
+           + threshold %in% threshold0
+           + out_of_bag %in% out_of_bag0  >= 6) %>%
+    mutate(id = 1)
+
+  tbl2 <- expand_grid(nexp, ntest, model) %>%
+    mutate(quantiles_fit = list(quantiles_fit),
+           quantiles_predict = list(quantiles_predict),
+           id = 1)
+
+  tbl3 <- expand_grid(distr, df) %>%
+    mutate(df = if_else(distr == "gaussian", NaN, df)) %>%
+    mutate(id = 1) %>%
+    distinct()
+
+  my_args <- full_join(tbl2, tbl3, by = "id") %>%
+    full_join(tbl1, by = "id") %>%
+    select(-id) %>%
+    rowwise() %>%
+    mutate(id = cur_group_id()) %>%
+    select(id, everything())
+
+  return(my_args)
+}
+
 simulation_settings_1 <- function(){
   ## void -> tibble
   ## returns a tibble with simulation settings
@@ -320,7 +388,7 @@ wrapper_sim <- function(i, sims_args, meins = FALSE){
   ntest <- sims_args$ntest[i]
   quantiles_fit <- sims_args$quantiles_fit[[i]]
   quantiles_predict <- sims_args$quantiles_predict[[i]]
-  model <- sims_args$model[i] #!!!
+  model <- sims_args$model[i]
   distr <- sims_args$distr[i]
   df <- sims_args$df[i]
   n <- sims_args$n[i]
@@ -332,7 +400,6 @@ wrapper_sim <- function(i, sims_args, meins = FALSE){
   honesty <- sims_args$honesty[i]
   threshold <- sims_args$threshold[i]
   out_of_bag <- sims_args$out_of_bag[i]
-  # test_data <- sims_args$test_data[i]
 
 
   # generate training data
