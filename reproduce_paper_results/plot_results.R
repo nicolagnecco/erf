@@ -1,32 +1,31 @@
 rm(list = ls())
 library(tidyverse)
 library(cowplot)
+library(grid)
+library(gridExtra)
 source("reproduce_paper_results/simulation_functions.R")
 
-GRAPH_TYPE <- "line"
+GRAPH_TYPE <- "boxplot"
 theme_set(theme_bw() +
             theme(plot.background = element_blank(),
                   legend.background = element_blank()))
 
 # function defintions ####
-extract_params <- function(tbl, param, methods){
-  ## dat character character_v -> tibble
+extract_params <- function(tbl, param, base_params, methods=NULL){
+  ## dat character list character_v -> tibble
   ## prepare data to be plotted
 
-  base_params <- list(
-    n0 = 2e3,
-    p0 = 40,
-    scale0 = 2,
-    num.trees0 = 2e3,
-    min.node.size0 = 5,
-    honesty0 = TRUE,
-    threshold0 = 0.8,
-    out_of_bag0 = FALSE,
-    test_data0 = "zero")
-
+  if (is.null(methods)){
+    methods <- unique(tbl$perf[[1]]$method)
+  }
   base_params <- lapply(base_params, as.character)
 
   param_enquo <- as.name(param)
+  lvs <- if(is.double(tbl[[param]])){
+    sort(unique(tbl[[param]]))
+  } else {
+    unique(tbl[[param]])
+  }
 
   base_params_names <- sub(pattern = "0", replacement = "", names(base_params))
   cond <- paste(unlist(base_params[which(base_params_names != param)]),
@@ -35,28 +34,20 @@ extract_params <- function(tbl, param, methods){
 
   dd <- tbl %>%
     unite("base_params", all_of(cols_to_unite)) %>%
-    filter(base_params == cond)
+    filter(base_params == cond) %>%
+    select(-quantiles_fit, -quantiles_predict, -rng)  %>%
+    unnest(cols = c(perf)) %>%
+    mutate(method = factor(method),
+           quantile = factor(quantiles_predict))
+
 
   dd2 <- dd %>%
-    mutate(model = if_else(model == "gaussian", model,
-                           paste(model, "_", df, sep = ""))) %>%
-    mutate(!!param_enquo := factor(!!param_enquo)) %>%
-    select(nexp, method, model, quantiles_predict, predictions,
-           !!param_enquo, x) %>%
-    unnest(cols = c(quantiles_predict, predictions)) %>%
-    pivot_wider(names_from = "method",
-                values_from = "predictions")
+    mutate(distr = if_else(distr == "gaussian", distr,
+                           paste(distr, "_", df, sep = ""))) %>%
+    mutate(!!param_enquo := factor(!!param_enquo, levels = lvs))
 
-  dd3 <- dd2 %>%
-    mutate(across(all_of(methods), function(x){(x - true)^2})) %>%
-    select(-true) %>%
-    pivot_longer(cols = all_of(methods),
-                 names_to = "method", values_to = "se") %>%
-    group_by(model, quantiles_predict, method, !! param_enquo, nexp) %>%
-    summarise(ise = sqrt(mean(se))) %>% # mean across x's
-    mutate(method = factor(method))
 
-  return(dd3)
+  return(dd2)
 
 }
 
@@ -78,56 +69,60 @@ plot_sims_0 <- function(tbl, quant){
 }
 
 plot_sims_1 <- function(tbl, param){
-  ## tibble character -> list
+  ## tibble character -> gtable
   ## create list of simulation plots and and saves them
 
+  param_enquo <- as.name(param)
   quant_pred <- tbl$quantiles_predict %>% unique()
+  distros <- tbl$distr %>% unique()
   lop <- list()
+  k <- 0
 
-  if (GRAPH_TYPE == "boxplot"){
-
-  for (i in seq_along(quant_pred)){
-    g <- ggplot(tbl %>% filter(quantiles_predict == quant_pred[i])) +
-      facet_grid(model ~ quantiles_predict, scale = "free") +
-      geom_boxplot(aes_string(x = param, y = "ise", col = "method")) +
-      scale_color_manual(values = c("#D55E00","#0072B2", "#CC79A7")) +
-      ylab("ISE")
-
-    ggsave(paste("reproduce_paper_results/output/simulation_", param,
-                 "_quantile_", quant_pred[i], ".pdf", sep = ""),
-           g, width = 10, height = 7.5, units = c("in"))
-
-    lop[[i]] <- g
-
-  }
-
-  } else {
-
-    tbl <- tbl %>% summarise(mise = mean(ise))
-
+  for (j in seq_along(distros)) {
     for (i in seq_along(quant_pred)){
-      g <- ggplot(tbl %>% filter(quantiles_predict == quant_pred[i]),
-             aes_string(x = param,
-                 y = "mise",
-                 col = "method",
-                 group = "method")) +
-        facet_grid(model ~ quantiles_predict, scale = "free") +
-        stat_summary(fun=sum, geom="line", size = 1, alpha = .5) +
-        scale_color_manual(values = c("#D55E00","#0072B2", "#CC79A7")) +
-        ylab("MISE")
+      k <- k + 1
 
+      dat2plot <- tbl %>% filter(quantiles_predict == quant_pred[i],
+                                 distr == distros[j])
 
-      ggsave(paste("reproduce_paper_results/output/simulation_", param,
-                   "_quantile_", quant_pred[i], ".pdf", sep = ""),
-             g, width = 10, height = 7.5, units = c("in"))
+      upperylim <- dat2plot %>%
+        group_by(method, !!param_enquo) %>%
+        summarise(iqr = quantile(ise, .75) - quantile(ise, .25),
+                  upper = quantile(ise, .75) + 1.5 * iqr, max(ise)) %>%
+        ungroup() %>%
+        select(upper) %>% max()
 
-      lop[[i]] <- g
+      g <- ggplot(dat2plot) +
+        geom_boxplot(aes_string(x = param, y = "ise", col = "method"),
+                     outlier.shape = NA) +
+        scale_color_manual(values = c("#E69F00", "#D55E00","#0072B2", "#009E73")) +
+        ylab("") +
+        xlab("") +
+        coord_cartesian(ylim = c(0, upperylim)) +
+        ggtitle(paste("q = ", quant_pred[i],
+                      "; distr = ", distros[[j]], sep = ""))
+
+      lop[[k]] <- g
 
     }
-
   }
 
-  return(lop)
+  pp <- plot_grid(plotlist = lop, ncol = length(distros),
+                  nrow = length(quant_pred))
+
+  #create common x and y labels
+  y.grob <- textGrob("ISE",
+                     gp=gpar(fontface="bold", fontsize=15), rot=90)
+
+  x.grob <- textGrob(param,
+                     gp=gpar(fontface="bold", fontsize=15))
+
+  #add to plot
+  gg <- grid.arrange(arrangeGrob(pp, left = y.grob, bottom = x.grob))
+
+  ggsave(paste("output/simulation_settings_1", param, ".pdf", sep = ""), gg,
+         width = 22.5, height = 15, units = c("in"))
+  return(gg)
 }
 
 
@@ -148,11 +143,21 @@ ggsave("output/simulation_settings_0.pdf", g,
 
 
 # plot results sim1 ####
-dat <- read_rds("output/simulation_settings_0-2020-10-02_11_58_51.rds")
+dat <- read_rds("output/simulation_settings_1-2020-10-05_11_12_42.rds")
+base_params <- list(
+  n0 = 2e3,
+  p0 = 40,
+  num.trees0 = 2e3,
+  min.node.size0 = 5,
+  honesty0 = TRUE,
+  threshold0 = 0.8,
+  out_of_bag0 = FALSE)
+
 
 # n
-dat_plot <- extract_params(dat, "n", c("grf", "erf"))
-lop <- plot_sims_1(dat_plot, "n")
+dat_plot <- extract_params(dat, "n", base_params)
+gg <- plot_sims_1(dat_plot, "n")
+
 
 # p
 dat_plot <- extract_params(dat, "p", c("grf", "erf"))
