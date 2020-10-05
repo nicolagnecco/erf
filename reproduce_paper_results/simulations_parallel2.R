@@ -16,8 +16,8 @@ source("simulation_functions.R")
 
 
 ## set cluster arguments
-# args = commandArgs(trailingOnly=TRUE)
-args = list("simulation_settings_1", 20)
+args = commandArgs(trailingOnly=TRUE)
+# args = list("simulation_settings_1", 20)
 
 
 cl <- makeCluster(args[[2]], type="PSOCK")
