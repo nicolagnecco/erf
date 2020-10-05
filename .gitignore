@@ -1,5 +1,5 @@
 .Rproj.user
 .Rhistory
 .DS_Store
-reproduce_paper_results/output/sims*.txt
+reproduce_paper_results/output/*.txt
 reproduce_paper_results/output/*.pdf
