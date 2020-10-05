@@ -16,8 +16,8 @@ source("simulation_functions.R")
 
 
 ## set cluster arguments
-args = commandArgs(trailingOnly=TRUE)
-# args = list("simulation_settings_1", 20)
+# args = commandArgs(trailingOnly=TRUE)
+args = list("simulation_settings_1", 20)
 
 
 cl <- makeCluster(args[[2]], type="PSOCK")
@@ -45,7 +45,7 @@ m <- 40
 ## running time
 ptm<-proc.time()
 
-clusterExport(cl)
+clusterExport(cl, varlist = c("sims_args"))
 clusterEvalQ(cl, {
   library(tidyverse);
   library(grf);
