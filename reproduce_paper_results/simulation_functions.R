@@ -147,11 +147,11 @@ generate_theoretical_quantiles <- function(alpha, X, model = c("step", "periodic
     ## produce theoretical quantiles for the periodic model
 
     n <- nrow(X)
-    p <- ncol(X)
+    p <- length(alpha)
 
     switch(distr,
            "gaussian" = {
-             q_tilde <- qnorm(alpha)
+             q_tilde <- matrix(qnorm(alpha), nrow = n, ncol = p, byrow = TRUE)
            },
            "student_t" = {
              df_x <- 3 - cos(X[, 1] * 3/2 * pi)
