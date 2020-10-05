@@ -17,7 +17,7 @@ source("simulation_functions.R")
 
 ## set cluster arguments
 args = commandArgs(trailingOnly=TRUE)
-# args = list("simulation_settings_1", 20)
+# args = list("simulation_settings_2", 24)
 
 
 cl <- makeCluster(spec = args[[2]], type="FORK")
