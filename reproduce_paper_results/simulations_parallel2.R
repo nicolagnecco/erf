@@ -12,7 +12,7 @@ source("simulation_functions.R")
 # args
 # - simulation_settings
 # - number of nodes
-# example: Rscript simulations_parallel2.R simulations_settings_1 20
+# example: Rscript simulations_parallel2.R simulation_settings_1 20
 
 
 ## set cluster arguments
@@ -20,7 +20,7 @@ args = commandArgs(trailingOnly=TRUE)
 # args = list("simulation_settings_1", 20)
 
 
-cl <- makeCluster(args[[2]], type="PSOCK")
+cl <- makeCluster(spec = args[[2]], type="FORK")
 sprintf("start with %s workers", args[[2]])
 
 numworkers = as.integer(args[[2]])
