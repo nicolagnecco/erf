@@ -3,9 +3,8 @@ library(tidyverse)
 library(cowplot)
 library(grid)
 library(gridExtra)
-source("reproduce_paper_results/simulation_functions.R")
+source("simulation_functions.R")
 
-GRAPH_TYPE <- "boxplot"
 theme_set(theme_bw() +
             theme(plot.background = element_blank(),
                   legend.background = element_blank()))
@@ -60,7 +59,7 @@ plot_sims_0 <- function(tbl, quant){
     geom_boxplot() +
     stat_summary(fun=mean, geom="point", shape=17, size = 2) +
     scale_color_manual(values = c("#E69F00", "#D55E00","#0072B2", "#009E73")) +
-    xlab("ISE") +
+    xlab("") +
     ylab("") +
     ggtitle(paste("q =", quant))
 
@@ -120,7 +119,7 @@ plot_sims_1 <- function(tbl, param){
   #add to plot
   gg <- grid.arrange(arrangeGrob(pp, left = y.grob, bottom = x.grob))
 
-  ggsave(paste("output/simulation_settings_1", param, ".pdf", sep = ""), gg,
+  ggsave(paste("output/simulation_settings_1_", param, ".pdf", sep = ""), gg,
          width = 22.5, height = 15, units = c("in"))
   return(gg)
 }
@@ -137,8 +136,19 @@ g1 <- plot_sims_0(dat, .99)
 g2 <- plot_sims_0(dat, .995)
 g3 <- plot_sims_0(dat, .999) + xlim(c(0, 110))
 g4 <- plot_sims_0(dat, .9995) + xlim(c(0, 300))
-g <- plot_grid(g1, g2, g3, g4, nrow = 2)
-ggsave("output/simulation_settings_0.pdf", g,
+pp <- plot_grid(g1, g2, g3, g4, nrow = 2)
+
+#create common x and y labels
+y.grob <- textGrob("method",
+                   gp=gpar(fontface="bold", fontsize=15), rot=90)
+
+x.grob <- textGrob("ISE",
+                   gp=gpar(fontface="bold", fontsize=15))
+
+#add to plot
+gg <- grid.arrange(arrangeGrob(pp, left = y.grob, bottom = x.grob))
+
+ggsave("output/simulation_settings_0.pdf", gg,
        width = 15, height = 7.5, units = c("in"))
 
 
