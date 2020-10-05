@@ -39,7 +39,7 @@ settings <- set_simulations(simulation_func = func, seed = 42)
 sims_args <- settings$simulation_arguments
 rm(settings)
 m <- NROW(sims_args)
-m <- 3
+m <- 40
 
 ## running time
 ptm<-proc.time()
