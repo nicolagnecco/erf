@@ -266,7 +266,7 @@ simulation_settings_1 <- function(){
 
   ## other parameter values
   ## general
-  nexp <- 1:1e3
+  nexp <- 1:1e2
   n <- c(n0, 500, 1000)
   p <- c(p0, 10, 20)
   ntest <- 1e3
@@ -277,7 +277,7 @@ simulation_settings_1 <- function(){
   ## fit
   num.trees <- c(num.trees0, 500, 3000, 5000)
   quantiles_fit <- c(0.1, 0.5, 0.9)
-  min.node.size <- c(5, 20, 40, n0)
+  min.node.size <- c(min.node.size0, 20, 40)
   honesty <- c(honesty0, FALSE)
 
   ## predict
@@ -454,7 +454,7 @@ wrapper_sim <- function(i, sims_args, meins = FALSE){
                                                      model = model,
                                                      distr = distr, df = df)
 
-  # collect results   # !!! take integral over x's ()
+  # collect results
   tb_erf <- tibble(id = id,
                    method = "erf",
                    predictions = matrix2list(predictions_erf)) %>%
