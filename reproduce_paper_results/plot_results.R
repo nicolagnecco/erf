@@ -10,13 +10,10 @@ theme_set(theme_bw() +
                   legend.background = element_blank()))
 
 # function defintions ####
-extract_params <- function(tbl, param, base_params, methods=NULL){
-  ## dat character list character_v -> tibble
+extract_params <- function(tbl, param, base_params){
+  ## dat character list -> tibble
   ## prepare data to be plotted
 
-  if (is.null(methods)){
-    methods <- unique(tbl$perf[[1]]$method)
-  }
   base_params <- lapply(base_params, as.character)
 
   param_enquo <- as.name(param)
@@ -170,36 +167,29 @@ gg <- plot_sims_1(dat_plot, "n")
 
 
 # p
-dat_plot <- extract_params(dat, "p", c("grf", "erf"))
-lop <- plot_sims_1(dat_plot, "p")
+dat_plot <- extract_params(dat, "p", base_params)
+gg <- plot_sims_1(dat_plot, "p")
 
-# scale
-dat_plot <- extract_params(dat, "scale", c("grf", "erf"))
-lop <- plot_sims_1(dat_plot, "scale")
-
-# test_data
-dat_plot <- extract_params(dat, "test_data", c("grf", "erf"))
-lop <- plot_sims_1(dat_plot, "test_data")
 
 # num.trees
-dat_plot <- extract_params(dat, "num.trees", c("grf", "erf"))
-lop <- plot_sims_1(dat_plot, "num.trees")
+dat_plot <- extract_params(dat, "num.trees", base_params)
+gg <- plot_sims_1(dat_plot, "num.trees")
 
 # min.node.size
-dat_plot <- extract_params(dat, "min.node.size", c("grf", "erf"))
-lop <- plot_sims_1(dat_plot, "min.node.size")
+dat_plot <- extract_params(dat, "min.node.size", base_params)
+gg <- plot_sims_1(dat_plot, "min.node.size")
 
 # honesty
-dat_plot <- extract_params(dat, "honesty", c("grf", "erf"))
-lop <- plot_sims_1(dat_plot, "honesty")
+dat_plot <- extract_params(dat, "honesty", base_params)
+gg <- plot_sims_1(dat_plot, "honesty")
 
 # threshold
-dat_plot <- extract_params(dat, "threshold", c("grf", "erf"))
-lop <- plot_sims_1(dat_plot, "threshold")
+dat_plot <- extract_params(dat, "threshold", base_params)
+gg <- plot_sims_1(dat_plot, "threshold")
 
 # out_of_bag
-dat_plot <- extract_params(dat, "out_of_bag", c("grf", "erf"))
-lop <- plot_sims_1(dat_plot, "out_of_bag")
+dat_plot <- extract_params(dat, "out_of_bag", base_params)
+gg <- plot_sims_1(dat_plot, "out_of_bag")
 
 # old plots #####
 # models <- unique(dat$model)
