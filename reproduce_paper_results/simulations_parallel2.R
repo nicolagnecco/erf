@@ -12,12 +12,12 @@ source("simulation_functions.R")
 # args
 # - simulation_settings
 # - number of nodes
-# example: Rscript simulations_parallel.R simulations_settings_1 5
+# example: Rscript simulations_parallel2.R simulations_settings_1 20
 
 
 ## set cluster arguments
 args = commandArgs(trailingOnly=TRUE)
-# args = list("simulation_settings_1", 24)
+# args = list("simulation_settings_1", 20)
 
 
 cl <- makeCluster(args[[2]], type="PSOCK")
@@ -39,6 +39,7 @@ settings <- set_simulations(simulation_func = func, seed = 42)
 sims_args <- settings$simulation_arguments
 rm(settings)
 m <- NROW(sims_args)
+m <- 40
 
 
 ## running time
