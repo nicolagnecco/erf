@@ -281,7 +281,7 @@ simulation_settings_1 <- function(){
   honesty <- c(honesty0, FALSE)
 
   ## predict
-  quantiles_predict <- c(.99, .995, .999, .9995)
+  quantiles_predict <- c(.99, .995, .999, .9995, .9999)
   threshold <- c(threshold0, .5, .9)
   out_of_bag <- c(out_of_bag0, TRUE)
 
@@ -318,6 +318,75 @@ simulation_settings_1 <- function(){
 
   return(my_args)
 }
+
+simulation_settings_2 <- function(){
+  ## void -> tibble
+  ## returns a tibble with simulation settings
+
+  ## base parameter values
+  n0 <- 2e3
+  p0 <- 10
+  num.trees0 <- 2e3
+  min.node.size0 <- 5
+  honesty0 <- TRUE
+  threshold0 <- 0.8
+  out_of_bag0 <- FALSE
+
+  ## other parameter values
+  ## general
+  nexp <- 1:1e2
+  n <- c(n0, 500, 1000)
+  p <- c(p0, 40, 20)
+  ntest <- 1e3
+  model <- c("periodic")
+  distr <- c("gaussian", "student_t")
+  df <- c(2, 3, 4)
+
+  ## fit
+  num.trees <- c(num.trees0, 500, 3000, 5000)
+  quantiles_fit <- c(0.1, 0.5, 0.9)
+  min.node.size <- c(min.node.size0, 20, 40)
+  honesty <- c(honesty0, FALSE)
+
+  ## predict
+  quantiles_predict <- c(.99, .995, .999, .9995, .9999)
+  threshold <- c(threshold0, .5, .9)
+  out_of_bag <- c(out_of_bag0, TRUE)
+
+
+  ## create parameter grid
+  ## tibble 1
+  tbl1 <- expand_grid(n, p, num.trees, min.node.size, honesty, threshold,
+                      out_of_bag) %>%
+    filter(n %in% n0
+           + p %in% p0
+           + num.trees %in% num.trees0
+           + min.node.size %in% min.node.size0
+           + honesty %in% honesty0
+           + threshold %in% threshold0
+           + out_of_bag %in% out_of_bag0  >= 6) %>%
+    mutate(id = 1)
+
+  tbl2 <- expand_grid(nexp, ntest, model) %>%
+    mutate(quantiles_fit = list(quantiles_fit),
+           quantiles_predict = list(quantiles_predict),
+           id = 1)
+
+  tbl3 <- expand_grid(distr, df) %>%
+    mutate(df = if_else(distr == "gaussian", NaN, df)) %>%
+    mutate(id = 1) %>%
+    distinct()
+
+  my_args <- full_join(tbl2, tbl3, by = "id") %>%
+    full_join(tbl1, by = "id") %>%
+    select(-id) %>%
+    rowwise() %>%
+    mutate(id = cur_group_id()) %>%
+    select(id, everything())
+
+  return(my_args)
+}
+
 
 set_simulations <- function(simulation_func,
                             experiment_ids=NULL,
