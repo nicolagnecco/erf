@@ -155,11 +155,11 @@ generate_theoretical_quantiles <- function(alpha, X, model = c("step", "periodic
            },
            "student_t" = {
              df_x <- 3 - cos(X[, 1] * 3/2 * pi)
-             q_tilde <- qt(alpha, df = df_x)
+             q_tilde <- sapply(alpha, qt, df = df_x)
            })
 
     sigma_x <- 3/2 + 1/2 * cos((X[, 1]^2 + X[, 2]^2) * 3/2 * pi)
-    q <- as.matrix(sigma_x) %*% t(q_tilde)
+    q <- diag(sigma_x) %*% q_tilde
 
     return(q)
   }
