@@ -595,9 +595,9 @@ produce_weights_step <- function(i, params, train){
                                   honesty = honesty)
 
   weights <- as.matrix(grf::get_sample_weights(fit_grf, newdata = x0_mat,
-                                               num.threads = NULL))
+                                               num.threads = NULL))[1, ]
 
-  res <- tibble(X1 = train$X[, 1], weights = t(weights), x0 = x0,
+  res <- tibble(X1 = train$X[, 1], weights = weights, x0 = x0,
                 min.node.size = min.node.size, honesty = honesty)
 
   return(res)

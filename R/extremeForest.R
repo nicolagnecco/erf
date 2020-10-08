@@ -46,15 +46,29 @@
 #' @export
 predict_erf <- function(object, quantiles, threshold = 0.8,
                         newdata = NULL, model_assessment = FALSE,
-                        Y.test = NULL, out_of_bag = FALSE) {
+                        Y.test = NULL, out_of_bag = FALSE){
+
+  predict_erf_internal(object, quantiles, threshold,
+                       newdata, model_assessment, Y.test, out_of_bag)
+
+}
+
+predict_erf_internal <- function(object, quantiles, threshold = 0.8,
+                        newdata = NULL, model_assessment = FALSE,
+                        Y.test = NULL, out_of_bag = FALSE, wi_x0 = NULL) {
+
+  ## same inputs as predict_erf + weights -> same output as predict_erf
+  ## same purpose as predict_erf
 
   validate_inputs(object, quantiles, threshold, newdata, model_assessment,
                   Y.test, out_of_bag)
 
   X0 <- set_test_observations(object, newdata)
 
+  if (is.null(wi_x0)){
   wi_x0 <-  as.matrix(grf::get_sample_weights(object, newdata = X0,
                                               num.threads = NULL))
+  }
 
   t_xi <- compute_thresholds(object, threshold = threshold,
                              X = object$X.orig, out_of_bag = out_of_bag)

@@ -64,8 +64,8 @@ plot_sims_0 <- function(tbl, quant){
 
 }
 
-plot_sims_1 <- function(tbl, param){
-  ## tibble character -> gtable
+plot_sims <- function(tbl, param, file_name){
+  ## tibble character character -> gtable
   ## create list of simulation plots and and saves them
 
   param_enquo <- as.name(param)
@@ -116,12 +116,45 @@ plot_sims_1 <- function(tbl, param){
   #add to plot
   gg <- grid.arrange(arrangeGrob(pp, left = y.grob, bottom = x.grob))
 
-  ggsave(paste("output/simulation_settings_2_", param, ".pdf", sep = ""), gg,
+  ggsave(paste0("output/", file_name, "_", param, ".pdf"), gg,
          width = 22.5, height = 15, units = c("in"))
   return(gg)
 }
-# !!! to change
 
+plot_grf_weights <- function(dat){
+  ## tibble -> list of plots
+  ## produce list of plots for grf weights for different test points x0
+
+  dat <- dat %>%
+    mutate(min.node.size =
+             factor(min.node.size,
+                    levels = sort(unique(dat$min.node.size)),
+                    labels = paste0("min.node.size = ",
+                                    sort(unique(dat$min.node.size)))),
+           honesty = factor(paste0("honesty = ", honesty)))
+
+  lop <- list()
+  k <- 0
+
+  for (x0_cur in unique(dat$x0)){
+    k <- k + 1
+    g <-  ggplot(dat %>% filter(x0 == x0_cur)) +
+      facet_grid(honesty ~ min.node.size) +
+      geom_line(aes(x = X1, y = weights),
+                col = "#E69F00", alpha = 1) +
+      geom_point(data = tibble(x = x0_cur, y = 0),
+                 mapping = aes(x = x, y = y), size = 3)
+
+    ggsave(paste0("output/grf_weights_x0=", x0_cur, ".pdf"), g,
+           width = 10, height = 7.5, units = c("in"))
+
+    lop[[k]] <- g
+
+  }
+
+  return(lop)
+
+}
 
 # plot results sim0 ####
 dat <- read_rds("output/simulation_settings_0-2020-10-02_11_58_51.rds") %>%
@@ -132,11 +165,8 @@ dat <- read_rds("output/simulation_settings_0-2020-10-02_11_58_51.rds") %>%
 
 g1 <- plot_sims_0(dat, .99)
 g2 <- plot_sims_0(dat, .995)
-g3 <- plot_sims_0(dat, .999)
-g3
-g3 + xlim(c(0, 110))
-g3 + coord_cartesian(xlim = c(0, 110))
-g4 <- plot_sims_0(dat, .9995) + xlim(c(0, 300)) # !!!
+g3 <- plot_sims_0(dat, .999) + coord_cartesian(xlim = c(0, 110))
+g4 <- plot_sims_0(dat, .9995) + coord_cartesian(xlim = c(0, 300))
 pp <- plot_grid(g1, g2, g3, g4, nrow = 2)
 
 #create common x and y labels
@@ -146,7 +176,7 @@ y.grob <- textGrob("method",
 x.grob <- textGrob("ISE",
                    gp=gpar(fontface="bold", fontsize=15))
 
-#add to plot
+# add to plot
 gg <- grid.arrange(arrangeGrob(pp, left = y.grob, bottom = x.grob))
 
 ggsave("output/simulation_settings_0.pdf", gg,
@@ -165,35 +195,16 @@ base_params <- list(
   out_of_bag0 = FALSE)
 
 
-# n
-dat_plot <- extract_params(dat, "n", base_params)
-gg <- plot_sims_1(dat_plot, "n")
+param_names <- c("n", "p", "num.trees", "min.node.size", "honesty", "threshold",
+                 "out_of_bag")
+sim_name <- "simulation_settings_1"
+
+for (prm in param_names){
+  dat_plot <- extract_params(dat, prm, base_params)
+  plot_sims(dat_plot, prm, file_name = sim_name)
+}
 
 
-# p
-dat_plot <- extract_params(dat, "p", base_params)
-gg <- plot_sims_1(dat_plot, "p")
-
-
-# num.trees
-dat_plot <- extract_params(dat, "num.trees", base_params)
-gg <- plot_sims_1(dat_plot, "num.trees")
-
-# min.node.size
-dat_plot <- extract_params(dat, "min.node.size", base_params)
-gg <- plot_sims_1(dat_plot, "min.node.size")
-
-# honesty
-dat_plot <- extract_params(dat, "honesty", base_params)
-gg <- plot_sims_1(dat_plot, "honesty")
-
-# threshold
-dat_plot <- extract_params(dat, "threshold", base_params)
-gg <- plot_sims_1(dat_plot, "threshold")
-
-# out_of_bag
-dat_plot <- extract_params(dat, "out_of_bag", base_params)
-gg <- plot_sims_1(dat_plot, "out_of_bag")
 
 # plot results sim2 ####
 dat <- read_rds("output/simulation_settings_2-2020-10-06_05_25_16.rds")
@@ -206,45 +217,23 @@ base_params <- list(
   threshold0 = 0.8,
   out_of_bag0 = FALSE)
 
+param_names <- c("n", "p", "num.trees", "min.node.size", "honesty", "threshold",
+                 "out_of_bag")
+sim_name <- "simulation_settings_2"
 
 
-# n
-dat_plot <- extract_params(dat, "n", base_params)
-gg <- plot_sims_1(dat_plot, "n")
+for (prm in param_names){
+  dat_plot <- extract_params(dat, prm, base_params)
+  plot_sims(dat_plot, prm, file_name = sim_name)
+}
 
 
-# p
-dat_plot <- extract_params(dat, "p", base_params)
-gg <- plot_sims_1(dat_plot, "p")
+
+# plot grf weights ####
+dat <- read_rds("output/simulation_grf_weights_sequential-2020-10-08_14_45_12.rds")
+lop <- plot_grf_weights(dat)
 
 
-# num.trees
-dat_plot <- extract_params(dat, "num.trees", base_params)
-gg <- plot_sims_1(dat_plot, "num.trees")
-
-# min.node.size
-dat_plot <- extract_params(dat, "min.node.size", base_params)
-gg <- plot_sims_1(dat_plot, "min.node.size")
-
-# honesty
-dat_plot <- extract_params(dat, "honesty", base_params)
-gg <- plot_sims_1(dat_plot, "honesty")
-
-# threshold
-dat_plot <- extract_params(dat, "threshold", base_params)
-gg <- plot_sims_1(dat_plot, "threshold")
-
-# out_of_bag
-dat_plot <- extract_params(dat, "out_of_bag", base_params)
-gg <- plot_sims_1(dat_plot, "out_of_bag")
-
-# plot grf_weights
-ggplot(res) +
-  geom_line(aes(x = X1, y = weights),
-            col = "#E69F00", alpha = 1) +
-  geom_point(data = tibble(x = x0, y = 0),
-             mapping = aes(x = x, y = y), size = 3) +
-  coord_cartesian(ylim = c(0, 0.003))
 
 # old plots #####
 # models <- unique(dat$model)
