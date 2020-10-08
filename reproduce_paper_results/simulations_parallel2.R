@@ -20,7 +20,7 @@ args = commandArgs(trailingOnly=TRUE)
 # args = list("simulation_settings_2", 2)
 
 
-cl <- makeCluster(spec = args[[2]], type="FORK")
+cl <- makeCluster(spec = args[[2]], type="PSOCK")
 sprintf("start with %s workers", args[[2]])
 
 numworkers = as.integer(args[[2]])

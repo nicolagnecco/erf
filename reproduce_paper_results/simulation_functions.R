@@ -573,3 +573,33 @@ matrix2list <- function(mat){
   ## produces a list with elements corresponding to rows of mat
   split(mat, rep(1:nrow(mat), times = ncol(mat)))
 }
+
+produce_weights_step <- function(i, params, train){
+  ## integer tibble list -> tibble
+  ## produce tibble with weights, training predictors and params
+
+  m <- nrow(params)
+  n <- nrow(train$X)
+  p <- ncol(train$X)
+
+  x0 <- params$x0[i]
+  x0_mat <- matrix(c(x0,
+                     rep(0, p-1)),
+                   nrow = 1, ncol = p)
+  min.node.size <- params$min.node.size[i]
+  honesty <- params$honesty[i]
+
+
+  fit_grf <- grf::quantile_forest(train$X, train$Y,
+                                  min.node.size = min.node.size,
+                                  honesty = honesty)
+
+  weights <- as.matrix(grf::get_sample_weights(fit_grf, newdata = x0_mat,
+                                               num.threads = NULL))
+
+  res <- tibble(X1 = train$X[, 1], weights = t(weights), x0 = x0,
+                min.node.size = min.node.size, honesty = honesty)
+
+  return(res)
+}
+
