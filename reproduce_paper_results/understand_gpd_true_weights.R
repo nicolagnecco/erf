@@ -11,8 +11,8 @@ source("simulation_functions.R")
 
 ## collect arguments
 args <- commandArgs(trailingOnly=TRUE)
-# args <- list(simulation = "simulation_settings_3",
-#              strategy = c("sequential", "cluster"), n_workers = 2)
+args <- list(simulation = "simulation_settings_4",
+             strategy = c("sequential", "cluster")[1], n_workers = 2)
 
 sim_setting <- args[[1]]
 strategy <- args[[2]]
@@ -49,9 +49,9 @@ if(strategy == "cluster"){
 ## run simulations
 ptm<-proc.time()
 cat("**** Simulation ---", sim_setting , "**** \n", file = file_log)
-ll <- foreach(i = 1:m, .combine = bind_rows) %dopar% {
+ll <- foreach(i = 1:3, .combine = bind_rows) %dopar% {
   cat("Simulation", i, "out of", m, "\n", file = file_log, append = TRUE)
-  wrapper_sim(i, sims_args)
+  wrapper_sim_weights_gpd(i, sims_args)
 }
 sink(file = file_log, append = TRUE)
 print(proc.time() - ptm)

@@ -459,6 +459,68 @@ simulation_settings_3 <- function(seed){
 
 }
 
+simulation_settings_4 <- function(seed){
+  ## void -> tibble
+  ## check impact of different methods of generating test data
+
+  ## base parameter values
+  n0 <- 2e3
+  p0 <- 40
+  num.trees0 <- 2e3
+  min.node.size0 <- 100
+  honesty0 <- TRUE
+  threshold0 <- 0.8
+  out_of_bag0 <- TRUE
+
+  ## other parameter values
+  ## general
+  nexp <- 1:1e2
+  n <- c(n0)
+  p <- c(p0)
+  ntest <- 1e3
+  model <- c("step")
+  distr <- c("student_t")
+  df <- c(4)
+
+  ## fit
+  num.trees <- c(num.trees0)
+  quantiles_fit <- c(0.1, 0.5, 0.9)
+  min.node.size <- c(min.node.size0, 5, 40, n0)
+  honesty <- c(honesty0, FALSE)
+
+  ## predict
+  quantiles_predict <- c(.99, .995, .999, .9995, .9999)
+  threshold <- c(threshold0)
+  out_of_bag <- c(out_of_bag0)
+
+  ## create parameter grid
+  ## tibble 1
+  tbl1 <- expand_grid(n, p, num.trees, min.node.size, honesty, threshold,
+                      out_of_bag) %>%
+    mutate(id = 1)
+
+  tbl2 <- expand_grid(nexp, ntest, model) %>%
+    mutate(quantiles_fit = list(quantiles_fit),
+           quantiles_predict = list(quantiles_predict),
+           id = 1)
+
+  tbl3 <- expand_grid(distr, df) %>%
+    mutate(df = if_else(distr == "gaussian", NaN, df)) %>%
+    mutate(id = 1) %>%
+    distinct()
+
+  my_args <- full_join(tbl2, tbl3, by = "id") %>%
+    full_join(tbl1, by = "id") %>%
+    select(-id) %>%
+    rowwise() %>%
+    mutate(id = cur_group_id()) %>%
+    select(id, everything()) %>%
+    set_rng(seed)
+
+  return(my_args)
+
+}
+
 set_rng <- function(tbl, seed){
   ## tibble integer -> tibble
   ## adds to tbl a column with seeds to generate independent streams of random
@@ -516,8 +578,8 @@ wrapper_sim <- function(i, sims_args){
   honesty <- sims_args$honesty[i]
   threshold <- sims_args$threshold[i]
   out_of_bag <- sims_args$out_of_bag[i]
-  if("test_data" %in% colnames(sims_args)){
-    test_data <- sims_args$test_data[i]
+  if(sims_args %>% has_name("test_data")){
+    test_data <- sims_args[["test_data"]][i]
   } else {
     test_data <- "halton"
   }
@@ -544,7 +606,7 @@ wrapper_sim <- function(i, sims_args){
                                honesty = honesty)
 
 
-  # generate test data
+  # generate test data (#??? maybe temp option?)
   if (test_data == "halton"){
     X_test <- randtoolbox::halton(ntest, p) * 2 - 1
 
@@ -664,5 +726,148 @@ produce_weights_step <- function(i, params, train){
                 min.node.size = min.node.size, honesty = honesty)
 
   return(res)
+}
+
+wrapper_sim_weights_gpd <- function(i, sims_args){
+  ## integer tibble character -> tibble
+  ## run simulations over arguments of row i in sims_args
+
+  m <- nrow(sims_args)
+  cat("Simulation", i, "out of", m, "\n")
+
+
+  # set current simulation variables
+  id <- sims_args$id[i]
+  nexp <- sims_args$nexp[i]
+  ntest <- sims_args$ntest[i]
+  quantiles_fit <- sims_args$quantiles_fit[[i]]
+  quantiles_predict <- sims_args$quantiles_predict[[i]]
+  model <- sims_args$model[i]
+  distr <- sims_args$distr[i]
+  df <- sims_args$df[i]
+  n <- sims_args$n[i]
+  p <- sims_args$p[i]
+
+  num.trees <- sims_args$num.trees[i]
+  min.node.size <- sims_args$min.node.size[i]
+  honesty <- sims_args$honesty[i]
+  threshold <- sims_args$threshold[i]
+  out_of_bag <- sims_args$out_of_bag[i]
+  if(sims_args %>% has_name("test_data")){
+    test_data <- sims_args[["test_data"]][i]
+  } else {
+    test_data <- "halton"
+  }
+
+
+  # generate training data
+  rng_sims <- sims_args$rng[[i]]
+  rngtools::setRNG(rng_sims)
+  dat <- generate_joint_distribution(n = n, p = p, model = model,
+                                     distr = distr, df = df)
+
+  # fit models
+  # fit quantile regression function w/ grf
+  fit_grf <- quantile_forest(dat$X, dat$Y, quantiles = quantiles_fit,
+                             num.trees = num.trees,
+                             min.node.size = min.node.size, honesty = honesty)
+
+  # generate test data (#??? maybe temp option?)
+  if (test_data == "halton"){
+    X_test <- randtoolbox::halton(ntest, p) * 2 - 1
+
+  } else if (test_data == "uniform"){
+    X_test <- matrix(runif(ntest * p, min = -1, max = 1),
+                     nrow = ntest, ncol = p)
+
+  } else if (test_data == "zero"){
+    X_test <- matrix(0, nrow = ntest, ncol = p)
+    X_test[, 1] <- seq(-1, 1, length.out = ntest)
+  }
+
+
+  # predict models
+  # predict quantile regression functions w/ erf
+  predictions_erf <- predict_erf(fit_grf, quantiles = quantiles_predict,
+                                 threshold = threshold,
+                                 newdata = X_test, model_assessment = FALSE,
+                                 Y.test = NULL,
+                                 out_of_bag = out_of_bag)$predictions
+
+  # predict quantile regression functions w/ erf with exact weights
+  predictions_erf_true_wgts <- erf:::predict_erf_internal(fit_grf, quantiles = quantiles_predict,
+                                 threshold = threshold,
+                                 newdata = X_test, model_assessment = FALSE,
+                                 Y.test = NULL,
+                                 out_of_bag = out_of_bag,
+                                 wi_x0 = get_step_weights(dat$X, X_test))$predictions
+
+  # predict true quantile regression functions
+  predictions_true <- generate_theoretical_quantiles(alpha = quantiles_predict,
+                                                     X = X_test,
+                                                     model = model,
+                                                     distr = distr, df = df)
+
+  # collect results
+  tb_erf <- tibble(id = id,
+                   method = "erf",
+                   predictions = matrix2list(predictions_erf)) %>%
+    rowid_to_column()
+
+  tb_erf_wgts <- tibble(id = id,
+                   method = "erf_true_weights",
+                   predictions = matrix2list(predictions_erf_true_wgts)) %>%
+    rowid_to_column()
+
+  tb_true <- tibble(id = id,
+                    method = "true",
+                    predictions = matrix2list(predictions_true)) %>%
+    rowid_to_column()
+
+  method <- c("erf", "erf_true_weights")
+
+
+  res <- bind_rows(tb_true, tb_erf, tb_erf_wgts) %>%
+    mutate(quantiles_predict = list(quantiles_predict)) %>%
+    unnest(cols = c(quantiles_predict, predictions)) %>%
+    pivot_wider(names_from = "method",
+                values_from = "predictions") %>%
+    mutate(across(all_of(method), function(x){(x - true)^2})) %>%
+    select(-"true") %>%
+    pivot_longer(cols = all_of(method),
+                 names_to = "method", values_to = "se") %>%
+    group_by(id, method, quantiles_predict) %>%
+    summarise(ise = mean(se))
+
+  # return value
+  return(res)
+}
+
+get_step_weights <- function(x_train, x_test){
+  ## numeric_matrix (x2) -> numeric_matrix
+  ## produce exact weights for step function
+
+  # helper
+  get_step_weights_x0 <- function(x0, x_train){
+    wgts_x0 <- if (x0 < 0){
+      1 / sum(x_train[, 1] < 0) * (x_train[, 1] < 0)
+    } else {
+      1 / sum(x_train[, 1] >=0) * (x_train[, 1] >=0)
+    }
+
+    return(wgts_x0)
+  }
+
+  # body
+  n <- nrow(x_train)
+  p <- ncol(x_train)
+  ntest <- nrow(x_test)
+
+  wgts_list <- lapply(1:ntest,  function(i){
+    get_step_weights_x0(x_test[i, 1], x_train)
+  })
+
+  matrix(unlist(wgts_list), nrow = ntest, byrow = TRUE)
+
 }
 
