@@ -335,7 +335,7 @@ g4 <- plot_model(dat, "gaussian", "student_t")
 
 gg <- plot_grid(g1, g2, g3, g4, nrow = 2)
 ggsave("output/models.pdf", gg,
-       width = 7.5, height = 7.5, units = c("in"))
+       width = 10, height = 10, units = c("in"))
 
 
 # old plots #####
