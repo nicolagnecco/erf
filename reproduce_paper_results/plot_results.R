@@ -229,6 +229,36 @@ for (prm in param_names){
 
 
 
+# plot results sim3 ####
+dat <- read_rds("output/simulation_settings_3-2020-10-09_09_00_48.rds")
+base_params <- list(
+  n0 = 2e3,
+  p0 = 40,
+  num.trees0 = 2e3,
+  min.node.size0 = 100,
+  honesty0 = TRUE,
+  threshold0 = 0.8,
+  out_of_bag0 = TRUE,
+  test_data0 = "halton")
+
+dat_plot <- dat %>%
+  ungroup() %>%
+  select(perf, test_data) %>%
+  unnest(cols = c(perf)) %>%
+  mutate(method = factor(method),
+         test_data = factor(test_data),
+         quantiles_predict = factor(quantiles_predict))
+
+ggplot(dat_plot, aes(x = ise, y = method, col = method)) +
+  facet_grid(test_data ~ quantiles_predict, scales = "free") +
+  geom_boxplot() +
+  stat_summary(fun=mean, geom="point", shape=17, size = 2) +
+  scale_color_manual(values = c("#E69F00", "#D55E00","#0072B2", "#009E73")) +
+  xlab("") +
+  ylab("")
+
+
+
 # plot grf weights ####
 dat <- read_rds("output/simulation_grf_weights_sequential-2020-10-08_14_45_12.rds")
 lop <- plot_grf_weights(dat)
