@@ -1,31 +1,35 @@
 library(tidyverse)
+library(grf)
+library(erf)
+library(rngtools)
+library(randtoolbox)
 library(future)
 library(doFuture)
 source("simulation_functions.R")
 
-# collect arguments
+## collect arguments
 args <- commandArgs(trailingOnly=TRUE)
 # args <- list(strategy = "sequential", workers = 2)
 
 
-# set up file names
+## set up file names
 dttime <- gsub(pattern = " |:", x = Sys.time(), replacement = "_")
 file_log <- "output/progress.txt"
 file_rds <- paste("output/", "simulation_grf_weights_", args[[1]],  "-",
                   dttime, ".rds", sep = "")
 
 
-# set up future strategy
+## set up future strategy
 doFuture::registerDoFuture()
 
 if (args[[1]] == "sequential"){
   future::plan(sequential)
 } else {
-  future::plan(sequential, workers = args[[2]])
+  future::plan(cluster, workers = args[[2]])
 }
 
 
-# Simulate data
+## simulate data
 set.seed(1290)
 n <- 2e3
 p <- 40
@@ -33,7 +37,7 @@ train <- generate_joint_distribution(n, p, model = "step", distr = "student_t",
                                      df = 2)
 
 
-# compute weights
+## compute weights
 x0 <- seq(-1, 1, by = .5)
 min.node.size <- c(5, 40, 1e2, n)
 honesty <- c(TRUE, FALSE)
