@@ -49,7 +49,7 @@ if(strategy == "cluster"){
 ## run simulations
 ptm<-proc.time()
 cat("**** Simulation ---", sim_setting , "**** \n", file = file_log)
-ll <- foreach(i = 1:3, .combine = bind_rows) %dopar% {
+ll <- foreach(i = 1:m, .combine = bind_rows) %dopar% {
   cat("Simulation", i, "out of", m, "\n", file = file_log, append = TRUE)
   wrapper_sim_weights_gpd(i, sims_args)
 }
