@@ -182,6 +182,28 @@ plot_true_gpd_weights <- function(dat, is_honest = TRUE){
 
 }
 
+plot_model <- function(dat, model, distr){
+  ## tibble -> plot
+  ## plot quantiles of model with given distr
+  quantiles <- generate_theoretical_quantiles(alpha = .995, X = as.matrix(dat),
+                                              model = model,
+                                              distr = distr, df = NA) %>%
+    as.numeric()
+
+
+  dat <- dat %>%
+    mutate(quantile = quantiles)
+
+  g <- ggplot(dat, aes(x = X1, y = X2, fill = quantile)) +
+    geom_raster() +
+    coord_fixed(expand = FALSE) +
+    scale_fill_viridis_c() +
+    ggtitle(paste0("Model = ", model, "; distribution = ", distr))
+
+  return(g)
+
+}
+
 
 # plot results sim0 ####
 dat <- read_rds("output/simulation_settings_0-2020-10-02_11_58_51.rds") %>%
@@ -299,6 +321,21 @@ gg <- plot_grid(g1, g2, nrow = 2)
 
 ggsave("output/simulation_settings_4.pdf", gg,
        width = 15, height = 22.5, units = c("in"))
+
+
+# plot models ####
+n <- 1e4
+dat <- expand_grid(X1 = seq(-1, 1, length.out = floor(sqrt(n))),
+                   X2 = seq(-1, 1, length.out = floor(sqrt(n))))
+
+g1 <- plot_model(dat, "periodic", "gaussian")
+g2 <- plot_model(dat, "periodic", "student_t")
+g3 <- plot_model(dat, "gaussian", "gaussian")
+g4 <- plot_model(dat, "gaussian", "student_t")
+
+gg <- plot_grid(g1, g2, g3, g4, nrow = 2)
+ggsave("output/models.pdf", gg,
+       width = 7.5, height = 7.5, units = c("in"))
 
 
 # old plots #####

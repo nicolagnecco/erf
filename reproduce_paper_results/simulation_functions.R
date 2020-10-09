@@ -41,7 +41,7 @@ predict_unconditional_quantiles <- function(threshold, alpha, Y, ntest){
 }
 
 generate_joint_distribution <- function(n, p,
-                                        model = c("step", "periodic"),
+                                        model = c("step", "periodic", "gaussian"),
                                         distr = c("gaussian", "student_t"),
                                         df){
   ## integer (x2) character (x2) integer -> list
@@ -96,6 +96,29 @@ generate_joint_distribution <- function(n, p,
     return(Y)
   }
 
+  gaussian_model <- function(X, distr){
+    ## numeric_matrix charachter -> numeric_vector
+    ## produce response Y for the gaussian model
+
+    n <- nrow(X)
+    p <- ncol(X)
+
+    switch(distr,
+           "gaussian" = {
+             Y_tilde <- rnorm(n)
+           },
+           "student_t" = {
+             df_x <- 7 * (1 + exp(4 * X[, 1] + 1.2))^(-1) + 3
+             Y_tilde <- rt(n, df = df_x)
+           })
+
+    sigma_x <- 1 + 6 * mvtnorm::dmvnorm(X[, c(1, 2)],
+                                        sigma = rbind(c(1, .9), c(.9, 1)))
+    Y <- sigma_x * Y_tilde
+
+    return(Y)
+  }
+
   # body
   model <- match.arg(model)
   distr <- match.arg(distr)
@@ -107,13 +130,17 @@ generate_joint_distribution <- function(n, p,
          },
          "periodic" = {
            Y <- periodic_model(X, distr)
+         },
+         "gaussian" = {
+           Y <- gaussian_model(X, distr)
          })
 
   return(list(X = X, Y = Y))
 
 }
 
-generate_theoretical_quantiles <- function(alpha, X, model = c("step", "periodic"),
+generate_theoretical_quantiles <- function(alpha, X,
+                                           model = c("step", "periodic", "gaussian"),
                                            distr = c("gaussian", "student_t"),
                                            df){
   ## numeric_vector numeric_matrix character (x2) integer -> numeric_matrix
@@ -159,7 +186,30 @@ generate_theoretical_quantiles <- function(alpha, X, model = c("step", "periodic
            })
 
     sigma_x <- 3/2 + 1/2 * cos((X[, 1]^2 + X[, 2]^2) * 3/2 * pi)
-    q <- diag(sigma_x) %*% q_tilde
+    q <- sigma_x * q_tilde
+
+    return(q)
+  }
+
+  gaussian_model_quantiles <- function(alpha, X, distr){
+    ## numeric_vector numeric_matrix charachter -> numeric_vector
+    ## produce theoretical quantiles for the gaussian model
+
+    n <- nrow(X)
+    p <- length(alpha)
+
+    switch(distr,
+           "gaussian" = {
+             q_tilde <- matrix(qnorm(alpha), nrow = n, ncol = p, byrow = TRUE)
+           },
+           "student_t" = {
+             df_x <- 7 * (1 + exp(4 * X[, 1] + 1.2))^(-1) + 3
+             q_tilde <- sapply(alpha, qt, df = df_x)
+           })
+
+    sigma_x <- 1 + 6 * mvtnorm::dmvnorm(X[, c(1, 2)],
+                                        sigma = rbind(c(1, .9), c(.9, 1)))
+    q <- sigma_x * q_tilde
 
     return(q)
   }
@@ -177,6 +227,9 @@ generate_theoretical_quantiles <- function(alpha, X, model = c("step", "periodic
          },
          "periodic" = {
            quantiles <- periodic_model_quantiles(alpha, X, distr)
+         },
+         "gaussian" = {
+           quantiles <- gaussian_model_quantiles(alpha, X, distr)
          })
 
   return(quantiles)
