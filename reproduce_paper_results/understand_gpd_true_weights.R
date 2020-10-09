@@ -11,8 +11,8 @@ source("simulation_functions.R")
 
 ## collect arguments
 args <- commandArgs(trailingOnly=TRUE)
-args <- list(simulation = "simulation_settings_4",
-             strategy = c("sequential", "cluster")[1], n_workers = 2)
+#args <- list(simulation = "simulation_settings_4",
+#             strategy = c("sequential", "cluster")[1], n_workers = 2)
 
 sim_setting <- args[[1]]
 strategy <- args[[2]]
