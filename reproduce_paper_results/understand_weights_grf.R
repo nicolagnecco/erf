@@ -9,23 +9,26 @@ source("simulation_functions.R")
 
 ## collect arguments
 args <- commandArgs(trailingOnly=TRUE)
-# args <- list(strategy = "sequential", workers = 2)
+# args <- list(strategy = "sequential", n_workers = 2)
+
+strategy <- args[[1]]
+n_workers <- as.double(args[[2]])
 
 
 ## set up file names
 dttime <- gsub(pattern = " |:", x = Sys.time(), replacement = "_")
 file_log <- "output/progress.txt"
-file_rds <- paste("output/", "simulation_grf_weights_", args[[1]],  "-",
+file_rds <- paste("output/", "simulation_grf_weights_", strategy,  "-",
                   dttime, ".rds", sep = "")
 
 
 ## set up future strategy
 doFuture::registerDoFuture()
 
-if (args[[1]] == "sequential"){
+if (strategy == "sequential"){
   future::plan(sequential)
 } else {
-  future::plan(cluster, workers = args[[2]])
+  future::plan(cluster, workers = n_workers)
 }
 
 
@@ -45,7 +48,7 @@ params <- expand_grid(x0, min.node.size, honesty)
 m <- nrow(params)
 
 ptm<-proc.time()
-cat("**** Grf weights ---", args[[1]], "**** \n", file = file_log)
+cat("**** Grf weights ---", strategy, "**** \n", file = file_log)
 ll <- foreach(i = 1:m, .combine = bind_rows) %dopar% {
   cat("Simulation", i, "out of", m, "\n", file = file_log, append = TRUE)
   produce_weights_step(i, params, train)
