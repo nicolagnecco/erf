@@ -4,15 +4,14 @@ library(grf)
 library(erf)
 library(rngtools)
 library(randtoolbox)
-library(future)
-library(doFuture)
+library(doParallel)
 source("simulation_functions.R")
 
 
 ## collect arguments
 args <- commandArgs(trailingOnly=TRUE)
-# args <- list(simulation = "simulation_settings_3", strategy = "cluster",
-#             n_workers = 2)
+# args <- list(simulation = "simulation_settings_3",
+#              strategy = c("sequential", "cluster"), n_workers = 2)
 
 sim_setting <- args[[1]]
 strategy <- args[[2]]
@@ -25,23 +24,28 @@ file_log <- "output/progress.txt"
 file_rds <- paste("output/", sim_setting,  "-", dttime, ".rds", sep = "")
 
 
-## set up future strategy
-doFuture::registerDoFuture()
-
-if (strategy == "sequential"){
-  future::plan(sequential)
-} else {
-  future::plan(cluster, workers = n_workers)
-}
-
-
 ## set simulation arguments
 func <- eval(as.name(sim_setting))
 sims_args <- func(seed = 42)
 m <- NROW(sims_args)
 
 
-## running time
+## set up cluster
+if(strategy == "cluster"){
+  cl <- parallel::makePSOCKcluster(n_workers)
+  registerDoParallel(cl)
+  clusterExport(cl, varlist = c("sims_args"))
+  clusterEvalQ(cl, {
+    library(tidyverse);
+    library(grf);
+    library(erf);
+    library(rngtools);
+    library(randtoolbox)
+  })
+}
+
+
+## run simulations
 ptm<-proc.time()
 cat("**** Simulation ---", sim_setting , "**** \n", file = file_log)
 ll <- foreach(i = 1:m, .combine = bind_rows) %dopar% {
