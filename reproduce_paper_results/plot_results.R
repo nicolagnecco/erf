@@ -156,6 +156,33 @@ plot_grf_weights <- function(dat){
 
 }
 
+plot_true_gpd_weights <- function(dat, is_honest = TRUE){
+  ## tibble -> plot
+  ## creates a plot for a given level of honesty
+
+  dat <- dat %>%
+    mutate(min.node.size =
+             factor(min.node.size,
+                    levels = sort(unique(dat$min.node.size)),
+                    labels = paste0("min.node.size = ",
+                                    sort(unique(dat$min.node.size)))),
+           quantiles_predict =
+             factor(quantiles_predict,
+                    levels = sort(unique(dat$quantiles_predict)),
+                    labels = paste0("quantile = ",
+                                    sort(unique(dat$quantiles_predict)))))
+
+  ggplot(dat %>% filter(honesty == is_honest),
+         aes(x = ise, y = method, col = method)) +
+    facet_grid(min.node.size ~ quantiles_predict, scales = "free") +
+    geom_boxplot() +
+    stat_summary(fun=mean, geom="point", shape=17, size = 2) +
+    scale_color_manual(values = c("#E69F00", "#009E73")) +
+    ggtitle(paste0("honesty = ", is_honest))
+
+}
+
+
 # plot results sim0 ####
 dat <- read_rds("output/simulation_settings_0-2020-10-02_11_58_51.rds") %>%
   select(-quantiles_fit, -quantiles_predict, -rng) %>%
@@ -205,7 +232,6 @@ for (prm in param_names){
 }
 
 
-
 # plot results sim2 ####
 dat <- read_rds("output/simulation_settings_2-2020-10-06_05_25_16.rds")
 base_params <- list(
@@ -228,41 +254,51 @@ for (prm in param_names){
 }
 
 
-
 # plot results sim3 ####
 dat <- read_rds("output/simulation_settings_3-2020-10-09_09_00_48.rds")
-base_params <- list(
-  n0 = 2e3,
-  p0 = 40,
-  num.trees0 = 2e3,
-  min.node.size0 = 100,
-  honesty0 = TRUE,
-  threshold0 = 0.8,
-  out_of_bag0 = TRUE,
-  test_data0 = "halton")
-
 dat_plot <- dat %>%
   ungroup() %>%
   select(perf, test_data) %>%
   unnest(cols = c(perf)) %>%
   mutate(method = factor(method),
          test_data = factor(test_data),
-         quantiles_predict = factor(quantiles_predict))
+         quantiles_predict =
+           factor(quantiles_predict,
+                  levels = sort(unique(quantiles_predict)),
+                  labels = paste0("quantile = ",
+                                  sort(unique(quantiles_predict)))))
 
-ggplot(dat_plot, aes(x = ise, y = method, col = method)) +
+
+gg <- ggplot(dat_plot, aes(x = ise, y = method, col = method)) +
   facet_grid(test_data ~ quantiles_predict, scales = "free") +
   geom_boxplot() +
   stat_summary(fun=mean, geom="point", shape=17, size = 2) +
-  scale_color_manual(values = c("#E69F00", "#D55E00","#0072B2", "#009E73")) +
-  xlab("") +
-  ylab("")
+  scale_color_manual(values = c("#E69F00", "#D55E00","#0072B2", "#009E73"))
 
+ggsave("output/simulation_settings_3.pdf", gg,
+         width = 10, height = 10, units = c("in"))
 
 
 # plot grf weights ####
 dat <- read_rds("output/simulation_grf_weights_sequential-2020-10-08_14_45_12.rds")
 lop <- plot_grf_weights(dat)
 
+
+# plot results sim4 ####
+dat <- read_rds("output/simulation_settings_4-2020-10-09_15_20_19.rds")
+dat_plot <- dat %>%
+  ungroup() %>%
+  select(perf, min.node.size, honesty) %>%
+  unnest(cols = c(perf)) %>%
+  mutate(method = factor(method),
+         honesty = factor(honesty))
+
+g1 <- plot_true_gpd_weights(dat_plot, TRUE)
+g2 <- plot_true_gpd_weights(dat_plot, FALSE)
+gg <- plot_grid(g1, g2, nrow = 2)
+
+ggsave("output/simulation_settings_4.pdf", gg,
+       width = 15, height = 22.5, units = c("in"))
 
 
 # old plots #####
