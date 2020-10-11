@@ -55,7 +55,8 @@ plot_sims_0 <- function(tbl, quant){
   g <- ggplot(tbl %>% filter(quantile == quant),
                aes_string(y = "method", x = "ise", col = "method")) +
     geom_boxplot() +
-    stat_summary(fun=mean, geom="point", shape=17, size = 2) +
+    stat_summary(fun=mean, geom="crossbar", fatten = 1.5, width = .75,
+                 color = "black") +
     scale_color_manual(values = c("#E69F00", "#D55E00","#0072B2", "#009E73")) +
     xlab("") +
     ylab("") +
@@ -177,7 +178,8 @@ plot_true_gpd_weights <- function(dat, is_honest = TRUE){
          aes(x = ise, y = method, col = method)) +
     facet_grid(min.node.size ~ quantiles_predict, scales = "free") +
     geom_boxplot() +
-    stat_summary(fun=mean, geom="point", shape=17, size = 2) +
+    stat_summary(fun=mean, geom="crossbar", fatten = 1.5, width = .75,
+                 color = "black") +
     scale_color_manual(values = c("#E69F00", "#009E73")) +
     ggtitle(paste0("honesty = ", is_honest))
 
@@ -231,6 +233,23 @@ gg <- grid.arrange(arrangeGrob(pp, left = y.grob, bottom = x.grob))
 
 ggsave("output/simulation_settings_0.pdf", gg,
        width = 15, height = 7.5, units = c("in"))
+
+
+# plot results sim00 ####
+dat <- read_rds("output/simulation_settings_00-2020-10-11_14_14_15.rds") %>%
+  select(-quantiles_fit, -quantiles_predict, -rng) %>%
+  unnest(cols = c(perf)) %>%
+  mutate(method = factor(method),
+         quantile = factor(quantiles_predict))
+
+g1 <- plot_sims_0(dat, .99)
+g2 <- plot_sims_0(dat, .995)
+g3 <- plot_sims_0(dat, .999) + coord_cartesian(xlim = c(0, 110))
+g4 <- plot_sims_0(dat, .9995) + coord_cartesian(xlim = c(0, 300))
+g5 <- plot_sims_0(dat, .9999) + coord_cartesian(xlim = c(0, 450))
+
+g5
+pp <- plot_grid(g1, g2, g3, g4, nrow = 2)
 
 
 # plot results sim1 ####
@@ -295,7 +314,8 @@ dat_plot <- dat %>%
 gg <- ggplot(dat_plot, aes(x = ise, y = method, col = method)) +
   facet_grid(test_data ~ quantiles_predict, scales = "free") +
   geom_boxplot() +
-  stat_summary(fun=mean, geom="point", shape=17, size = 2) +
+  stat_summary(fun=mean, geom="crossbar", fatten = 1.5, width = .75,
+               color = "black") +
   scale_color_manual(values = c("#E69F00", "#D55E00","#0072B2", "#009E73"))
 
 ggsave("output/simulation_settings_3.pdf", gg,
@@ -353,14 +373,16 @@ g1 <- ggplot(dat_plot %>% filter(model == "step"),
        aes(x = ise, y = method, col = method)) +
   facet_grid(ntest ~ quantiles_predict, scales = "free") +
   geom_boxplot() +
-  stat_summary(fun=mean, geom="point", shape=17, size = 2) +
+  stat_summary(fun=mean, geom="crossbar", fatten = 1.5, width = .75,
+               color = "black") +
   scale_color_manual(values = c("#E69F00", "#D55E00","#0072B2", "#009E73")) +
   ggtitle(paste0("Model = step"))
 g2 <- ggplot(dat_plot %>% filter(model == "gaussian"),
              aes(x = ise, y = method, col = method)) +
   facet_grid(ntest ~ quantiles_predict, scales = "free") +
   geom_boxplot() +
-  stat_summary(fun=mean, geom="point", shape=17, size = 2) +
+  stat_summary(fun=mean, geom="crossbar", fatten = 1.5, width = .75,
+               color = "black") +
   scale_color_manual(values = c("#E69F00", "#D55E00","#0072B2", "#009E73")) +
   ggtitle(paste0("Model = gaussian"))
 
