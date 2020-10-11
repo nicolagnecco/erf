@@ -10,6 +10,8 @@ theme_set(theme_bw() +
                   legend.background = element_blank(),
                   strip.background = element_rect(fill = "white")))
 
+my_palette <- c("#D55E00", "#0072B2", "#009E73", "#E69F00", "#56B4E9")
+
 # function definitions ####
 extract_params <- function(tbl, param, base_params){
   ## dat character list -> tibble
@@ -57,7 +59,7 @@ plot_sims_0 <- function(tbl, quant){
     geom_boxplot() +
     stat_summary(fun=mean, geom="crossbar", fatten = 1.5, width = .75,
                  color = "black") +
-    scale_color_manual(values = c("#E69F00", "#D55E00","#0072B2", "#009E73")) +
+    scale_color_manual(values = my_palette) +
     xlab("") +
     ylab("") +
     ggtitle(paste("q =", quant))
@@ -93,7 +95,7 @@ plot_sims <- function(tbl, param, file_name){
       g <- ggplot(dat2plot) +
         geom_boxplot(aes_string(x = param, y = "ise", col = "method"),
                      outlier.shape = NA) +
-        scale_color_manual(values = c("#E69F00", "#D55E00","#0072B2", "#009E73")) +
+        scale_color_manual(values = my_palette) +
         ylab("") +
         xlab("") +
         coord_cartesian(ylim = c(0, upperylim)) +
@@ -143,7 +145,7 @@ plot_grf_weights <- function(dat){
     g <-  ggplot(dat %>% filter(x0 == x0_cur)) +
       facet_grid(honesty ~ min.node.size) +
       geom_line(aes(x = X1, y = weights),
-                col = "#E69F00", alpha = 1) +
+                col = my_palette[1], alpha = 1) +
       geom_point(data = tibble(x = x0_cur, y = 0),
                  mapping = aes(x = x, y = y), size = 3)
 
@@ -180,7 +182,7 @@ plot_true_gpd_weights <- function(dat, is_honest = TRUE){
     geom_boxplot() +
     stat_summary(fun=mean, geom="crossbar", fatten = 1.5, width = .75,
                  color = "black") +
-    scale_color_manual(values = c("#E69F00", "#009E73")) +
+    scale_color_manual(values = my_palette[c(1, 5)]) +
     ggtitle(paste0("honesty = ", is_honest))
 
 }
@@ -209,7 +211,7 @@ plot_model <- function(dat, model, distr){
 
 
 # plot results sim0 ####
-dat <- read_rds("output/simulation_settings_0-2020-10-02_11_58_51.rds") %>%
+dat <- read_rds("output/simulation_settings_0-2020-10-11_14_42_46.rds") %>%
   select(-quantiles_fit, -quantiles_predict, -rng) %>%
   unnest(cols = c(perf)) %>%
   mutate(method = factor(method),
@@ -217,9 +219,10 @@ dat <- read_rds("output/simulation_settings_0-2020-10-02_11_58_51.rds") %>%
 
 g1 <- plot_sims_0(dat, .99)
 g2 <- plot_sims_0(dat, .995)
-g3 <- plot_sims_0(dat, .999) + coord_cartesian(xlim = c(0, 110))
-g4 <- plot_sims_0(dat, .9995) + coord_cartesian(xlim = c(0, 300))
-pp <- plot_grid(g1, g2, g3, g4, nrow = 2)
+g3 <- plot_sims_0(dat, .999) + coord_cartesian(xlim = c(0, 60))
+g4 <- plot_sims_0(dat, .9995) + coord_cartesian(xlim = c(0, 75))
+g5 <- plot_sims_0(dat, .9999) + coord_cartesian(xlim = c(0, 300))
+pp <- plot_grid(g1, g2, g3, g4, g5, nrow = 3)
 
 #create common x and y labels
 y.grob <- textGrob("method",
@@ -232,7 +235,7 @@ x.grob <- textGrob("ISE",
 gg <- grid.arrange(arrangeGrob(pp, left = y.grob, bottom = x.grob))
 
 ggsave("output/simulation_settings_0.pdf", gg,
-       width = 15, height = 7.5, units = c("in"))
+       width = 15, height = 12.5, units = c("in"))
 
 
 # plot results sim00 ####
@@ -244,12 +247,24 @@ dat <- read_rds("output/simulation_settings_00-2020-10-11_14_14_15.rds") %>%
 
 g1 <- plot_sims_0(dat, .99)
 g2 <- plot_sims_0(dat, .995)
-g3 <- plot_sims_0(dat, .999) + coord_cartesian(xlim = c(0, 110))
-g4 <- plot_sims_0(dat, .9995) + coord_cartesian(xlim = c(0, 300))
+g3 <- plot_sims_0(dat, .999) + coord_cartesian(xlim = c(0, 60))
+g4 <- plot_sims_0(dat, .9995) + coord_cartesian(xlim = c(0, 160))
 g5 <- plot_sims_0(dat, .9999) + coord_cartesian(xlim = c(0, 450))
 
-g5
-pp <- plot_grid(g1, g2, g3, g4, nrow = 2)
+pp <- plot_grid(g1, g2, g3, g4, g5, nrow = 3)
+
+#create common x and y labels
+y.grob <- textGrob("method",
+                   gp=gpar(fontface="bold", fontsize=15), rot=90)
+
+x.grob <- textGrob("ISE",
+                   gp=gpar(fontface="bold", fontsize=15))
+
+# add to plot
+gg <- grid.arrange(arrangeGrob(pp, left = y.grob, bottom = x.grob))
+
+ggsave("output/simulation_settings_00.pdf", gg,
+       width = 15, height = 12.5, units = c("in"))
 
 
 # plot results sim1 ####
@@ -316,7 +331,7 @@ gg <- ggplot(dat_plot, aes(x = ise, y = method, col = method)) +
   geom_boxplot() +
   stat_summary(fun=mean, geom="crossbar", fatten = 1.5, width = .75,
                color = "black") +
-  scale_color_manual(values = c("#E69F00", "#D55E00","#0072B2", "#009E73"))
+  scale_color_manual(values = my_palette)
 
 ggsave("output/simulation_settings_3.pdf", gg,
          width = 10, height = 10, units = c("in"))
@@ -375,7 +390,7 @@ g1 <- ggplot(dat_plot %>% filter(model == "step"),
   geom_boxplot() +
   stat_summary(fun=mean, geom="crossbar", fatten = 1.5, width = .75,
                color = "black") +
-  scale_color_manual(values = c("#E69F00", "#D55E00","#0072B2", "#009E73")) +
+  scale_color_manual(values = my_palette) +
   ggtitle(paste0("Model = step"))
 g2 <- ggplot(dat_plot %>% filter(model == "gaussian"),
              aes(x = ise, y = method, col = method)) +
@@ -383,7 +398,7 @@ g2 <- ggplot(dat_plot %>% filter(model == "gaussian"),
   geom_boxplot() +
   stat_summary(fun=mean, geom="crossbar", fatten = 1.5, width = .75,
                color = "black") +
-  scale_color_manual(values = c("#E69F00", "#D55E00","#0072B2", "#009E73")) +
+  scale_color_manual(values = my_palette) +
   ggtitle(paste0("Model = gaussian"))
 
 gg <- plot_grid(g1, g2, nrow = 2)
