@@ -514,7 +514,8 @@ simulation_settings_3 <- function(seed){
 
 simulation_settings_4 <- function(seed){
   ## void -> tibble
-  ## check impact of different methods of generating test data
+  ## understand impact of using true weights and intermetiate threshold to fit
+  ## gpd
 
   ## base parameter values
   n0 <- 2e3
@@ -849,7 +850,7 @@ wrapper_sim_weights_gpd <- function(i, sims_args){
 
   # predict quantile regression functions w/ erf with exact weights
   wi_x0 <- get_step_weights(dat$X, X_test)
-  t_xi <- get_step_intermediate_thres(dat$X, X_test)
+  t_xi <- get_step_intermediate_thres(dat$X, dat$Y)
 
   predictions_erf_true_wgts <- erf:::predict_erf_internal(fit_grf, quantiles = quantiles_predict,
                                  threshold = threshold,
@@ -927,3 +928,20 @@ get_step_weights <- function(x_train, x_test){
 
 }
 
+get_step_intermediate_thres <- function(x_train, y_train, threshold = 0.8){
+  ## numeric_matrix numeric_vector numeric -> numeric_matrix
+  ## produce exact intermediate thresholds for step function at the given level
+
+  n <- nrow(x_train)
+
+  t_xi_neg <- quantile(y_train[x_train[, 1] < 0], threshold)
+  t_xi_pos <- quantile(y_train[x_train[, 1] >= 0], threshold)
+
+  t_xi <- matrix(0, nrow = n, ncol = 1)
+  t_xi[x_train[, 1] < 0] <- t_xi_neg
+  t_xi[x_train[, 1] >= 0] <- t_xi_pos
+
+  return(t_xi)
+
+
+}
