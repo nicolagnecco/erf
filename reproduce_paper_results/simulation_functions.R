@@ -848,12 +848,15 @@ wrapper_sim_weights_gpd <- function(i, sims_args){
                                  out_of_bag = out_of_bag)$predictions
 
   # predict quantile regression functions w/ erf with exact weights
+  wi_x0 <- get_step_weights(dat$X, X_test)
+  t_xi <- get_step_intermediate_thres(dat$X, X_test)
+
   predictions_erf_true_wgts <- erf:::predict_erf_internal(fit_grf, quantiles = quantiles_predict,
                                  threshold = threshold,
                                  newdata = X_test, model_assessment = FALSE,
                                  Y.test = NULL,
                                  out_of_bag = out_of_bag,
-                                 wi_x0 = get_step_weights(dat$X, X_test))$predictions
+                                 wi_x0 = wi_x0, t_xi = t_xi)$predictions
 
   # predict true quantile regression functions
   predictions_true <- generate_theoretical_quantiles(alpha = quantiles_predict,
