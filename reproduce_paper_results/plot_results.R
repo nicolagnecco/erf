@@ -7,9 +7,10 @@ source("simulation_functions.R")
 
 theme_set(theme_bw() +
             theme(plot.background = element_blank(),
-                  legend.background = element_blank()))
+                  legend.background = element_blank(),
+                  strip.background = element_rect(fill = "white")))
 
-# function defintions ####
+# function definitions ####
 extract_params <- function(tbl, param, base_params){
   ## dat character list -> tibble
   ## prepare data to be plotted
@@ -307,7 +308,7 @@ lop <- plot_grf_weights(dat)
 
 
 # plot results sim4 ####
-dat <- read_rds("output/simulation_settings_4-2020-10-09_15_20_19.rds")
+dat <- read_rds("output/simulation_settings_4-2020-10-11_10_06_29.rds")
 dat_plot <- dat %>%
   ungroup() %>%
   select(perf, min.node.size, honesty) %>%
@@ -337,6 +338,35 @@ gg <- plot_grid(g1, g2, g3, g4, nrow = 2)
 ggsave("output/models.pdf", gg,
        width = 10, height = 10, units = c("in"))
 
+
+
+# plot results sim5 ####
+dat <- read_rds("output/simulation_settings_5-2020-10-11_10_31_40.rds")
+dat_plot <- dat %>%
+  ungroup() %>%
+  select(perf, ntest, model) %>%
+  unnest(cols = c(perf)) %>%
+  mutate(method = factor(method),
+         ntest = factor(paste0("ntest = ", ntest)))
+
+g1 <- ggplot(dat_plot %>% filter(model == "step"),
+       aes(x = ise, y = method, col = method)) +
+  facet_grid(ntest ~ quantiles_predict, scales = "free") +
+  geom_boxplot() +
+  stat_summary(fun=mean, geom="point", shape=17, size = 2) +
+  scale_color_manual(values = c("#E69F00", "#D55E00","#0072B2", "#009E73")) +
+  ggtitle(paste0("Model = step"))
+g2 <- ggplot(dat_plot %>% filter(model == "gaussian"),
+             aes(x = ise, y = method, col = method)) +
+  facet_grid(ntest ~ quantiles_predict, scales = "free") +
+  geom_boxplot() +
+  stat_summary(fun=mean, geom="point", shape=17, size = 2) +
+  scale_color_manual(values = c("#E69F00", "#D55E00","#0072B2", "#009E73")) +
+  ggtitle(paste0("Model = gaussian"))
+
+gg <- plot_grid(g1, g2, nrow = 2)
+ggsave("output/simulation_settings_5.pdf", gg,
+       width = 15, height = 22.5, units = c("in"))
 
 # old plots #####
 # models <- unique(dat$model)
