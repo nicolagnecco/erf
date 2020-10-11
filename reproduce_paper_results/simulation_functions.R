@@ -244,17 +244,17 @@ simulation_settings_0 <- function(seed){
   n0 <- 2e3
   p0 <- 40
   num.trees0 <- 2e3
-  min.node.size0 <- 5
+  min.node.size0 <- 100
   honesty0 <- TRUE
   threshold0 <- 0.8
-  out_of_bag0 <- FALSE
+  out_of_bag0 <- TRUE
 
   ## other parameter values
   ## general
   nexp <- 1:1e3
   n <- c(n0)
   p <- c(p0)
-  ntest <- 1e4
+  ntest <- 1e3
   model <- c("step")
   distr <- c("student_t")
   df <- c(4)
