@@ -211,17 +211,18 @@ plot_model <- function(dat, model, distr){
 
 
 # plot results sim0 ####
-dat <- read_rds("output/simulation_settings_0-2020-10-11_14_42_46.rds") %>%
+dat <- read_rds("output/simulation_settings_0-2020-10-12_12_55_29.rds") %>%
   select(-quantiles_fit, -quantiles_predict, -rng) %>%
   unnest(cols = c(perf)) %>%
   mutate(method = factor(method),
          quantile = factor(quantiles_predict))
 
-g1 <- plot_sims_0(dat, .99)
-g2 <- plot_sims_0(dat, .995)
-g3 <- plot_sims_0(dat, .999) + coord_cartesian(xlim = c(0, 60))
-g4 <- plot_sims_0(dat, .9995) + coord_cartesian(xlim = c(0, 75))
-g5 <- plot_sims_0(dat, .9999) + coord_cartesian(xlim = c(0, 300))
+dat_plot <- dat %>% filter(distr == "gaussian")
+g1 <- plot_sims_0(dat_plot, .99)
+g2 <- plot_sims_0(dat_plot, .995)
+g3 <- plot_sims_0(dat_plot, .999) + coord_cartesian(xlim = c(0, 10))
+g4 <- plot_sims_0(dat_plot, .9995) + coord_cartesian(xlim = c(0, 15))
+g5 <- plot_sims_0(dat_plot, .9999) + coord_cartesian(xlim = c(0, 20))
 pp <- plot_grid(g1, g2, g3, g4, g5, nrow = 3)
 
 #create common x and y labels
@@ -234,22 +235,44 @@ x.grob <- textGrob("ISE",
 # add to plot
 gg <- grid.arrange(arrangeGrob(pp, left = y.grob, bottom = x.grob))
 
-ggsave("output/simulation_settings_0.pdf", gg,
+ggsave("output/simulation_settings_0_gaussian.pdf", gg,
+       width = 15, height = 12.5, units = c("in"))
+
+dat_plot <- dat %>% filter(distr == "student_t")
+g1 <- plot_sims_0(dat_plot, .99)
+g2 <- plot_sims_0(dat_plot, .995)
+g3 <- plot_sims_0(dat_plot, .999) + coord_cartesian(xlim = c(0, 60))
+g4 <- plot_sims_0(dat_plot, .9995) + coord_cartesian(xlim = c(0, 75))
+g5 <- plot_sims_0(dat_plot, .9999) + coord_cartesian(xlim = c(0, 300))
+pp <- plot_grid(g1, g2, g3, g4, g5, nrow = 3)
+
+#create common x and y labels
+y.grob <- textGrob("method",
+                   gp=gpar(fontface="bold", fontsize=15), rot=90)
+
+x.grob <- textGrob("ISE",
+                   gp=gpar(fontface="bold", fontsize=15))
+
+# add to plot
+gg <- grid.arrange(arrangeGrob(pp, left = y.grob, bottom = x.grob))
+
+ggsave("output/simulation_settings_0_student_t.pdf", gg,
        width = 15, height = 12.5, units = c("in"))
 
 
 # plot results sim00 ####
-dat <- read_rds("output/simulation_settings_00-2020-10-11_14_14_15.rds") %>%
+dat <- read_rds("output/simulation_settings_00-2020-10-12_13_24_49.rds") %>%
   select(-quantiles_fit, -quantiles_predict, -rng) %>%
   unnest(cols = c(perf)) %>%
   mutate(method = factor(method),
          quantile = factor(quantiles_predict))
 
-g1 <- plot_sims_0(dat, .99)
-g2 <- plot_sims_0(dat, .995)
-g3 <- plot_sims_0(dat, .999) + coord_cartesian(xlim = c(0, 60))
-g4 <- plot_sims_0(dat, .9995) + coord_cartesian(xlim = c(0, 160))
-g5 <- plot_sims_0(dat, .9999) + coord_cartesian(xlim = c(0, 450))
+dat_plot <- dat %>% filter(distr == "gaussian")
+g1 <- plot_sims_0(dat_plot, .99)
+g2 <- plot_sims_0(dat_plot, .995)
+g3 <- plot_sims_0(dat_plot, .999)
+g4 <- plot_sims_0(dat_plot, .9995)
+g5 <- plot_sims_0(dat_plot, .9999)
 
 pp <- plot_grid(g1, g2, g3, g4, g5, nrow = 3)
 
@@ -263,7 +286,30 @@ x.grob <- textGrob("ISE",
 # add to plot
 gg <- grid.arrange(arrangeGrob(pp, left = y.grob, bottom = x.grob))
 
-ggsave("output/simulation_settings_00.pdf", gg,
+ggsave("output/simulation_settings_00_gaussian.pdf", gg,
+       width = 15, height = 12.5, units = c("in"))
+
+
+dat_plot <- dat %>% filter(distr == "student_t")
+g1 <- plot_sims_0(dat_plot, .99)
+g2 <- plot_sims_0(dat_plot, .995)
+g3 <- plot_sims_0(dat_plot, .999) + coord_cartesian(xlim = c(0, 60))
+g4 <- plot_sims_0(dat_plot, .9995) + coord_cartesian(xlim = c(0, 160))
+g5 <- plot_sims_0(dat_plot, .9999) + coord_cartesian(xlim = c(0, 450))
+
+pp <- plot_grid(g1, g2, g3, g4, g5, nrow = 3)
+
+#create common x and y labels
+y.grob <- textGrob("method",
+                   gp=gpar(fontface="bold", fontsize=15), rot=90)
+
+x.grob <- textGrob("ISE",
+                   gp=gpar(fontface="bold", fontsize=15))
+
+# add to plot
+gg <- grid.arrange(arrangeGrob(pp, left = y.grob, bottom = x.grob))
+
+ggsave("output/simulation_settings_00_student_t.pdf", gg,
        width = 15, height = 12.5, units = c("in"))
 
 
