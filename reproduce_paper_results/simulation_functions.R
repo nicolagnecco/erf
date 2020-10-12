@@ -256,7 +256,7 @@ simulation_settings_0 <- function(seed){
   p <- c(p0)
   ntest <- 1e3
   model <- c("step")
-  distr <- c("student_t")
+  distr <- c("gaussian", "student_t")
   df <- c(4)
 
   ## fit
@@ -325,7 +325,7 @@ simulation_settings_00 <- function(seed){
   p <- c(p0)
   ntest <- 1e3
   model <- c("gaussian")
-  distr <- c("student_t")
+  distr <- c("gaussian", "student_t")
   df <- c(4)
 
   ## fit
