@@ -1,4 +1,3 @@
-rm(list = ls())
 # devtools::install_github("nicolagnecco/erf", auth_token = "f7a9e7c23f4e61c93b17d28a8606c4788c94b073")
 library(tidyverse)
 library(grf)
