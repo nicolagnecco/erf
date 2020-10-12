@@ -583,7 +583,7 @@ simulation_settings_3 <- function(seed){
 
 simulation_settings_4 <- function(seed){
   ## void -> tibble
-  ## understand impact of using true weights and intermetiate threshold to fit
+  ## understand impact of using true weights and intermediate threshold to fit
   ## gpd
 
   ## base parameter values
@@ -602,14 +602,14 @@ simulation_settings_4 <- function(seed){
   p <- c(p0)
   ntest <- 1e3
   model <- c("step")
-  distr <- c("student_t")
+  distr <- c("gaussian", "student_t")
   df <- c(4)
 
   ## fit
   num.trees <- c(num.trees0)
   quantiles_fit <- c(0.1, 0.5, 0.9)
   min.node.size <- c(min.node.size0, 5, 40, n0)
-  honesty <- c(honesty0, FALSE)
+  honesty <- c(honesty0)
 
   ## predict
   quantiles_predict <- c(.99, .995, .999, .9995, .9999)
@@ -988,14 +988,29 @@ wrapper_sim_weights_gpd <- function(i, sims_args){
 
   # predict quantile regression functions w/ erf with exact weights
   wi_x0 <- get_step_weights(dat$X, X_test)
-  t_xi <- get_step_intermediate_thres(dat$X, dat$Y)
 
-  predictions_erf_true_wgts <- erf:::predict_erf_internal(fit_grf, quantiles = quantiles_predict,
-                                 threshold = threshold,
-                                 newdata = X_test, model_assessment = FALSE,
-                                 Y.test = NULL,
-                                 out_of_bag = out_of_bag,
-                                 wi_x0 = wi_x0, t_xi = t_xi)$predictions
+  predictions_erf_true_wgts <-
+    erf:::predict_erf_internal(fit_grf, quantiles = quantiles_predict,
+                               threshold = threshold,
+                               newdata = X_test, model_assessment = FALSE,
+                               Y.test = NULL,
+                               out_of_bag = out_of_bag,
+                               wi_x0 = wi_x0)$predictions
+
+  # predict quantile regression functions w/ oracle erf
+  t_xi <- get_step_intermediate_thres(dat$X, dat$Y)
+  t_x0 <- get_step_intermediate_thres(dat$X, dat$Y, X_test)
+
+  predictions_erf_oracle <-
+    erf:::predict_erf_internal(fit_grf,
+                               quantiles = quantiles_predict,
+                               threshold = threshold,
+                               newdata = X_test, model_assessment = FALSE,
+                               Y.test = NULL,
+                               out_of_bag = out_of_bag,
+                               wi_x0 = wi_x0,
+                               t_xi = t_xi,
+                               t_x0 = t_x0)$predictions
 
   # predict true quantile regression functions
   predictions_true <- generate_theoretical_quantiles(alpha = quantiles_predict,
@@ -1014,15 +1029,20 @@ wrapper_sim_weights_gpd <- function(i, sims_args){
                    predictions = matrix2list(predictions_erf_true_wgts)) %>%
     rowid_to_column()
 
+  tb_erf_oracle <- tibble(id = id,
+                          method = "erf_oracle",
+                          predictions = matrix2list(predictions_erf_oracle)) %>%
+    rowid_to_column()
+
   tb_true <- tibble(id = id,
                     method = "true",
                     predictions = matrix2list(predictions_true)) %>%
     rowid_to_column()
 
-  method <- c("erf", "erf_true_weights")
+  method <- c("erf", "erf_true_weights", "erf_oracle")
 
 
-  res <- bind_rows(tb_true, tb_erf, tb_erf_wgts) %>%
+  res <- bind_rows(tb_true, tb_erf, tb_erf_wgts, tb_erf_oracle) %>%
     mutate(quantiles_predict = list(quantiles_predict)) %>%
     unnest(cols = c(quantiles_predict, predictions)) %>%
     pivot_wider(names_from = "method",
@@ -1066,20 +1086,25 @@ get_step_weights <- function(x_train, x_test){
 
 }
 
-get_step_intermediate_thres <- function(x_train, y_train, threshold = 0.8){
-  ## numeric_matrix numeric_vector numeric -> numeric_matrix
+get_step_intermediate_thres <- function(x_train, y_train, x_test = NULL,
+                                        threshold = 0.8){
+  ## numeric_matrix numeric_vector numeric_matrix numeric -> numeric_matrix
   ## produce exact intermediate thresholds for step function at the given level
-
-  n <- nrow(x_train)
 
   t_xi_neg <- quantile(y_train[x_train[, 1] < 0], threshold)
   t_xi_pos <- quantile(y_train[x_train[, 1] >= 0], threshold)
 
-  t_xi <- matrix(0, nrow = n, ncol = 1)
-  t_xi[x_train[, 1] < 0] <- t_xi_neg
-  t_xi[x_train[, 1] >= 0] <- t_xi_pos
-
-  return(t_xi)
-
-
-}
+  if (is.null(x_test)){
+    n <- nrow(x_train)
+    t_xi <- matrix(0, nrow = n, ncol = 1)
+    t_xi[x_train[, 1] < 0] <- t_xi_neg
+    t_xi[x_train[, 1] >= 0] <- t_xi_pos
+    return(t_xi)
+  } else {
+    ntest <- nrow(x_test)
+    t_x0 <- matrix(0, nrow = ntest, ncol = 1)
+    t_x0[x_test[, 1] < 0] <- t_xi_neg
+    t_x0[x_test[, 1] >= 0] <- t_xi_pos
+    return(t_x0)
+  }
+ }

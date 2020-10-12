@@ -56,9 +56,9 @@ predict_erf <- function(object, quantiles, threshold = 0.8,
 predict_erf_internal <- function(object, quantiles, threshold = 0.8,
                         newdata = NULL, model_assessment = FALSE,
                         Y.test = NULL, out_of_bag = FALSE,
-                        wi_x0 = NULL, t_xi = NULL) {
+                        wi_x0 = NULL, t_xi = NULL, t_x0 = NULL) {
 
-  ## same inputs as predict_erf + weights and t_xi -> same output as predict_erf
+  ## same inputs as predict_erf + weights, t_xi, t_x0 -> same output as predict_erf
   ## same purpose as predict_erf
 
   validate_inputs(object, quantiles, threshold, newdata, model_assessment,
@@ -76,7 +76,9 @@ predict_erf_internal <- function(object, quantiles, threshold = 0.8,
                              X = object$X.orig, out_of_bag = out_of_bag)
   }
 
+  if (is.null(t_x0)){
   t_x0 <- compute_thresholds(object, threshold = threshold, X = X0)
+  }
 
   gpd_pars <- fit_conditional_gpd(object, wi_x0, t_xi)
 
