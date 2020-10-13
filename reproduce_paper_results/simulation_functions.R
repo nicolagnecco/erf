@@ -961,7 +961,6 @@ wrapper_sim <- function(i, sims_args, type = c("ise", "plot")){
 
   method <- c("erf", "grf", "meins", "unconditional")
 
-  browser()
   res <- bind_rows(tb_true, tb_grf, tb_erf, tb_unconditional, tb_meins) %>%
     mutate(quantiles_predict = list(quantiles_predict)) %>%
     pivot_wider(names_from = "method",

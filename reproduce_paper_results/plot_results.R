@@ -457,10 +457,13 @@ ggsave("output/simulation_settings_5.pdf", gg,
 
 
 # plot sim_6 ####
-dat <- read_rds("output/simulation_settings_6-2020-10-13_17_52_28.rds")
+dat <- read_rds("output/simulation_settings_6-2020-10-13_18_48_14.rds")
+
 qq <- .999
-dat_plot <- ll %>%
-  filter(id == 1, quantiles_predict == qq) %>%
+dat_plot <- dat %>%
+  filter(id == 1,
+         quantiles_predict == qq,
+         model == "step") %>%
   pivot_longer(cols = all_of(c("true", "grf", "erf", "meins", "unconditional")),
                names_to = "method", values_to = "quantile") %>%
   mutate(method = factor(method))

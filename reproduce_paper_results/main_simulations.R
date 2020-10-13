@@ -17,7 +17,7 @@ option_list = list(
   make_option(c("-s", "--simulation_setting"), type="character",
               default=NULL,
               help=paste0("Simulation setting. The name of the function to call ",
-              "to set up the simulation."),
+                          "to set up the simulation."),
               metavar="character"),
   make_option(c("-p", "--parallel_plan"), type="character", default="sequential",
               help="One of 'sequential' and 'cluster'.", metavar="character"),
@@ -40,7 +40,7 @@ n_workers <- args$n_workers
 type <- args$type
 
 # sim_setting <- "simulation_settings_6"
-
+# type <- "plot"
 
 ## set up file names
 dttime <- gsub(pattern = " |:", x = Sys.time(), replacement = "_")
@@ -82,8 +82,13 @@ sink()
 
 
 ## collect and save results
-ll <- ll %>%
-  nest(perf = c(method, quantiles_predict, ise)) %>%
-  left_join(sims_args, by = "id")
+if (type == "ise"){
+  ll <- ll %>%
+    nest(perf = c(method, quantiles_predict, ise)) %>%
+    left_join(sims_args, by = "id")
+} else {
+  ll <- ll %>%
+    left_join(sims_args %>% select(-quantiles_predict), by = "id")
+}
 
 saveRDS(ll, file = file_rds)
