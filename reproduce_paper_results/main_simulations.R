@@ -48,18 +48,6 @@ if(strategy == "cluster"){
 }
 
 
-n <- c(2, 3)
-d <- c(10, 12, 15)
-
-expand_grid(n, )
-
-tibble(
-
-
-)
-
-
-
 
 ## run simulations
 ptm<-proc.time()
@@ -72,8 +60,6 @@ sink(file = file_log, append = TRUE)
 print(proc.time() - ptm)
 sink()
 
-ll <- expand_grid(x = 1:2, y = 1:3)
-expand.grid(ll)
 
 ## collect and save results
 ll <- ll %>%
