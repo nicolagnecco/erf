@@ -9,7 +9,8 @@ theme_set(theme_bw() +
                   legend.background = element_blank(),
                   strip.background = element_rect(fill = "white")))
 
-my_palette <- c("#D55E00", "#0072B2", "#009E73", "#E69F00", "#56B4E9")
+my_palette <- c("#D55E00", "#0072B2", "#009E73", "#E69F00", "#56B4E9",
+                "#CC79A7")
 
 # function definitions ####
 extract_params <- function(tbl, param, base_params){
@@ -159,9 +160,11 @@ plot_grf_weights <- function(dat){
 
 }
 
-plot_true_gpd_weights <- function(dat, is_honest = TRUE){
+plot_true_gpd_weights <- function(dat, distr = c("gaussian", "student_t")){
   ## tibble -> plot
-  ## creates a plot for a given level of honesty
+  ## creates a plot for a given distribution
+
+  arg_distr <- match.arg(distr)
 
   dat <- dat %>%
     mutate(min.node.size =
@@ -175,14 +178,14 @@ plot_true_gpd_weights <- function(dat, is_honest = TRUE){
                     labels = paste0("quantile = ",
                                     sort(unique(dat$quantiles_predict)))))
 
-  ggplot(dat %>% filter(honesty == is_honest),
+  ggplot(dat %>% filter(distr == arg_distr),
          aes(x = ise, y = method, col = method)) +
     facet_grid(min.node.size ~ quantiles_predict, scales = "free") +
     geom_boxplot() +
     stat_summary(fun=mean, geom="crossbar", fatten = 1.5, width = .75,
                  color = "black") +
-    scale_color_manual(values = my_palette[c(1, 5)]) +
-    ggtitle(paste0("honesty = ", is_honest))
+    scale_color_manual(values = my_palette[c(1, 5, 6)]) +
+    ggtitle(paste0("distribution = ", arg_distr))
 
 }
 
@@ -393,20 +396,22 @@ lop <- plot_grf_weights(dat)
 
 
 # plot results sim4 ####
-dat <- read_rds("output/simulation_settings_4-2020-10-11_10_06_29.rds")
+dat <- read_rds("output/simulation_settings_4-2020-10-12_12_30_43.rds")
 dat_plot <- dat %>%
   ungroup() %>%
-  select(perf, min.node.size, honesty) %>%
+  select(perf, min.node.size, distr) %>%
   unnest(cols = c(perf)) %>%
   mutate(method = factor(method),
-         honesty = factor(honesty))
+         distr = factor(distr))
 
-g1 <- plot_true_gpd_weights(dat_plot, TRUE)
-g2 <- plot_true_gpd_weights(dat_plot, FALSE)
+g1 <- plot_true_gpd_weights(dat_plot %>% filter(min.node.size != 2000),
+                            "gaussian"); g1
+g2 <- plot_true_gpd_weights(dat_plot %>% filter(min.node.size != 2000),
+                            "student_t"); g2
 gg <- plot_grid(g1, g2, nrow = 2)
 
 ggsave("output/simulation_settings_4.pdf", gg,
-       width = 15, height = 22.5, units = c("in"))
+       width = 10, height = 15, units = c("in"))
 
 
 # plot models ####
