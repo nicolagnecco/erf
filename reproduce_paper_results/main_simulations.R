@@ -1,5 +1,7 @@
-rm(list = ls())
-# devtools::install_github("nicolagnecco/erf", auth_token = "f7a9e7c23f4e61c93b17d28a8606c4788c94b073")
+#!/usr/bin/env Rscript
+# devtools::install_github("nicolagnecco/erf",
+#                          auth_token = "f7a9e7c23f4e61c93b17d28a8606c4788c94b073")
+library(optparse)
 library(tidyverse)
 library(grf)
 library(erf)
@@ -11,13 +13,33 @@ source("simulation_functions.R")
 
 
 ## collect arguments
-args <- commandArgs(trailingOnly=TRUE)
-# args <- list(simulation = "simulation_settings_0",
-             # strategy = c("sequential", "cluster")[1], n_workers = 2)
+option_list = list(
+  make_option(c("-s", "--simulation_setting"), type="character",
+              default=NULL,
+              help=paste0("Simulation setting. The name of the function to call ",
+              "to set up the simulation."),
+              metavar="character"),
+  make_option(c("-p", "--parallel_plan"), type="character", default="sequential",
+              help="One of 'sequential' and 'cluster'.", metavar="character"),
+  make_option(c("-n", "--n_workers"), type = "integer", default=1,
+              help="Number of workers if parallel_plan is 'cluster'.",
+              metavar="integer"),
+  make_option(c("-t", "--type"), type = "character", default="ise",
+              help="One of 'ise' and 'plot'.", metavar="character"))
 
-sim_setting <- args[[1]]
-strategy <- args[[2]]
-n_workers <- as.double(args[[3]])
+opt_parser <- OptionParser(option_list=option_list);
+args <- parse_args(opt_parser);
+
+if (is.null(args$simulation_setting)){
+  stop("Please, specify a simulation settings, e.g., simulation_settings_1.")
+}
+
+sim_setting <- args$simulation_setting
+strategy <- args$parallel_plan
+n_workers <- args$n_workers
+type <- args$type
+
+# sim_setting <- "simulation_settings_6"
 
 
 ## set up file names
@@ -36,7 +58,7 @@ m <- NROW(sims_args)
 if(strategy == "cluster"){
   cl <- parallel::makePSOCKcluster(n_workers)
   registerDoParallel(cl)
-  clusterExport(cl, varlist = c("sims_args"))
+  clusterExport(cl, varlist = c("sims_args", "type"))
   clusterEvalQ(cl, {
     library(tidyverse);
     library(grf);
@@ -52,7 +74,7 @@ ptm<-proc.time()
 cat("**** Simulation ---", sim_setting , "**** \n", file = file_log)
 ll <- foreach(i = 1:m, .combine = bind_rows) %dopar% {
   cat("Simulation", i, "out of", m, "\n", file = file_log, append = TRUE)
-  wrapper_sim(i, sims_args)
+  wrapper_sim(i, sims_args, type)
 }
 sink(file = file_log, append = TRUE)
 print(proc.time() - ptm)

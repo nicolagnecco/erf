@@ -1,4 +1,3 @@
-rm(list = ls())
 library(tidyverse)
 library(cowplot)
 library(grid)
@@ -217,6 +216,7 @@ dat <- read_rds("output/simulation_settings_0-2020-10-12_12_55_29.rds") %>%
   mutate(method = factor(method),
          quantile = factor(quantiles_predict))
 
+# Gaussian distribution
 dat_plot <- dat %>% filter(distr == "gaussian")
 g1 <- plot_sims_0(dat_plot, .99)
 g2 <- plot_sims_0(dat_plot, .995)
@@ -238,6 +238,8 @@ gg <- grid.arrange(arrangeGrob(pp, left = y.grob, bottom = x.grob))
 ggsave("output/simulation_settings_0_gaussian.pdf", gg,
        width = 15, height = 12.5, units = c("in"))
 
+
+# Student-t distribution
 dat_plot <- dat %>% filter(distr == "student_t")
 g1 <- plot_sims_0(dat_plot, .99)
 g2 <- plot_sims_0(dat_plot, .995)
@@ -267,6 +269,7 @@ dat <- read_rds("output/simulation_settings_00-2020-10-12_13_24_49.rds") %>%
   mutate(method = factor(method),
          quantile = factor(quantiles_predict))
 
+# Gaussian distribution
 dat_plot <- dat %>% filter(distr == "gaussian")
 g1 <- plot_sims_0(dat_plot, .99)
 g2 <- plot_sims_0(dat_plot, .995)
@@ -290,6 +293,7 @@ ggsave("output/simulation_settings_00_gaussian.pdf", gg,
        width = 15, height = 12.5, units = c("in"))
 
 
+# Student-t distribution
 dat_plot <- dat %>% filter(distr == "student_t")
 g1 <- plot_sims_0(dat_plot, .99)
 g2 <- plot_sims_0(dat_plot, .995)
@@ -450,6 +454,31 @@ g2 <- ggplot(dat_plot %>% filter(model == "gaussian"),
 gg <- plot_grid(g1, g2, nrow = 2)
 ggsave("output/simulation_settings_5.pdf", gg,
        width = 15, height = 22.5, units = c("in"))
+
+
+# plot sim_6 ####
+dat <- read_rds("output/simulation_settings_6-2020-10-13_17_52_28.rds")
+qq <- .999
+dat_plot <- ll %>%
+  filter(id == 1, quantiles_predict == qq) %>%
+  pivot_longer(cols = all_of(c("true", "grf", "erf", "meins", "unconditional")),
+               names_to = "method", values_to = "quantile") %>%
+  mutate(method = factor(method))
+
+
+
+ggplot(dat_plot, aes(x = X1, y = X2, fill = quantile)) +
+  facet_wrap(vars(method)) +
+  geom_raster() +
+  coord_fixed(expand = FALSE) +
+  scale_fill_viridis_c() +
+  ggtitle(paste0("Quantile = ", qq))
+
+
+
+ggplot(dat_plot, aes(x = true, y = meins)) +
+  geom_point() +
+  geom_abline(slope = 1)
 
 # old plots #####
 # models <- unique(dat$model)

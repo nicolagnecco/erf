@@ -271,6 +271,7 @@ simulation_settings_0 <- function(seed){
   out_of_bag <- c(out_of_bag0)
 
 
+  # !!! refactor
   ## create parameter grid
   ## tibble 1
   tbl1 <- expand_grid(n, p, num.trees, min.node.size, honesty, threshold,
@@ -713,6 +714,75 @@ simulation_settings_5 <- function(seed){
   return(my_args)
 }
 
+simulation_settings_6 <- function(seed){
+  ## integer -> tibble
+  ## plot goodness of fit of different methods
+
+  ## base parameter values
+  n0 <- 2e3
+  p0 <- 10
+  num.trees0 <- 2e3
+  min.node.size0 <- 100
+  honesty0 <- TRUE
+  threshold0 <- 0.8
+  out_of_bag0 <- TRUE
+
+  ## other parameter values
+  ## general
+  nexp <- 1:1
+  n <- c(n0)
+  p <- c(p0)
+  ntest <- 1e3
+  model <- c("step", "gaussian")
+  distr <- c("student_t")
+  df <- c(4)
+
+  ## fit
+  num.trees <- c(num.trees0)
+  quantiles_fit <- c(0.1, 0.5, 0.9)
+  min.node.size <- c(min.node.size0)
+  honesty <- c(honesty0)
+
+  ## predict
+  quantiles_predict <- c(.8, .99, .995, .999, .9995, .9999)
+  threshold <- c(threshold0)
+  out_of_bag <- c(out_of_bag0)
+
+
+  ## create parameter grid
+  ## tibble 1
+  tbl1 <- expand_grid(n, p, num.trees, min.node.size, honesty, threshold,
+                      out_of_bag) %>%
+    filter(n %in% n0
+           + p %in% p0
+           + num.trees %in% num.trees0
+           + min.node.size %in% min.node.size0
+           + honesty %in% honesty0
+           + threshold %in% threshold0
+           + out_of_bag %in% out_of_bag0  >= 6) %>%
+    mutate(id = 1)
+
+  tbl2 <- expand_grid(nexp, ntest, model) %>%
+    mutate(quantiles_fit = list(quantiles_fit),
+           quantiles_predict = list(quantiles_predict),
+           id = 1)
+
+  tbl3 <- expand_grid(distr, df) %>%
+    mutate(df = if_else(distr == "gaussian", NaN, df)) %>%
+    mutate(id = 1) %>%
+    distinct()
+
+  my_args <- full_join(tbl2, tbl3, by = "id") %>%
+    full_join(tbl1, by = "id") %>%
+    select(-id) %>%
+    rowwise() %>%
+    mutate(id = cur_group_id()) %>%
+    select(id, everything()) %>%
+    set_rng(seed)
+
+  return(my_args)
+}
+
 set_rng <- function(tbl, seed){
   ## tibble integer -> tibble
   ## adds to tbl a column with seeds to generate independent streams of random
@@ -745,15 +815,16 @@ set_rng <- function(tbl, seed){
   return(tbl)
 }
 
-wrapper_sim <- function(i, sims_args){
+wrapper_sim <- function(i, sims_args, type = c("ise", "plot")){
   ## integer tibble character -> tibble
   ## run simulations over arguments of row i in sims_args
 
+  type <- match.arg(type)
   m <- nrow(sims_args)
   cat("Simulation", i, "out of", m, "\n")
 
 
-  # set current simulation variables
+  # set required simulation variables
   id <- sims_args$id[i]
   nexp <- sims_args$nexp[i]
   ntest <- sims_args$ntest[i]
@@ -770,6 +841,8 @@ wrapper_sim <- function(i, sims_args){
   honesty <- sims_args$honesty[i]
   threshold <- sims_args$threshold[i]
   out_of_bag <- sims_args$out_of_bag[i]
+
+  # set additional simulation variables
   if(sims_args %>% has_name("test_data")){
     test_data <- sims_args[["test_data"]][i]
   } else {
@@ -798,7 +871,8 @@ wrapper_sim <- function(i, sims_args){
                                honesty = honesty)
 
 
-  # generate test data (#??? maybe temp option?)
+  # generate test data
+  if (type == "ise"){
   if (test_data == "halton"){
     X_test <- randtoolbox::halton(ntest, p) * 2 - 1
 
@@ -810,7 +884,20 @@ wrapper_sim <- function(i, sims_args){
     X_test <- matrix(0, nrow = ntest, ncol = p)
     X_test[, 1] <- seq(-1, 1, length.out = ntest)
   }
+  } else {
+    if (p < 2){
+      stop("p must be at least 2, when type = plot.")
+    }
 
+   X_test <- expand_grid(X1 = seq(-1, 1, length.out = floor(sqrt(ntest))),
+                         X2 = seq(-1, 1, length.out = floor(sqrt(ntest)))) %>%
+     as.matrix()
+
+   if (p > 2){
+   X_test <- cbind(X_test,
+                   matrix(0, ncol = p - 2, nrow = floor(sqrt(ntest))**2))
+   }
+}
 
   # predict models
   # predict quantile regression functions w/ grf
@@ -829,10 +916,16 @@ wrapper_sim <- function(i, sims_args){
 
 
   # predict unconditional quantile
+  ntest_unc <- if(type == "ise"){
+    ntest
+  } else {
+    floor(sqrt(ntest))**2
+  }
+
   predictions_unconditional <- predict_unconditional_quantiles(threshold = threshold,
                                                            alpha = quantiles_predict,
                                                            Y = dat$Y,
-                                                           ntest = ntest)
+                                                           ntest = ntest_unc)
 
   # predict true quantile regression functions
   predictions_true <- generate_theoretical_quantiles(alpha = quantiles_predict,
@@ -868,18 +961,27 @@ wrapper_sim <- function(i, sims_args){
 
   method <- c("erf", "grf", "meins", "unconditional")
 
-
+  browser()
   res <- bind_rows(tb_true, tb_grf, tb_erf, tb_unconditional, tb_meins) %>%
     mutate(quantiles_predict = list(quantiles_predict)) %>%
-    unnest(cols = c(quantiles_predict, predictions)) %>%
     pivot_wider(names_from = "method",
-                values_from = "predictions") %>%
-    mutate(across(all_of(method), function(x){(x - true)^2})) %>%
-    select(-"true") %>%
-    pivot_longer(cols = all_of(method),
-                 names_to = "method", values_to = "se") %>%
-    group_by(id, method, quantiles_predict) %>%
-    summarise(ise = mean(se))
+                values_from = "predictions")
+
+
+  if (type == "ise"){
+    res <- res %>%
+      unnest(cols = !c("rowid", "id")) %>%
+      mutate(across(all_of(method), function(x){(x - true)^2})) %>%
+      select(-"true") %>%
+      pivot_longer(cols = all_of(method),
+                   names_to = "method", values_to = "se") %>%
+      group_by(id, method, quantiles_predict) %>%
+      summarise(ise = mean(se))
+  } else {
+    res <- res %>%
+      mutate(X1 = X_test[, 1], X2 = X_test[, 2]) %>%
+      unnest(cols = !c("rowid", "id"))
+  }
 
   # return value
   return(res)
@@ -928,7 +1030,7 @@ wrapper_sim_weights_gpd <- function(i, sims_args){
   cat("Simulation", i, "out of", m, "\n")
 
 
-  # set current simulation variables
+  # set required simulation variables
   id <- sims_args$id[i]
   nexp <- sims_args$nexp[i]
   ntest <- sims_args$ntest[i]
@@ -945,6 +1047,8 @@ wrapper_sim_weights_gpd <- function(i, sims_args){
   honesty <- sims_args$honesty[i]
   threshold <- sims_args$threshold[i]
   out_of_bag <- sims_args$out_of_bag[i]
+
+  # set additional simulation variables
   if(sims_args %>% has_name("test_data")){
     test_data <- sims_args[["test_data"]][i]
   } else {
@@ -964,7 +1068,7 @@ wrapper_sim_weights_gpd <- function(i, sims_args){
                              num.trees = num.trees,
                              min.node.size = min.node.size, honesty = honesty)
 
-  # generate test data (#??? maybe temp option?)
+  # generate test data
   if (test_data == "halton"){
     X_test <- randtoolbox::halton(ntest, p) * 2 - 1
 
