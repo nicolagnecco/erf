@@ -12,8 +12,8 @@ source("simulation_functions.R")
 
 ## collect arguments
 args <- commandArgs(trailingOnly=TRUE)
-# args <- list(simulation = "simulation_settings_0",
-             # strategy = c("sequential", "cluster")[1], n_workers = 2)
+args <- list(simulation = "simulation_settings_00",
+             strategy = c("sequential", "cluster")[1], n_workers = 2)
 
 sim_setting <- args[[1]]
 strategy <- args[[2]]
@@ -30,6 +30,7 @@ file_rds <- paste("output/", sim_setting,  "-", dttime, ".rds", sep = "")
 func <- eval(as.name(sim_setting))
 sims_args <- func(seed = 42)
 m <- NROW(sims_args)
+m <- 1
 
 
 ## set up cluster
@@ -47,10 +48,23 @@ if(strategy == "cluster"){
 }
 
 
+n <- c(2, 3)
+d <- c(10, 12, 15)
+
+expand_grid(n, )
+
+tibble(
+
+
+)
+
+
+
+
 ## run simulations
 ptm<-proc.time()
 cat("**** Simulation ---", sim_setting , "**** \n", file = file_log)
-ll <- foreach(i = 1:m, .combine = bind_rows) %dopar% {
+ll <- foreach(i = 1:1, .combine = bind_rows) %dopar% {
   cat("Simulation", i, "out of", m, "\n", file = file_log, append = TRUE)
   wrapper_sim(i, sims_args)
 }
@@ -58,6 +72,8 @@ sink(file = file_log, append = TRUE)
 print(proc.time() - ptm)
 sink()
 
+ll <- expand_grid(x = 1:2, y = 1:3)
+expand.grid(ll)
 
 ## collect and save results
 ll <- ll %>%

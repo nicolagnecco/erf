@@ -113,7 +113,7 @@ generate_joint_distribution <- function(n, p,
            })
 
     sigma_x <- 1 + 6 * mvtnorm::dmvnorm(X[, c(1, 2)],
-                                        sigma = rbind(c(1, .9), c(.9, 1)))
+                                        sigma = rbind(c(1, 0.9), c(0.9, 1)))
     Y <- sigma_x * Y_tilde
 
     return(Y)
@@ -208,7 +208,7 @@ generate_theoretical_quantiles <- function(alpha, X,
            })
 
     sigma_x <- 1 + 6 * mvtnorm::dmvnorm(X[, c(1, 2)],
-                                        sigma = rbind(c(1, .9), c(.9, 1)))
+                                        sigma = rbind(c(1, 0.9), c(0.9, 1)))
     q <- sigma_x * q_tilde
 
     return(q)
@@ -311,9 +311,9 @@ simulation_settings_00 <- function(seed){
 
   ## base parameter values
   n0 <- 5e3
-  p0 <- 10
+  p0 <- 4
   num.trees0 <- 2e3
-  min.node.size0 <- 100
+  min.node.size0 <- 5
   honesty0 <- TRUE
   threshold0 <- 0.8
   out_of_bag0 <- TRUE
@@ -324,8 +324,8 @@ simulation_settings_00 <- function(seed){
   n <- c(n0)
   p <- c(p0)
   ntest <- 1e3
-  model <- c("gaussian")
-  distr <- c("gaussian", "student_t")
+  model <- c("periodic")
+  distr <- c("gaussian")
   df <- c(4)
 
   ## fit
@@ -335,7 +335,7 @@ simulation_settings_00 <- function(seed){
   honesty <- c(honesty0)
 
   ## predict
-  quantiles_predict <- c(.99, .995, .999, .9995, .9999)
+  quantiles_predict <- c(.8, .99, .995, .999, .9995, .9999)
   threshold <- c(threshold0)
   out_of_bag <- c(out_of_bag0)
 
@@ -785,6 +785,7 @@ wrapper_sim <- function(i, sims_args){
 
   # fit models
   # fit quantile regression function w/ grf
+  mtry <- 1
   fit_grf <- quantile_forest(dat$X, dat$Y, quantiles = quantiles_fit,
                              num.trees = num.trees,
                              min.node.size = min.node.size, honesty = honesty)
@@ -799,17 +800,22 @@ wrapper_sim <- function(i, sims_args){
 
 
   # generate test data (#??? maybe temp option?)
-  if (test_data == "halton"){
-    X_test <- randtoolbox::halton(ntest, p) * 2 - 1
+  # if (test_data == "halton"){
+  #   X_test <- randtoolbox::halton(ntest, p) * 2 - 1
+  #
+  # } else if (test_data == "uniform"){
+  #   X_test <- matrix(runif(ntest * p, min = -1, max = 1),
+  #                    nrow = ntest, ncol = p)
+  #
+  # } else if (test_data == "zero"){
+  #   X_test <- matrix(0, nrow = ntest, ncol = p)
+  #   X_test[, 1] <- seq(-1, 1, length.out = ntest)
+  # }
 
-  } else if (test_data == "uniform"){
-    X_test <- matrix(runif(ntest * p, min = -1, max = 1),
-                     nrow = ntest, ncol = p)
-
-  } else if (test_data == "zero"){
-    X_test <- matrix(0, nrow = ntest, ncol = p)
-    X_test[, 1] <- seq(-1, 1, length.out = ntest)
-  }
+  X_test <- expand_grid(X1 = seq(-1, 1, length.out = floor(sqrt(ntest))),
+  X2 = seq(-1, 1, length.out = floor(sqrt(ntest)))) %>%
+    as.matrix()%>%
+    cbind(matrix(0, ncol = p - 2, nrow = floor(sqrt(ntest))**2))
 
 
   # predict models
@@ -832,7 +838,7 @@ wrapper_sim <- function(i, sims_args){
   predictions_unconditional <- predict_unconditional_quantiles(threshold = threshold,
                                                            alpha = quantiles_predict,
                                                            Y = dat$Y,
-                                                           ntest = ntest)
+                                                           ntest = floor(sqrt(ntest))**2)
 
   # predict true quantile regression functions
   predictions_true <- generate_theoretical_quantiles(alpha = quantiles_predict,
@@ -843,27 +849,32 @@ wrapper_sim <- function(i, sims_args){
   # collect results
   tb_erf <- tibble(id = id,
                    method = "erf",
-                   predictions = matrix2list(predictions_erf)) %>%
+                   predictions = matrix2list(predictions_erf),
+                   X1 = X_test[, 1], X2 = X_test[, 2]) %>%
     rowid_to_column()
 
   tb_grf <- tibble(id = id,
                    method = "grf",
-                   predictions = matrix2list(predictions_grf)) %>%
+                   predictions = matrix2list(predictions_grf),
+                   X1 = X_test[, 1], X2 = X_test[, 2]) %>%
     rowid_to_column()
 
   tb_true <- tibble(id = id,
                     method = "true",
-                    predictions = matrix2list(predictions_true)) %>%
+                    predictions = matrix2list(predictions_true),
+                    X1 = X_test[, 1], X2 = X_test[, 2]) %>%
     rowid_to_column()
 
   tb_unconditional <- tibble(id = id,
                         method = "unconditional",
-                        predictions = matrix2list(predictions_unconditional)) %>%
+                        predictions = matrix2list(predictions_unconditional),
+                        X1 = X_test[, 1], X2 = X_test[, 2]) %>%
     rowid_to_column()
 
   tb_meins <- tibble(id = id,
                      method = "meins",
-                     predictions = matrix2list(predictions_meins)) %>%
+                     predictions = matrix2list(predictions_meins),
+                     X1 = X_test[, 1], X2 = X_test[, 2]) %>%
     rowid_to_column()
 
   method <- c("erf", "grf", "meins", "unconditional")
@@ -873,13 +884,15 @@ wrapper_sim <- function(i, sims_args){
     mutate(quantiles_predict = list(quantiles_predict)) %>%
     unnest(cols = c(quantiles_predict, predictions)) %>%
     pivot_wider(names_from = "method",
-                values_from = "predictions") %>%
-    mutate(across(all_of(method), function(x){(x - true)^2})) %>%
-    select(-"true") %>%
-    pivot_longer(cols = all_of(method),
-                 names_to = "method", values_to = "se") %>%
-    group_by(id, method, quantiles_predict) %>%
-    summarise(ise = mean(se))
+                values_from = "predictions")
+
+  # %>%
+  #   mutate(across(all_of(method), function(x){(x - true)^2})) %>%
+  #   select(-"true") %>%
+  #   pivot_longer(cols = all_of(method),
+  #                names_to = "method", values_to = "se") %>%
+  #   group_by(id, method, quantiles_predict) %>%
+  #   summarise(ise = mean(se))
 
   # return value
   return(res)

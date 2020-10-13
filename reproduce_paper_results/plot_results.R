@@ -220,7 +220,10 @@ dat <- read_rds("output/simulation_settings_0-2020-10-12_12_55_29.rds") %>%
 dat_plot <- dat %>% filter(distr == "gaussian")
 g1 <- plot_sims_0(dat_plot, .99)
 g2 <- plot_sims_0(dat_plot, .995)
-g3 <- plot_sims_0(dat_plot, .999) + coord_cartesian(xlim = c(0, 10))
+g3 <- plot_sims_0(dat_plot, .999) + coord_cartesian(xlim = c(0, 5))
+g3
+
++ coord_cartesian(xlim = c(0, 10))
 g4 <- plot_sims_0(dat_plot, .9995) + coord_cartesian(xlim = c(0, 15))
 g5 <- plot_sims_0(dat_plot, .9999) + coord_cartesian(xlim = c(0, 20))
 pp <- plot_grid(g1, g2, g3, g4, g5, nrow = 3)
@@ -487,3 +490,30 @@ ggsave("output/simulation_settings_5.pdf", gg,
 #          gg, width = 10, height = 7.5, units = c("in"))
 #
 # }
+
+
+
+# test ###
+View(ll)
+
+qq <- .999
+dat_plot <- ll %>%
+  filter(id == 1, quantiles_predict == qq) %>%
+  pivot_longer(cols = all_of(c("true", "grf", "erf", "meins", "unconditional")),
+                              names_to = "method", values_to = "quantile") %>%
+  mutate(method = factor(method))
+
+
+
+ggplot(dat_plot, aes(x = X1, y = X2, fill = quantile)) +
+  facet_wrap(vars(method)) +
+  geom_raster() +
+  coord_fixed(expand = FALSE) +
+  scale_fill_viridis_c() +
+  ggtitle(paste0("Quantile = ", qq))
+
+
+
+ggplot(dat_plot, aes(x = true, y = meins)) +
+  geom_point() +
+  geom_abline(slope = 1)
