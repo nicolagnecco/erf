@@ -25,7 +25,10 @@ option_list = list(
               help="Number of workers if parallel_plan is 'cluster'.",
               metavar="integer"),
   make_option(c("-t", "--type"), type = "character", default="ise",
-              help="One of 'ise' and 'plot'.", metavar="character"))
+              help="One of 'ise' and 'plot'.", metavar="character"),
+  make_option(c("-i", "--inspect_erf"), type = "logical", default=FALSE,
+              help=paste0("If TRUE, it returns a list that, along with simulation results, ",
+              "allows you to inspect the parameters estimated by erf", metavar="logical")))
 
 opt_parser <- OptionParser(option_list=option_list);
 args <- parse_args(opt_parser);
@@ -38,9 +41,11 @@ sim_setting <- args$simulation_setting
 strategy <- args$parallel_plan
 n_workers <- args$n_workers
 type <- args$type
+inspect_erf <- args$inspect_erf
 
 # sim_setting <- "simulation_settings_6"
 # type <- "plot"
+# inspect_erf <- TRUE
 
 ## set up file names
 dttime <- gsub(pattern = " |:", x = Sys.time(), replacement = "_")
@@ -74,7 +79,7 @@ ptm<-proc.time()
 cat("**** Simulation ---", sim_setting , "**** \n", file = file_log)
 ll <- foreach(i = 1:m, .combine = bind_rows) %dopar% {
   cat("Simulation", i, "out of", m, "\n", file = file_log, append = TRUE)
-  wrapper_sim(i, sims_args, type)
+  wrapper_sim(i, sims_args, type, inspect_erf)
 }
 sink(file = file_log, append = TRUE)
 print(proc.time() - ptm)
@@ -82,13 +87,25 @@ sink()
 
 
 ## collect and save results
+if (inspect_erf) {
+  res <- ll$res
+} else {
+  res <- ll
+}
+
 if (type == "ise"){
-  ll <- ll %>%
+  res <- res %>%
     nest(perf = c(method, quantiles_predict, ise)) %>%
     left_join(sims_args, by = "id")
 } else {
-  ll <- ll %>%
+  res <- res %>%
     left_join(sims_args %>% select(-quantiles_predict), by = "id")
+}
+
+if (inspect_erf){
+  ll$res <- res
+} else {
+  ll <- res
 }
 
 saveRDS(ll, file = file_rds)

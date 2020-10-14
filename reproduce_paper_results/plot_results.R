@@ -462,18 +462,20 @@ ggsave("output/simulation_settings_5.pdf", gg,
 
 
 # plot sim_6 ####
-dat <- read_rds("output/simulation_settings_6-2020-10-13_18_48_14.rds")
+ll <- read_rds("output/simulation_settings_6-2020-10-14_13_20_47.rds")
 
-qq <- .999
+
+# Contour plots
+dat <- ll$res
+qq <- .9999
+
 dat_plot <- dat %>%
-  filter(id == 1,
-         quantiles_predict == qq,
+  filter(quantiles_predict == qq,
          model == "step") %>%
   pivot_longer(cols = all_of(c("true", "grf", "erf", "meins", "unconditional")),
                names_to = "method", values_to = "quantile") %>%
+  # filter(method %in% c("erf")) %>%
   mutate(method = factor(method))
-
-
 
 ggplot(dat_plot, aes(x = X1, y = X2, fill = quantile)) +
   facet_wrap(vars(method)) +
@@ -483,7 +485,25 @@ ggplot(dat_plot, aes(x = X1, y = X2, fill = quantile)) +
   ggtitle(paste0("Quantile = ", qq))
 
 
+# Param plots
+ll <- read_rds("output/simulation_settings_6-2020-10-14_13_31_13.rds")
+params <- tibble(X1 = ll$X_test[, 1], X2 = ll$X_test[, 2]) %>%
+  bind_cols(ll$erf_object) %>%
+  mutate(true_scale = sigma_step(cbind(X1, X2))) %>%
+  pivot_longer(cols = all_of(c("scale_param", "true_scale")),
+               names_to = "method",
+               values_to = "scale")
 
+# scale
+ggplot(params, aes(x = X1, y = X2, fill = scale)) +
+  facet_wrap(vars(method)) +
+  geom_raster() +
+  coord_fixed(expand = FALSE) +
+  scale_fill_viridis_c()
+
+
+
+# QQ-plots
 ggplot(dat_plot, aes(x = true, y = meins)) +
   geom_point() +
   geom_abline(slope = 1)

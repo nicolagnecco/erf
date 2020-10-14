@@ -41,7 +41,7 @@ predict_unconditional_quantiles <- function(threshold, alpha, Y, ntest){
 }
 
 generate_joint_distribution <- function(n, p,
-                                        model = c("step", "periodic", "gaussian"),
+                                        model = c("step", "mixture", "periodic", "gaussian"),
                                         distr = c("gaussian", "student_t"),
                                         df){
   ## integer (x2) character (x2) integer -> list
@@ -68,7 +68,29 @@ generate_joint_distribution <- function(n, p,
              Y_tilde <- rt(n, df = df)
            })
 
-    sigma_x <- 1 + 1 * (X[, 1] > 0)
+    sigma_x <- sigma_step(X)
+    Y <- sigma_x * Y_tilde
+
+    return(Y)
+  }
+
+  mixture_model <- function(X, distr){
+    ## numeric_matrix charachter -> numeric_vector
+    ## produce response Y for the mixture model
+
+    n <- nrow(X)
+    p <- ncol(X)
+
+    switch(distr,
+           "gaussian" = {
+             Y_tilde <- rnorm(n)
+           },
+           "student_t" = {
+             df_x <- 4 #7 * (1 + exp(4 * X[, 1] + 1.2))^(-1) + 3
+             Y_tilde <- rt(n, df = df_x)
+           })
+
+    sigma_x <- sigma_mixture(X[, c(1, 2)])
     Y <- sigma_x * Y_tilde
 
     return(Y)
@@ -128,6 +150,9 @@ generate_joint_distribution <- function(n, p,
          "step" = {
            Y <- step_model(X, distr, df)
          },
+         "mixture" = {
+           Y <- mixture_model(X, distr)
+         },
          "periodic" = {
            Y <- periodic_model(X, distr)
          },
@@ -140,7 +165,7 @@ generate_joint_distribution <- function(n, p,
 }
 
 generate_theoretical_quantiles <- function(alpha, X,
-                                           model = c("step", "periodic", "gaussian"),
+                                           model = c("step", "mixture", "periodic", "gaussian"),
                                            distr = c("gaussian", "student_t"),
                                            df){
   ## numeric_vector numeric_matrix character (x2) integer -> numeric_matrix
@@ -163,8 +188,30 @@ generate_theoretical_quantiles <- function(alpha, X,
              q_tilde <- qt(alpha, df = df)
            })
 
-    sigma_x <- 1 + 1 * (X[, 1] > 0)
+    sigma_x <- sigma_step(X)
     q <- as.matrix(sigma_x) %*% t(q_tilde)
+
+    return(q)
+  }
+
+  mixture_model_quantiles <- function(alpha, X, distr){
+    ## numeric_vector numeric_matrix charachter -> numeric_vector
+    ## produce theoretical quantiles for the mixture model
+
+    n <- nrow(X)
+    p <- length(alpha)
+
+    switch(distr,
+           "gaussian" = {
+             q_tilde <- matrix(qnorm(alpha), nrow = n, ncol = p, byrow = TRUE)
+           },
+           "student_t" = {
+             df_x <- 4 #7 * (1 + exp(4 * X[, 1] + 1.2))^(-1) + 3
+             q_tilde <- sapply(alpha, qt, df = df_x)
+           })
+
+    sigma_x <- sigma_mixture(X[, c(1, 2)])
+    q <- sigma_x * q_tilde
 
     return(q)
   }
@@ -225,6 +272,9 @@ generate_theoretical_quantiles <- function(alpha, X,
          "step" = {
            quantiles <- step_model_quantiles(alpha, X, distr, df)
          },
+         "mixture" = {
+           quantiles <- mixture_model_quantiles(alpha, X, distr)
+         },
          "periodic" = {
            quantiles <- periodic_model_quantiles(alpha, X, distr)
          },
@@ -233,6 +283,39 @@ generate_theoretical_quantiles <- function(alpha, X,
          })
 
   return(quantiles)
+
+}
+
+sigma_mixture <- function(X){
+  ## numeric_matrix -> numeric_vector
+  ## produce 2-dimensional mixture of Gaussians representing the scale function
+
+  mu_1 <- c(-.5, .5)
+  sigma_1 <- rbind(c(1/24, 0), c(0, 1/24))
+  w_1 <- 6
+  mu_2 <- c(.5, -.5)
+  sigma_2 <- rbind(c(1/24, 0), c(0, 1/24))
+  w_2 <- 6
+
+  sigma_x <- 1 +
+    w_1 * mvtnorm::dmvnorm(X[, c(1, 2)], mean = mu_1, sigma = sigma_1) +
+    w_2 * mvtnorm::dmvnorm(X[, c(1, 2)], mean = mu_2, sigma = sigma_2)
+
+  # sigma_x[sigma_x < 1.5] <- 1
+  # sigma_x[sigma_x >= 1.5] <- 5
+
+  return(sigma_x)
+
+}
+
+sigma_step <- function(X){
+  ## numeric_matrix -> numeric_vector
+  ## produce step function representing the scale function
+
+
+  sigma_x <- 1 + 1 * (X[, 1] > 0)
+
+  return(sigma_x)
 
 }
 
@@ -719,10 +802,10 @@ simulation_settings_6 <- function(seed){
   ## plot goodness of fit of different methods
 
   ## base parameter values
-  n0 <- 2e3
-  p0 <- 10
+  n0 <- 5e3
+  p0 <- 2
   num.trees0 <- 2e3
-  min.node.size0 <- 100
+  min.node.size0 <- 40
   honesty0 <- TRUE
   threshold0 <- 0.8
   out_of_bag0 <- TRUE
@@ -733,8 +816,8 @@ simulation_settings_6 <- function(seed){
   n <- c(n0)
   p <- c(p0)
   ntest <- 1e3
-  model <- c("step", "gaussian")
-  distr <- c("student_t")
+  model <- c("step")
+  distr <- c("gaussian")
   df <- c(4)
 
   ## fit
@@ -806,7 +889,7 @@ set_rng <- function(tbl, seed){
   m <- nrow(tbl)
 
   # create independent RNG streams with L'Ecuyer method
-  rng <- RNGseq(m, seed = seed)
+  rng <- RNGseq(m, seed = seed, simplify = FALSE)
 
   # add RNG streams to tbl
   tbl$rng <- rng
@@ -815,9 +898,15 @@ set_rng <- function(tbl, seed){
   return(tbl)
 }
 
-wrapper_sim <- function(i, sims_args, type = c("ise", "plot")){
-  ## integer tibble character -> tibble
-  ## run simulations over arguments of row i in sims_args
+wrapper_sim <- function(i, sims_args, type = c("ise", "plot"),
+                        inspect_erf = FALSE){
+  ## integer tibble character boolean -> tibble
+  ## run simulations over arguments of row i in sims_args and return a tibble
+  ## with results
+  ## NOTE: if inspect_erf = TRUE, it produces a list containing:
+  ## - tibble with simulation results
+  ## - tibble with erf estimated parameters to inspect
+  ## - tibble with test data
 
   type <- match.arg(type)
   m <- nrow(sims_args)
@@ -904,11 +993,13 @@ wrapper_sim <- function(i, sims_args, type = c("ise", "plot")){
   predictions_grf <- predict(fit_grf, X_test, quantiles = quantiles_predict)
 
   # predict quantile regression functions w/ erf
-  predictions_erf <- predict_erf(fit_grf, quantiles = quantiles_predict,
-                                 threshold = threshold,
-                                 newdata = X_test, model_assessment = FALSE,
-                                 Y.test = NULL,
-                                 out_of_bag = out_of_bag)$predictions
+  erf_object <- predict_erf(fit_grf, quantiles = quantiles_predict,
+                            threshold = threshold,
+                            newdata = X_test, model_assessment = FALSE,
+                            Y.test = NULL,
+                            out_of_bag = out_of_bag)
+
+  predictions_erf <- erf_object$predictions
 
   # predict quantile regression functions w/ meinshausen
   predictions_meins <- predict(fit_meins, X_test,
@@ -981,9 +1072,23 @@ wrapper_sim <- function(i, sims_args, type = c("ise", "plot")){
       mutate(X1 = X_test[, 1], X2 = X_test[, 2]) %>%
       unnest(cols = !c("rowid", "id"))
   }
-
+  browser()
   # return value
-  return(res)
+  if (!inspect_erf){
+
+    return(res)
+
+  } else {
+
+    erf_object <- tibble(
+      scale_param = erf_object$pars[, 1],
+      shape_param = erf_object$pars[, 2],
+      t_x0 = erf_object$threshold[, 1])
+
+    return(list(res = res,
+                erf_object = erf_object,
+                X_test = X_test))
+  }
 }
 
 matrix2list <- function(mat){

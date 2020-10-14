@@ -38,8 +38,8 @@
 #' \item \code{pars} --- Numeric matrix. Estimated parameters at each test point (on rows).
 #'         The columns contain the estimates for the \eqn{\sigma}{sigma} and
 #'         \eqn{\xi}{csi} parameter, respectively.
-#' \item \code{threshold} --- Numeric matrix. Estimated intermediate threshold at each test point
-#'         (on rows).
+#' \item \code{threshold} --- Numeric matrix. Intermediate thresholds at each test point (on rows),
+#'         estimated using \code{\link[grf]{quantile_forest}}.
 #' \item \code{plot} (if \code{model_assessment = TRUE}). QQ-plot for model assessment.
 #' }
 #'
