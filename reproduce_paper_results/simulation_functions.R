@@ -871,7 +871,7 @@ simulation_settings_6 <- function(seed){
 
   ## other parameter values
   ## general
-  nexp <- 1:50
+  nexp <- 1:1
   n <- c(n0)
   p <- c(p0)
   ntest <- 1e3
