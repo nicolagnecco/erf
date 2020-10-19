@@ -43,9 +43,9 @@ n_workers <- args$n_workers
 type <- args$type
 inspect_erf <- args$inspect_erf
 
-# sim_setting <- "simulation_settings_6"
-# type <- "plot"
-# inspect_erf <- TRUE
+sim_setting <- "simulation_settings_6"
+type <- "plot"
+inspect_erf <- TRUE
 
 ## set up file names
 dttime <- gsub(pattern = " |:", x = Sys.time(), replacement = "_")
@@ -73,7 +73,7 @@ if(strategy == "cluster"){
   })
 }
 
-
+debug(wrapper_sim)
 ## run simulations
 ptm<-proc.time()
 cat("**** Simulation ---", sim_setting , "**** \n", file = file_log)

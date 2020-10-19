@@ -291,7 +291,23 @@ generate_test_data <- function(ntest, p, method = c("halton", "grid")){
   ## integer (x2) character -> tibble
   ## generate the predictor test data using "halton" or "grid" method
 
-  # !!! continue from here
+  method <- match.arg(method)
+  if (method == "halton"){
+    X_test <- randtoolbox::halton(ntest, p) * 2 - 1
+
+  } else if (method == "grid"){
+    ntest_mod <- floor(sqrt(ntest))
+    X_test <- expand_grid(X1 = seq(-1, 1, length.out = ntest_mod),
+                          X2 = seq(-1, 1, length.out = ntest_mod)) %>%
+      as.matrix()
+
+    if (p > 2){
+      X_test <- cbind(X_test,
+                      matrix(runif(ntest_mod ** 2, min = -1, max = 1),
+                             ncol = p - 2,
+                             nrow = ntest_mod ** 2))
+    }
+  }
 }
 
 sigma_mixture <- function(X){
@@ -813,7 +829,7 @@ simulation_settings_6 <- function(seed){
   n0 <- 5e3
   p0 <- 2
   num.trees0 <- 2e3
-  min.node.size0 <- 40
+  min.node.size0 <- 100
   honesty0 <- TRUE
   threshold0 <- 0.8
   out_of_bag0 <- TRUE
@@ -971,31 +987,31 @@ wrapper_sim <- function(i, sims_args, type = c("ise", "plot"),
 
   # generate test data
   if (type == "ise"){
-  if (test_data == "halton"){
-    X_test <- randtoolbox::halton(ntest, p) * 2 - 1
+    if (test_data == "halton"){
+      X_test <- randtoolbox::halton(ntest, p) * 2 - 1
 
-  } else if (test_data == "uniform"){
-    X_test <- matrix(runif(ntest * p, min = -1, max = 1),
-                     nrow = ntest, ncol = p)
+    } else if (test_data == "uniform"){
+      X_test <- matrix(runif(ntest * p, min = -1, max = 1),
+                       nrow = ntest, ncol = p)
 
-  } else if (test_data == "zero"){
-    X_test <- matrix(0, nrow = ntest, ncol = p)
-    X_test[, 1] <- seq(-1, 1, length.out = ntest)
-  }
+    } else if (test_data == "zero"){
+      X_test <- matrix(0, nrow = ntest, ncol = p)
+      X_test[, 1] <- seq(-1, 1, length.out = ntest)
+    }
   } else {
     if (p < 2){
       stop("p must be at least 2, when type = plot.")
     }
 
-   X_test <- expand_grid(X1 = seq(-1, 1, length.out = floor(sqrt(ntest))),
-                         X2 = seq(-1, 1, length.out = floor(sqrt(ntest)))) %>%
-     as.matrix()
+    X_test <- expand_grid(X1 = seq(-1, 1, length.out = floor(sqrt(ntest))),
+                          X2 = seq(-1, 1, length.out = floor(sqrt(ntest)))) %>%
+      as.matrix()
 
-   if (p > 2){
-   X_test <- cbind(X_test,
-                   matrix(0, ncol = p - 2, nrow = floor(sqrt(ntest))**2))
-   }
-}
+    if (p > 2){
+      X_test <- cbind(X_test,
+                      matrix(0, ncol = p - 2, nrow = floor(sqrt(ntest))**2))
+    }
+  }
 
   # predict models
   # predict quantile regression functions w/ grf
@@ -1023,9 +1039,9 @@ wrapper_sim <- function(i, sims_args, type = c("ise", "plot"),
   }
 
   predictions_unconditional <- predict_unconditional_quantiles(threshold = threshold,
-                                                           alpha = quantiles_predict,
-                                                           Y = dat$Y,
-                                                           ntest = ntest_unc)
+                                                               alpha = quantiles_predict,
+                                                               Y = dat$Y,
+                                                               ntest = ntest_unc)
 
   # predict true quantile regression functions
   predictions_true <- generate_theoretical_quantiles(alpha = quantiles_predict,
@@ -1034,12 +1050,12 @@ wrapper_sim <- function(i, sims_args, type = c("ise", "plot"),
                                                      distr = distr, df = df)
 
   # collect results
-  tb_erf <- tibble(id = id,
+  tb_erf <- tibble(id = 1,
                    method = "erf",
                    predictions = matrix2list(predictions_erf)) %>%
     rowid_to_column()
 
-  tb_grf <- tibble(id = id,
+  tb_grf <- tibble(id = 1,
                    method = "grf",
                    predictions = matrix2list(predictions_grf)) %>%
     rowid_to_column()
@@ -1050,8 +1066,8 @@ wrapper_sim <- function(i, sims_args, type = c("ise", "plot"),
     rowid_to_column()
 
   tb_unconditional <- tibble(id = id,
-                        method = "unconditional",
-                        predictions = matrix2list(predictions_unconditional)) %>%
+                             method = "unconditional",
+                             predictions = matrix2list(predictions_unconditional)) %>%
     rowid_to_column()
 
   tb_meins <- tibble(id = id,
@@ -1061,7 +1077,7 @@ wrapper_sim <- function(i, sims_args, type = c("ise", "plot"),
 
   method <- c("erf", "grf", "meins", "unconditional")
 
-  res <- bind_rows(tb_true, tb_grf, tb_erf, tb_unconditional, tb_meins) %>%
+  res <- bind_rows(tb_erf, tb_grf) %>%
     mutate(quantiles_predict = list(quantiles_predict)) %>%
     pivot_wider(names_from = "method",
                 values_from = "predictions")
@@ -1081,7 +1097,7 @@ wrapper_sim <- function(i, sims_args, type = c("ise", "plot"),
       mutate(X1 = X_test[, 1], X2 = X_test[, 2]) %>%
       unnest(cols = !c("rowid", "id"))
   }
-  browser()
+
   # return value
   if (!inspect_erf){
 
@@ -1242,8 +1258,8 @@ wrapper_sim_weights_gpd <- function(i, sims_args){
     rowid_to_column()
 
   tb_erf_wgts <- tibble(id = id,
-                   method = "erf_true_weights",
-                   predictions = matrix2list(predictions_erf_true_wgts)) %>%
+                        method = "erf_true_weights",
+                        predictions = matrix2list(predictions_erf_true_wgts)) %>%
     rowid_to_column()
 
   tb_erf_oracle <- tibble(id = id,
@@ -1327,20 +1343,22 @@ get_step_intermediate_thres <- function(x_train, y_train, x_test = NULL,
 }
 
 # new
-simulation_study_1 <- function(n, p, ntest, model = c("step", "mixture"),
-                               distr = c("gaussian", "student_t"), df,
-                               num.trees = 2e3, quantiles_fit = c(0.1, 0.5, 0.9),
-                               mtry = min(ceiling(sqrt(ncol(p)) + 20), ncol(p)),
-                               min.node.size = 5, honesty = TRUE,
-                               quantiles_predict = c(.99, .999, .9995),
-                               threshold = 0.8, out_of_bag = TRUE){
+simulation_study <- function(n, p, ntest, model = c("step", "mixture"),
+                             distr = c("gaussian", "student_t"), df,
+                             num.trees = 2e3, quantiles_fit = c(0.1, 0.5, 0.9),
+                             mtry = min(ceiling(sqrt(ncol(p)) + 20), ncol(p)),
+                             min.node.size = 5, honesty = TRUE,
+                             quantiles_predict = c(.99, .999, .9995),
+                             threshold = 0.8, out_of_bag = TRUE,
+                             test_data = c("halton", "grid")){
   ## different params -> tibble
-  ## perform simulation_study 1
+  ## perform simulation_study
   ## !!! add comments
 
   # check arguments
   model <- match.arg(model)
   distr <- match.arg(model)
+  test_data <- match.arg(test_data)
 
   # generate training data
   rng_sims <- sims_args$rng[[i]]
@@ -1354,37 +1372,34 @@ simulation_study_1 <- function(n, p, ntest, model = c("step", "mixture"),
                              num.trees = num.trees,
                              min.node.size = min.node.size, honesty = honesty)
 
+
+  # MEINS
+  fit_meins <- quantile_forest(dat$X, dat$Y, quantiles = quantiles_fit,
+                               num.trees = num.trees,
+                               regression.splitting = TRUE,
+                               min.node.size = min.node.size,
+                               honesty = honesty)
+
   # generate test data
-  if (type == "ise"){
-    if (test_data == "halton"){
-      X_test <- randtoolbox::halton(ntest, p) * 2 - 1
-
-    } else if (test_data == "uniform"){
-      X_test <- matrix(runif(ntest * p, min = -1, max = 1),
-                       nrow = ntest, ncol = p)
-
-    } else if (test_data == "zero"){
-      X_test <- matrix(0, nrow = ntest, ncol = p)
-      X_test[, 1] <- seq(-1, 1, length.out = ntest)
-    }
-  } else {
-    if (p < 2){
-      stop("p must be at least 2, when type = plot.")
-    }
-
-    X_test <- expand_grid(X1 = seq(-1, 1, length.out = floor(sqrt(ntest))),
-                          X2 = seq(-1, 1, length.out = floor(sqrt(ntest)))) %>%
-      as.matrix()
-
-    if (p > 2){
-      X_test <- cbind(X_test,
-                      matrix(0, ncol = p - 2, nrow = floor(sqrt(ntest))**2))
-    }
+  if (test_data == "grid"){
+    ntest <- floor(sqrt(ntest)) ** 2
+    warning(paste0("Modified ntest to: ", ntest))
   }
 
+  X_test <- generate_test_data(ntest, p, test_data)
+
   # predict models
-  # predict quantile regression functions w/ grf
-  predictions_grf <- predict(fit_grf, X_test, quantiles = quantiles_predict)
+  # GRF
+  predictions_grf <- predict_method(
+    "grf",
+    list(object = fit_grf, newdata = X_test, quantiles = quantiles_predict))
+
+
+  # MEINS
+  predictions_meins <- predict(
+    "meins",
+    list(object = fit_grf, newdata = X_test)
+  )
 
   # predict quantile regression functions w/ erf
   erf_object <- predict_erf(fit_grf, quantiles = quantiles_predict,
@@ -1419,12 +1434,12 @@ simulation_study_1 <- function(n, p, ntest, model = c("step", "mixture"),
                                                      distr = distr, df = df)
 
   # collect results
-  tb_erf <- tibble(id = id,
+  tb_erf <- tibble(id = 1,
                    method = "erf",
                    predictions = matrix2list(predictions_erf)) %>%
     rowid_to_column()
 
-  tb_grf <- tibble(id = id,
+  tb_grf <- tibble(id = 1,
                    method = "grf",
                    predictions = matrix2list(predictions_grf)) %>%
     rowid_to_column()
@@ -1446,49 +1461,46 @@ simulation_study_1 <- function(n, p, ntest, model = c("step", "mixture"),
 
   method <- c("erf", "grf", "meins", "unconditional")
 
-  res <- bind_rows(tb_true, tb_grf, tb_erf, tb_unconditional, tb_meins) %>%
+  res <- bind_rows(tb_erf, tb_grf) %>%
     mutate(quantiles_predict = list(quantiles_predict)) %>%
     pivot_wider(names_from = "method",
                 values_from = "predictions")
 
-
-  if (type == "ise"){
-    res <- res %>%
-      unnest(cols = !c("rowid", "id")) %>%
-      mutate(across(all_of(method), function(x){(x - true)^2})) %>%
-      select(-"true") %>%
-      pivot_longer(cols = all_of(method),
-                   names_to = "method", values_to = "se") %>%
-      group_by(id, method, quantiles_predict) %>%
-      summarise(ise = mean(se))
-  } else {
-    res <- res %>%
-      mutate(X1 = X_test[, 1], X2 = X_test[, 2]) %>%
-      unnest(cols = !c("rowid", "id"))
-  }
-  browser()
-  # return value
-  if (!inspect_erf){
-
-    return(res)
-
-  } else {
-
-    erf_object <- tibble(
-      scale_param = erf_object$pars[, 1],
-      shape_param = erf_object$pars[, 2],
-      t_x0 = erf_object$threshold[, 1])
-
-    return(list(res = res,
-                erf_object = erf_object,
-                X_test = X_test))
-  }
 
   # fit model with different methods
 
   # generate test data
 
   # predict model with different methods
+
+}
+
+predict_method <- function(method = c("erf", "erf_trim", "grf",
+                                      "meins", "unconditional", "true"),
+                           arg_list){
+
+  ## character -> tibble
+  ## predict quantiles with the given method
+
+  method <- match.arg(method)
+
+  if (method %in% c("erf", "erf_trim")){
+    pred_object <- do.call(what = erf::predict_erf, args = arg_list)
+    predictions <- pred_object$predictions
+
+  } else if (method %in% c("grf", "meins")){
+    predictions <- do.call(what = stats::predict, args = arg_list)
+
+  } else if (method == "unconditional"){
+    predictions <- do.call(predict_unconditional_quantiles, args = arg_list)
+
+  } else if (method == "true"){
+    predictions <- do.call(generate_theoretical_quantiles,args = arg_list)
+  }
+
+  res <- tibble(method = method, predictions = matrix2list(predictions))
+
+  return(res)
 
 }
 

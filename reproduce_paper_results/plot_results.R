@@ -462,31 +462,29 @@ ggsave("output/simulation_settings_5.pdf", gg,
 
 
 # plot sim_6 ####
-ll <- read_rds("output/simulation_settings_6-2020-10-19_09_21_30.rds")
+ll <- read_rds("output/simulation_settings_6-2020-10-19_11_42_45.rds")
 
 
 # Contour plots
 dat <- ll$res
-qq <- .9999
+qq <- .999
 
 dat_plot <- dat %>%
   filter(quantiles_predict == qq,
          model == "step") %>%
   pivot_longer(cols = all_of(c("true", "grf", "erf", "meins", "unconditional")),
                names_to = "method", values_to = "quantile") %>%
-  filter(method %in% c("grf")) %>%
+  # filter(method %in% c("grf")) %>%
   mutate(method = factor(method))
 
-ggplot(dat_plot, aes(x = X1, y = X2, fill = quantile)) +
-  facet_wrap(vars(method)) +
-  geom_raster() +
-  coord_fixed(expand = FALSE) +
-  scale_fill_viridis_c() +
-  ggtitle(paste0("Quantile = ", qq))
+mat <- matrix(runif(n = 300), ncol = 3)
+dat <- tibble(X1 = mat[, 1], X2 = mat[, 2], y = factor(mat[, 3]))
+ggplot(dat, aes(x = X1, y = X2, fill = y)) +
+  geom_tile()
 
 
 # Param plots
-ll <- read_rds("output/simulation_settings_6-2020-10-19_09_21_30.rds")
+ll <- read_rds("output/simulation_settings_6-2020-10-")
 params <- tibble(X1 = ll$X_test[, 1], X2 = ll$X_test[, 2]) %>%
   bind_cols(ll$erf_object) %>%
   mutate(true_scale = sigma_step(cbind(X1, X2))) %>%
