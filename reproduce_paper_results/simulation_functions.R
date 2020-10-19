@@ -1,4 +1,3 @@
-# old
 square_loss <- function(y, y_hat){
   ## numeric_vector numeric_vector -> numeric
   ## produce square loss
@@ -42,7 +41,8 @@ predict_unconditional_quantiles <- function(threshold, alpha, Y, ntest){
 }
 
 generate_joint_distribution <- function(n, p,
-                                        model = c("step", "mixture", "periodic", "gaussian"),
+                                        model = c("step", "mixture", "periodic",
+                                                  "gaussian", "linear"),
                                         distr = c("gaussian", "student_t"),
                                         df){
   ## integer (x2) character (x2) integer -> list
@@ -142,6 +142,27 @@ generate_joint_distribution <- function(n, p,
     return(Y)
   }
 
+  linear_model <- function(X, distr, df){
+    ## numeric_matrix charachter integer -> numeric_vector
+    ## produce response Y for the linear model
+
+    n <- nrow(X)
+    p <- ncol(X)
+
+    switch(distr,
+           "gaussian" = {
+             Y_tilde <- rnorm(n)
+           },
+           "student_t" = {
+             Y_tilde <- rt(n, df = df)
+           })
+
+    sigma_x <- sigma_step(X)
+    Y <- 2 * X[, 1] + sigma_x * Y_tilde
+
+    return(Y)
+  }
+
   # body
   model <- match.arg(model)
   distr <- match.arg(distr)
@@ -159,6 +180,9 @@ generate_joint_distribution <- function(n, p,
          },
          "gaussian" = {
            Y <- gaussian_model(X, distr)
+         },
+         "linear" = {
+           Y <- linear_model(X, distr, df)
          })
 
   return(list(X = X, Y = Y))
@@ -166,7 +190,9 @@ generate_joint_distribution <- function(n, p,
 }
 
 generate_theoretical_quantiles <- function(alpha, X,
-                                           model = c("step", "mixture", "periodic", "gaussian"),
+                                           model = c("step", "mixture",
+                                                     "periodic", "gaussian",
+                                                     "linear"),
                                            distr = c("gaussian", "student_t"),
                                            df){
   ## numeric_vector numeric_matrix character (x2) integer -> numeric_matrix
@@ -262,6 +288,28 @@ generate_theoretical_quantiles <- function(alpha, X,
     return(q)
   }
 
+  linear_model_quantiles <- function(alpha, X, distr, df){
+    ## numeric_vector numeric_matrix charachter integer -> numeric_vector
+    ## produce theoretical quantiles Y for the linear model
+
+    n <- nrow(X)
+    p <- ncol(X)
+
+    switch(distr,
+           "gaussian" = {
+             q_tilde <- qnorm(alpha)
+           },
+           "student_t" = {
+             q_tilde <- qt(alpha, df = df)
+           })
+
+    sigma_x <- sigma_step(X)
+    q <- 2 * X[, 1] + as.matrix(sigma_x) %*% t(q_tilde)
+
+    return(q)
+  }
+
+
   # body
   model <- match.arg(model)
   distr <- match.arg(distr)
@@ -281,6 +329,9 @@ generate_theoretical_quantiles <- function(alpha, X,
          },
          "gaussian" = {
            quantiles <- gaussian_model_quantiles(alpha, X, distr)
+         },
+         "linear" = {
+           quantiles <- linear_model_quantiles(alpha, X, distr, df)
          })
 
   return(quantiles)
@@ -820,11 +871,11 @@ simulation_settings_6 <- function(seed){
 
   ## other parameter values
   ## general
-  nexp <- 1:5
+  nexp <- 1:50
   n <- c(n0)
   p <- c(p0)
   ntest <- 1e3
-  model <- c("step")
+  model <- c("linear", "step", "mixture")
   distr <- c("student_t")
   df <- c(4)
 
@@ -1332,12 +1383,10 @@ normalize <- function(x){
   ## normalize numeric vector
 
   if (var(x) == 0){
-    scale(x, scale = FALSE)
+    y <- scale(x, scale = FALSE)
   } else {
-    scale(x)
+    y <- scale(x)
     # (x - min(x))/(max(x) - min(x))
   }
-  as.numeric(x)
-
-  return(0)
+  as.numeric(y)
 }

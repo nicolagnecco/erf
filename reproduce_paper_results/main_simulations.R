@@ -102,6 +102,9 @@ if (type == "ise"){
 } else {
   res <- res %>%
     left_join(sims_args %>% select(-quantiles_predict), by = "id")
+
+  erf_object <- erf_object %>%
+    left_join(sims_args %>% select(-quantiles_predict), by = "id")
 }
 
 ll <- list()

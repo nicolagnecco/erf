@@ -462,19 +462,19 @@ ggsave("output/simulation_settings_5.pdf", gg,
 
 
 # plot resuls sim6 ####
-ll <- read_rds("output/simulation_settings_6-2020-10-19_17_22_09.rds")
+ll <- read_rds("output/simulation_settings_6-2020-10-19_21_18_31.rds")
 
 
 # Contour plots
 dat <- ll$res
-qq <- .9995
+qq <- .9999
+md <- "linear"
 
 dat_plot <- dat %>%
-  filter(quantiles_predict == qq,
-         model == "step") %>%
+  filter(quantiles_predict == qq, model == md) %>%
   pivot_longer(cols = all_of(c("true", "grf", "erf", "meins", "unconditional")),
                names_to = "method", values_to = "quantile") %>%
-  filter((method %in% c("grf", "true"))) %>%
+  filter((method %in% c("erf", "true"))) %>%
   mutate(method = factor(method)) %>%
   group_by(X1, X2, method) %>%
   summarise(quantile = mean(quantile))
@@ -489,10 +489,11 @@ ggplot(dat_plot, aes(x = X1, y = X2, fill = quantile)) +
 
 # Param plots
 params <- ll$erf_object %>%
+  filter(model == md) %>%
   mutate(true_scale = sigma_step(cbind(X1, X2)),
          true_shape = 1 / max(ll$res$df)) %>%
   group_by(id) %>%
-  mutate(across(c("true_scale", "true_shape", "scale_param", "shape_param"),
+  mutate(across(c("true_scale", "scale_param"),
              normalize))
 
 scale_param <- params %>%
