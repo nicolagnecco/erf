@@ -27,8 +27,8 @@ option_list = list(
   make_option(c("-t", "--type"), type = "character", default="ise",
               help="One of 'ise' and 'plot'.", metavar="character"),
   make_option(c("-i", "--inspect_erf"), type = "logical", default=FALSE,
-              help=paste0("If TRUE, it returns a list that, along with simulation results, ",
-              "allows you to inspect the parameters estimated by erf", metavar="logical")))
+              help=paste0("If TRUE, it returns a list that contains simulation results ",
+              "and the parameters estimated by erf."), metavar="logical"))
 
 opt_parser <- OptionParser(option_list=option_list);
 args <- parse_args(opt_parser);

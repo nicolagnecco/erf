@@ -1,3 +1,4 @@
+# old
 square_loss <- function(y, y_hat){
   ## numeric_vector numeric_vector -> numeric
   ## produce square loss
@@ -817,7 +818,7 @@ simulation_settings_6 <- function(seed){
   p <- c(p0)
   ntest <- 1e3
   model <- c("step")
-  distr <- c("gaussian")
+  distr <- c("student_t")
   df <- c(4)
 
   ## fit
@@ -900,6 +901,7 @@ set_rng <- function(tbl, seed){
 
 wrapper_sim <- function(i, sims_args, type = c("ise", "plot"),
                         inspect_erf = FALSE){
+  ## !!! make it more modular
   ## integer tibble character boolean -> tibble
   ## run simulations over arguments of row i in sims_args and return a tibble
   ## with results
@@ -1315,4 +1317,41 @@ get_step_intermediate_thres <- function(x_train, y_train, x_test = NULL,
     t_x0[x_test[, 1] >= 0] <- t_xi_pos
     return(t_x0)
   }
- }
+}
+
+# new
+simulation_study_1 <- function(n, p, ntest, model = c("step", "mixture"),
+                               distr = c("gaussian", "student_t"), df,
+                               num.trees = 2e3, quantiles_fit = c(0.1, 0.5, 0.9),
+                               mtry = min(ceiling(sqrt(ncol(p)) + 20), ncol(p)),
+                               min.node.size = 5, honesty = TRUE,
+                               quantiles_predict = c(.99, .999, .9995),
+                               threshold = 0.8, out_of_bag = TRUE){
+  ## different params -> tibble
+  ## perform simulation_study 1
+
+  # generate training data
+
+  # fit model with different methods
+
+  # generate test data
+
+  # predict model with different methods
+
+}
+
+simulation_wrapper <- function(i, rowid, sim_fn, sim_fn_args){
+  ## apply arguments sim_fn_args[i] to sim_fn
+  ## Args:
+  ##    - i (integer): row to consider from sim_fn_args
+  ##    - rowid (integer): unique identifier of the current simulation row
+  ##      (not necessarily equal to i)
+  ##    - sim_fn (function): function to run
+  ##    - sim_fn_args (tibble): tibble with arguments to pass to sim_fn
+  ##
+  ## Returns:
+  ##    - tibble with simulation results
+
+  do.call(what = sim_study, args = fun_args[i, ]) %>%
+    mutate(rowid = rowid)
+}
