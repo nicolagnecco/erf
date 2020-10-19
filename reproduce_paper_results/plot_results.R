@@ -461,21 +461,23 @@ ggsave("output/simulation_settings_5.pdf", gg,
        width = 15, height = 22.5, units = c("in"))
 
 
-# plot sim_6 ####
-ll <- read_rds("output/simulation_settings_6-2020-10-19_09_21_30.rds")
+# plot resuls sim6 ####
+ll <- read_rds("output/simulation_settings_6-2020-10-19_17_22_09.rds")
 
 
 # Contour plots
 dat <- ll$res
-qq <- .9999
+qq <- .9995
 
 dat_plot <- dat %>%
   filter(quantiles_predict == qq,
          model == "step") %>%
   pivot_longer(cols = all_of(c("true", "grf", "erf", "meins", "unconditional")),
                names_to = "method", values_to = "quantile") %>%
-  filter(method %in% c("grf")) %>%
-  mutate(method = factor(method))
+  filter((method %in% c("grf", "true"))) %>%
+  mutate(method = factor(method)) %>%
+  group_by(X1, X2, method) %>%
+  summarise(quantile = mean(quantile))
 
 ggplot(dat_plot, aes(x = X1, y = X2, fill = quantile)) +
   facet_wrap(vars(method)) +
@@ -486,21 +488,39 @@ ggplot(dat_plot, aes(x = X1, y = X2, fill = quantile)) +
 
 
 # Param plots
-ll <- read_rds("output/simulation_settings_6-2020-10-19_09_21_30.rds")
-params <- tibble(X1 = ll$X_test[, 1], X2 = ll$X_test[, 2]) %>%
-  bind_cols(ll$erf_object) %>%
-  mutate(true_scale = sigma_step(cbind(X1, X2))) %>%
+params <- ll$erf_object %>%
+  mutate(true_scale = sigma_step(cbind(X1, X2)),
+         true_shape = 1 / max(ll$res$df)) %>%
+  group_by(id) %>%
+  mutate(across(c("true_scale", "true_shape", "scale_param", "shape_param"),
+             normalize))
+
+scale_param <- params %>%
   pivot_longer(cols = all_of(c("scale_param", "true_scale")),
                names_to = "method",
-               values_to = "scale")
+               values_to = "scale") %>%
+  group_by(X1, X2, method) %>%
+  summarise(scale = mean(scale))
+
+shape_param <- params %>%
+  pivot_longer(cols = all_of(c("shape_param", "true_shape")),
+               names_to = "method",
+               values_to = "shape") %>%
+  group_by(X1, X2, method) %>%
+  summarise(shape = mean(shape))
 
 # scale
-ggplot(params, aes(x = X1, y = X2, fill = shape_param)) +
+ggplot(scale_param, aes(x = X1, y = X2, fill = scale)) +
   facet_wrap(vars(method)) +
   geom_raster() +
   coord_fixed(expand = FALSE) +
   scale_fill_viridis_c()
 
+ggplot(shape_param, aes(x = X1, y = X2, fill = shape)) +
+  facet_wrap(vars(method)) +
+  geom_raster() +
+  coord_fixed(expand = FALSE) +
+  scale_fill_viridis_c()
 
 
 # QQ-plots

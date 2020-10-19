@@ -77,7 +77,7 @@ if(strategy == "cluster"){
 ## run simulations
 ptm<-proc.time()
 cat("**** Simulation ---", sim_setting , "**** \n", file = file_log)
-ll <- foreach(i = 1:m, .combine = bind_rows) %dopar% {
+ll <- foreach(i = 1:m) %dopar% {
   cat("Simulation", i, "out of", m, "\n", file = file_log, append = TRUE)
   wrapper_sim(i, sims_args, type, inspect_erf)
 }
@@ -88,7 +88,9 @@ sink()
 
 ## collect and save results
 if (inspect_erf) {
-  res <- ll$res
+  res <- purrr::map(ll, function(x){x$res}) %>% reduce(.f = bind_rows)
+  erf_object <- purrr::map(ll, function(x){x$erf_object}) %>% reduce(.f = bind_rows)
+
 } else {
   res <- ll
 }
@@ -102,8 +104,11 @@ if (type == "ise"){
     left_join(sims_args %>% select(-quantiles_predict), by = "id")
 }
 
+ll <- list()
+
 if (inspect_erf){
   ll$res <- res
+  ll$erf_object <- erf_object
 } else {
   ll <- res
 }
