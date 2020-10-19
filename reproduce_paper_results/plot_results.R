@@ -462,19 +462,19 @@ ggsave("output/simulation_settings_5.pdf", gg,
 
 
 # plot resuls sim6 ####
-ll <- read_rds("output/simulation_settings_6-2020-10-19_21_18_31.rds")
+ll <- read_rds("output/simulation_settings_6-2020-10-19_19_30_08.rds")
 
 
 # Contour plots
 dat <- ll$res
 qq <- .9999
-md <- "linear"
+md <- "mixture"
 
 dat_plot <- dat %>%
   filter(quantiles_predict == qq, model == md) %>%
   pivot_longer(cols = all_of(c("true", "grf", "erf", "meins", "unconditional")),
                names_to = "method", values_to = "quantile") %>%
-  filter((method %in% c("erf", "true"))) %>%
+  filter((method %in% c("grf", "true", "erf"))) %>%
   mutate(method = factor(method)) %>%
   group_by(X1, X2, method) %>%
   summarise(quantile = mean(quantile))
@@ -490,7 +490,7 @@ ggplot(dat_plot, aes(x = X1, y = X2, fill = quantile)) +
 # Param plots
 params <- ll$erf_object %>%
   filter(model == md) %>%
-  mutate(true_scale = sigma_step(cbind(X1, X2)),
+  mutate(true_scale = sigma_mixture(cbind(X1, X2)),
          true_shape = 1 / max(ll$res$df)) %>%
   group_by(id) %>%
   mutate(across(c("true_scale", "scale_param"),
