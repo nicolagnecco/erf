@@ -17,7 +17,8 @@ Imports:
     grf,
     ismev,
     ggplot2,
-    Rcpp
+    Rcpp,
+    purrr
 URL: https://github.com/nicolagnecco/erf
 BugReports: https://github.com/nicolagnecco/erf/issues
 LinkingTo: 

@@ -11,7 +11,8 @@ predict_erf(
   newdata = NULL,
   model_assessment = FALSE,
   Y.test = NULL,
-  out_of_bag = FALSE
+  out_of_bag = FALSE,
+  lambda = 0
 )
 }
 \arguments{
@@ -48,6 +49,10 @@ Default is \code{NULL}.}
 \item{out_of_bag}{Boolean. Use out-of-bag observations to compute thresholds
 \eqn{t(x_i)} for the GPD?
 Default is \code{FALSE}.}
+
+\item{lambda}{Numeric. Penalty coefficient for the \eqn{\xi}{csi} parameter
+in the weighted log-likelihood.
+Default is 0.}
 }
 \value{
 Named list. The list is made of:
@@ -57,8 +62,10 @@ each desired quantile (on columns).
 \item \code{pars} --- Numeric matrix. Estimated parameters at each test point (on rows).
 The columns contain the estimates for the \eqn{\sigma}{sigma} and
 \eqn{\xi}{csi} parameter, respectively.
-\item \code{threshold} --- Numeric matrix. Estimated intermediate threshold at each test point
-(on rows).
+\item \code{threshold} --- Numeric matrix. Intermediate thresholds at each test point (on rows),
+estimated using \code{\link[grf]{quantile_forest}}.
+\item \code{lambda} --- Numeric. Penalty coefficient for the \eqn{\xi}{csi} parameter
+in the weighted log-likelihood.
 \item \code{plot} (if \code{model_assessment = TRUE}). QQ-plot for model assessment.
 }
 }

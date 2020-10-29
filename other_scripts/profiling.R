@@ -80,14 +80,17 @@ load("other_scripts/cpp_test_data.Rdata")
 
 sourceCpp("src/weighted_llh.cpp")
 
-mark(
-  weighted_llh(data, weights, par),
-  weighted_LLH(data, weights, par),
-  check = FALSE
+res <- mark(
+  weighted_llh(par = par, data = data, weights = weights, lambda = 1,
+               xi_prior = -0.3),
+  weighted_LLH(data = data, weights = weights, par = par, lambda = 1,
+               xi_prior = -0.3)
 )
 
-weighted_llh(data = data, weights = weights, pars = par)
-weighted_LLH(data, weights, par)
+weighted_llh(par = par, data = data, weights = weights, lambda = 1,
+             xi_prior = -0.3)
+weighted_LLH(data = data, weights = weights, par = par, lambda = 1,
+             xi_prior = -0.3)
 
 
 #

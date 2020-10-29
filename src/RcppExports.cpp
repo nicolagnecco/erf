@@ -7,20 +7,22 @@
 using namespace Rcpp;
 
 // weighted_llh
-double weighted_llh(const arma::vec& par, const arma::vec& data, const arma::vec& weights);
-RcppExport SEXP _erf_weighted_llh(SEXP parSEXP, SEXP dataSEXP, SEXP weightsSEXP) {
+double weighted_llh(const arma::vec& par, const arma::vec& data, const arma::vec& weights, double lambda, double xi_prior);
+RcppExport SEXP _erf_weighted_llh(SEXP parSEXP, SEXP dataSEXP, SEXP weightsSEXP, SEXP lambdaSEXP, SEXP xi_priorSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< const arma::vec& >::type par(parSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type data(dataSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type weights(weightsSEXP);
-    rcpp_result_gen = Rcpp::wrap(weighted_llh(par, data, weights));
+    Rcpp::traits::input_parameter< double >::type lambda(lambdaSEXP);
+    Rcpp::traits::input_parameter< double >::type xi_prior(xi_priorSEXP);
+    rcpp_result_gen = Rcpp::wrap(weighted_llh(par, data, weights, lambda, xi_prior));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_erf_weighted_llh", (DL_FUNC) &_erf_weighted_llh, 3},
+    {"_erf_weighted_llh", (DL_FUNC) &_erf_weighted_llh, 5},
     {NULL, NULL, 0}
 };
 

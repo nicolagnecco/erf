@@ -30,6 +30,9 @@
 #' @param out_of_bag Boolean. Use out-of-bag observations to compute thresholds
 #'                   \eqn{t(x_i)} for the GPD?
 #'                   Default is \code{FALSE}.
+#' @param lambda Numeric. Penalty coefficient for the \eqn{\xi}{csi} parameter
+#'               in the weighted log-likelihood.
+#'               Default is 0.
 #'
 #' @return Named list. The list is made of:
 #' \itemize{
@@ -40,22 +43,24 @@
 #'         \eqn{\xi}{csi} parameter, respectively.
 #' \item \code{threshold} --- Numeric matrix. Intermediate thresholds at each test point (on rows),
 #'         estimated using \code{\link[grf]{quantile_forest}}.
+#' \item \code{lambda} --- Numeric. Penalty coefficient for the \eqn{\xi}{csi} parameter
+#'         in the weighted log-likelihood.
 #' \item \code{plot} (if \code{model_assessment = TRUE}). QQ-plot for model assessment.
 #' }
 #'
 #' @export
 predict_erf <- function(object, quantiles, threshold = 0.8,
                         newdata = NULL, model_assessment = FALSE,
-                        Y.test = NULL, out_of_bag = FALSE){
+                        Y.test = NULL, out_of_bag = FALSE, lambda = 0){
 
   predict_erf_internal(object, quantiles, threshold,
-                       newdata, model_assessment, Y.test, out_of_bag)
+                       newdata, model_assessment, Y.test, out_of_bag, lambda)
 
 }
 
 predict_erf_internal <- function(object, quantiles, threshold = 0.8,
                         newdata = NULL, model_assessment = FALSE,
-                        Y.test = NULL, out_of_bag = FALSE,
+                        Y.test = NULL, out_of_bag = FALSE, lambda = 0,
                         wi_x0 = NULL, t_xi = NULL, t_x0 = NULL) {
 
   ## same inputs as predict_erf + weights, t_xi, t_x0 -> same output as predict_erf
@@ -80,16 +85,18 @@ predict_erf_internal <- function(object, quantiles, threshold = 0.8,
   t_x0 <- compute_thresholds(object, threshold = threshold, X = X0)
   }
 
-  gpd_pars <- fit_conditional_gpd(object, wi_x0, t_xi)
+  gpd_pars <- fit_conditional_gpd(object, wi_x0, t_xi, lambda)
 
   q_hat <- compute_extreme_quantiles(gpd_pars, t_x0, quantiles, threshold)
 
   if (model_assessment){
     p <- compute_model_assessment(t_x0, Y.test, gpd_pars)
     return(list(predictions = q_hat, pars = gpd_pars, threshold = t_x0,
+                lambda = lambda,
                 plot = p))
   } else {
-    return(list(predictions = q_hat, pars = gpd_pars, threshold = t_x0))
+    return(list(predictions = q_hat, pars = gpd_pars, threshold = t_x0,
+                lambda = lambda))
   }
 }
 
@@ -220,8 +227,8 @@ compute_thresholds <- function(object, threshold, X, out_of_bag = FALSE){
   return(q_hat)
 }
 
-fit_conditional_gpd <- function(object, wi_x0, t_xi){
-  ## quantile_forest numeric_matrix numeric_vector -> matrix
+fit_conditional_gpd <- function(object, wi_x0, t_xi, lambda){
+  ## quantile_forest numeric_matrix numeric_vector numeric -> matrix
   ## produce matrix with MLE GPD scale and shape parameter for each test point
 
   ntest <- nrow(wi_x0)
@@ -231,17 +238,18 @@ fit_conditional_gpd <- function(object, wi_x0, t_xi){
   init_par <- ismev::gpd.fit(exc_data, 0, show=FALSE)$mle
 
   wi_x0 <- wi_x0[, exc_idx]
-  EVT_par <- purrr::map_dfr(1:ntest, optim_wrap,init_par, weighted_llh,
-                            exc_data, wi_x0)
+  EVT_par <- purrr::map_dfr(1:ntest, optim_wrap, init_par, weighted_llh,
+                            exc_data, wi_x0, lambda, init_par[2])
 
   return(as.matrix(EVT_par))
 }
 
-optim_wrap <- function(i, init_par, obj_fun, exc_data, wi_x0){
+optim_wrap <- function(i, init_par, obj_fun, exc_data, wi_x0, lambda, xi_prior){
 
   curr_wi_x0 <- wi_x0[i, ]
-  res <- stats::optim(par = init_par, fn = obj_fun, data=exc_data,
-                      weights=curr_wi_x0)$par
+  res <- stats::optim(par = init_par, fn = obj_fun, data = exc_data,
+                      weights = curr_wi_x0, lambda = lambda,
+                      xi_prior = xi_prior)$par
   names(res) <- c("sigma", "csi")
   return(res)
 }
@@ -360,9 +368,9 @@ sample_exponentials <- function(dat_plot){
   return(dat)
 }
 
-weighted_LLH <- function(par, data, weights) {
-  ## numeric_vector numeric_matrix numeric_vector -> numeric
-  ## returns the weighted GPD log-likelihood
+weighted_LLH <- function(par, data, weights, lambda, xi_prior) {
+  ## numeric_vector numeric_matrix numeric_vector numeric numeric -> numeric
+  ## returns the weighted penalized GPD log-likelihood
 
   sig = par[1] # sigma
   xi = par[2] # xi
@@ -373,7 +381,9 @@ weighted_LLH <- function(par, data, weights) {
     if (min(y) <= 0)
       nl = 10^6
     else {
-      nl = sum(weights*(log(sig) + (1 + 1/xi)*log(y)))
+      nl = sum(weights*(log(sig) + (1 + 1/xi)*log(y))) / length(weights) +
+        lambda * (xi - xi_prior) ^ 2
+
     }
   }
   return(nl)
