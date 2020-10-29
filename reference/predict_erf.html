@@ -113,15 +113,16 @@ fitted using quantile_forest." />
 fitted using <code><a href='https://rdrr.io/pkg/grf/man/quantile_forest.html'>quantile_forest</a></code>.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>predict_erf</span>(
-  <span class='kw'>object</span>,
-  <span class='kw'>quantiles</span>,
-  threshold = <span class='fl'>0.8</span>,
-  newdata = <span class='kw'>NULL</span>,
-  model_assessment = <span class='fl'>FALSE</span>,
-  Y.test = <span class='kw'>NULL</span>,
-  out_of_bag = <span class='fl'>FALSE</span>
-)</pre>
+    <pre class="usage"><span class='fu'>predict_erf</span><span class='op'>(</span>
+  <span class='va'>object</span>,
+  <span class='va'>quantiles</span>,
+  threshold <span class='op'>=</span> <span class='fl'>0.8</span>,
+  newdata <span class='op'>=</span> <span class='cn'>NULL</span>,
+  model_assessment <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  Y.test <span class='op'>=</span> <span class='cn'>NULL</span>,
+  out_of_bag <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  lambda <span class='op'>=</span> <span class='fl'>0</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -174,6 +175,12 @@ Default is <code>NULL</code>.</p></td>
 \(t(x_i)\) for the GPD?
 Default is <code>FALSE</code>.</p></td>
     </tr>
+    <tr>
+      <th>lambda</th>
+      <td><p>Numeric. Penalty coefficient for the \(\xi\) parameter
+in the weighted log-likelihood.
+Default is 0.</p></td>
+    </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
@@ -184,8 +191,10 @@ each desired quantile (on columns).</p></li>
 <li><p><code>pars</code> --- Numeric matrix. Estimated parameters at each test point (on rows).
 The columns contain the estimates for the \(\sigma\) and
 \(\xi\) parameter, respectively.</p></li>
-<li><p><code>threshold</code> --- Numeric matrix. Estimated intermediate threshold at each test point
-(on rows).</p></li>
+<li><p><code>threshold</code> --- Numeric matrix. Intermediate thresholds at each test point (on rows),
+estimated using <code><a href='https://rdrr.io/pkg/grf/man/quantile_forest.html'>quantile_forest</a></code>.</p></li>
+<li><p><code>lambda</code> --- Numeric. Penalty coefficient for the \(\xi\) parameter
+in the weighted log-likelihood.</p></li>
 <li><p><code>plot</code> (if <code>model_assessment = TRUE</code>). QQ-plot for model assessment.</p></li>
 </ul>
 

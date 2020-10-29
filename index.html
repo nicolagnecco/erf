@@ -71,43 +71,40 @@
 <a href="#installation" class="anchor"></a>Installation</h2>
 <!-- You can install the released version of erf from [CRAN](https://CRAN.R-project.org) with: -->
 <div class="sourceCode" id="cb1"><pre class="downlit">
-<span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span>(<span class="st">"erf"</span>)
-</pre></div>
+<span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">"erf"</span><span class="op">)</span></pre></div>
 <p>You can install the development version from <a href="https://github.com/">GitHub</a> with:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit">
 <span class="co"># install.packages("devtools")</span>
-<span class="kw">devtools</span>::<span class="fu">install_github</span>(<span class="st">"nicolagnecco/erf"</span>)
-</pre></div>
+<span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"nicolagnecco/erf"</span><span class="op">)</span></pre></div>
 </div>
 <div id="example" class="section level2">
 <h2 class="hasAnchor">
 <a href="#example" class="anchor"></a>Example</h2>
 <p>This is a basic example which shows you how to peform prediction with <code>erf</code>. Let us create some datasets and fit a <code>quantile_forest</code> from the <code>grf</code> package.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit">
-<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw"><a href="https://github.com/nicolagnecco/erf">erf</a></span>)
-<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw"><a href="https://github.com/grf-labs/grf">grf</a></span>)
-<span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span>(<span class="fl">42</span>)
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/nicolagnecco/erf">erf</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/grf-labs/grf">grf</a></span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span>
 
-<span class="kw">n</span> <span class="op">&lt;-</span> <span class="fl">500</span>
-<span class="kw">p</span> <span class="op">&lt;-</span> <span class="fl">10</span>
-<span class="kw">X</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span>(<span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span>(<span class="kw">n</span> <span class="op">*</span> <span class="kw">p</span>), <span class="kw">n</span>, <span class="kw">p</span>)
-<span class="kw">Y</span> <span class="op">&lt;-</span> <span class="kw">X</span>[, <span class="fl">1</span>] <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span>(<span class="kw">n</span>)
-<span class="kw">object</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/grf/man/quantile_forest.html">quantile_forest</a></span>(<span class="kw">X</span>, <span class="kw">Y</span>, quantiles = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">0.1</span>, <span class="fl">0.5</span>, <span class="fl">0.9</span>))
-</pre></div>
+<span class="va">n</span> <span class="op">&lt;-</span> <span class="fl">500</span>
+<span class="va">p</span> <span class="op">&lt;-</span> <span class="fl">10</span>
+<span class="va">X</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="va">n</span> <span class="op">*</span> <span class="va">p</span><span class="op">)</span>, <span class="va">n</span>, <span class="va">p</span><span class="op">)</span>
+<span class="va">Y</span> <span class="op">&lt;-</span> <span class="va">X</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span>
+<span class="va">object</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/grf/man/quantile_forest.html">quantile_forest</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">Y</span>, quantiles <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.1</span>, <span class="fl">0.5</span>, <span class="fl">0.9</span><span class="op">)</span><span class="op">)</span></pre></div>
 <p>Now we can create a test dataset and predict extreme quantiles with <code>predict_erf</code>.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit">
-<span class="kw">n_test</span> <span class="op">&lt;-</span> <span class="fl">20</span>
-<span class="kw">X.test</span> <span class="op">&lt;-</span>  <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span>(<span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span>(<span class="kw">n_test</span> <span class="op">*</span> <span class="kw">p</span>), <span class="kw">n_test</span>, <span class="kw">p</span>)
-<span class="kw">Y.test</span> <span class="op">&lt;-</span> <span class="kw">X.test</span>[, <span class="fl">1</span>] <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span>(<span class="kw">n_test</span>)
+<span class="va">n_test</span> <span class="op">&lt;-</span> <span class="fl">20</span>
+<span class="va">X.test</span> <span class="op">&lt;-</span>  <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="va">n_test</span> <span class="op">*</span> <span class="va">p</span><span class="op">)</span>, <span class="va">n_test</span>, <span class="va">p</span><span class="op">)</span>
+<span class="va">Y.test</span> <span class="op">&lt;-</span> <span class="va">X.test</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="va">n_test</span><span class="op">)</span>
 
-<span class="kw">quantiles</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">.99</span>, <span class="fl">.999</span>)
-<span class="kw">threshold</span> <span class="op">&lt;-</span> <span class="fl">0.8</span>
+<span class="va">quantiles</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">.99</span>, <span class="fl">.999</span><span class="op">)</span>
+<span class="va">threshold</span> <span class="op">&lt;-</span> <span class="fl">0.8</span>
 
-<span class="kw">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/predict_erf.html">predict_erf</a></span>(<span class="kw">object</span>, quantiles = <span class="kw">quantiles</span>, threshold = <span class="kw">threshold</span>,
-                   newdata = <span class="kw">X.test</span>, model_assessment = <span class="fl">TRUE</span>,
-                   Y.test = <span class="kw">Y.test</span>, out_of_bag = <span class="fl">FALSE</span>)
+<span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/predict_erf.html">predict_erf</a></span><span class="op">(</span><span class="va">object</span>, quantiles <span class="op">=</span> <span class="va">quantiles</span>, threshold <span class="op">=</span> <span class="va">threshold</span>,
+                   newdata <span class="op">=</span> <span class="va">X.test</span>, model_assessment <span class="op">=</span> <span class="cn">TRUE</span>,
+                   Y.test <span class="op">=</span> <span class="va">Y.test</span>, out_of_bag <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
 
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span>(<span class="kw">res</span><span class="op">$</span><span class="kw">predictions</span>)
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">predictions</span><span class="op">)</span>
 <span class="co">#&gt;      quantile =  0.99 quantile =  0.999</span>
 <span class="co">#&gt; [1,]         1.325343          2.375495</span>
 <span class="co">#&gt; [2,]         1.325832          2.494542</span>
@@ -115,8 +112,7 @@
 <span class="co">#&gt; [4,]         1.169691          1.902427</span>
 <span class="co">#&gt; [5,]         1.188074          2.226763</span>
 <span class="co">#&gt; [6,]         2.631909          3.659733</span>
-<span class="kw">res</span><span class="op">$</span><span class="kw">plot</span>
-</pre></div>
+<span class="va">res</span><span class="op">$</span><span class="va">plot</span></pre></div>
 <p><img src="reference/figures/README-example2-1.png" width="100%"></p>
 </div>
 <div id="references" class="section level2">
