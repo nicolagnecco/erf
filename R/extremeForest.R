@@ -61,7 +61,8 @@ predict_erf <- function(object, quantiles, threshold = 0.8,
 predict_erf_internal <- function(object, quantiles, threshold = 0.8,
                         newdata = NULL, model_assessment = FALSE,
                         Y.test = NULL, out_of_bag = FALSE, lambda = 0,
-                        wi_x0 = NULL, t_xi = NULL, t_x0 = NULL) {
+                        wi_x0 = NULL, max_weight = NULL,
+                        t_xi = NULL, t_x0 = NULL) {
 
   ## same inputs as predict_erf + weights, t_xi, t_x0 -> same output as predict_erf
   ## same purpose as predict_erf
@@ -74,6 +75,10 @@ predict_erf_internal <- function(object, quantiles, threshold = 0.8,
   if (is.null(wi_x0)){
   wi_x0 <-  as.matrix(grf::get_sample_weights(object, newdata = X0,
                                               num.threads = NULL))
+  }
+
+  if (!is.null(max_weight)){
+    wi_x0[wi_x0 > max_weight] <- max_weight
   }
 
   if (is.null(t_xi)){
