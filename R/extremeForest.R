@@ -30,9 +30,12 @@
 #' @param out_of_bag Boolean. Use out-of-bag observations to compute thresholds
 #'                   \eqn{t(x_i)} for the GPD?
 #'                   Default is \code{FALSE}.
-#' @param lambda Numeric. Penalty coefficient for the \eqn{\xi}{csi} parameter
+#' @param lambda Numeric (>= 0). Penalty coefficient for the \eqn{\xi}{csi} parameter
 #'               in the weighted log-likelihood.
-#'               Default is 0.
+#'               Default is \code{0}.
+#' @param max_weight Numeric (>= 0). Maximum value for GRF weights used in the
+#'                   weighted log-likelihood.
+#'                   Default is \code{1}, i.e., no constraint on maximum weight.
 #'
 #' @return Named list. The list is made of:
 #' \itemize{
@@ -45,30 +48,34 @@
 #'         estimated using \code{\link[grf]{quantile_forest}}.
 #' \item \code{lambda} --- Numeric. Penalty coefficient for the \eqn{\xi}{csi} parameter
 #'         in the weighted log-likelihood.
+#' \item \code{max_weight} --- Numeric. Maximum value for GRF weights used in the
+#'       weighted log-likelihood.
 #' \item \code{plot} (if \code{model_assessment = TRUE}). QQ-plot for model assessment.
 #' }
 #'
 #' @export
 predict_erf <- function(object, quantiles, threshold = 0.8,
                         newdata = NULL, model_assessment = FALSE,
-                        Y.test = NULL, out_of_bag = FALSE, lambda = 0){
+                        Y.test = NULL, out_of_bag = FALSE, lambda = 0,
+                        max_weight = 1){
 
   predict_erf_internal(object, quantiles, threshold,
-                       newdata, model_assessment, Y.test, out_of_bag, lambda)
+                       newdata, model_assessment, Y.test, out_of_bag, lambda,
+                       max_weight)
 
 }
 
 predict_erf_internal <- function(object, quantiles, threshold = 0.8,
                         newdata = NULL, model_assessment = FALSE,
                         Y.test = NULL, out_of_bag = FALSE, lambda = 0,
-                        wi_x0 = NULL, max_weight = NULL,
+                        wi_x0 = NULL, max_weight = 1,
                         t_xi = NULL, t_x0 = NULL) {
 
   ## same inputs as predict_erf + weights, t_xi, t_x0 -> same output as predict_erf
   ## same purpose as predict_erf
 
   validate_inputs(object, quantiles, threshold, newdata, model_assessment,
-                  Y.test, out_of_bag)
+                  Y.test, out_of_bag, lambda, max_weight)
 
   X0 <- set_test_observations(object, newdata)
 
@@ -77,9 +84,7 @@ predict_erf_internal <- function(object, quantiles, threshold = 0.8,
                                               num.threads = NULL))
   }
 
-  if (!is.null(max_weight)){
-    wi_x0[wi_x0 > max_weight] <- max_weight
-  }
+  wi_x0[wi_x0 > max_weight] <- max_weight
 
   if (is.null(t_xi)){
   t_xi <- compute_thresholds(object, threshold = threshold,
@@ -97,16 +102,17 @@ predict_erf_internal <- function(object, quantiles, threshold = 0.8,
   if (model_assessment){
     p <- compute_model_assessment(t_x0, Y.test, gpd_pars)
     return(list(predictions = q_hat, pars = gpd_pars, threshold = t_x0,
-                lambda = lambda,
+                lambda = lambda, max_weight = max_weight,
                 plot = p))
   } else {
     return(list(predictions = q_hat, pars = gpd_pars, threshold = t_x0,
-                lambda = lambda))
+                lambda = lambda, max_weight = max_weight))
   }
 }
 
 validate_inputs <- function(object,  quantiles, threshold, newdata,
-                            model_assessment, Y.test, out_of_bag){
+                            model_assessment, Y.test, out_of_bag,
+                            lambda, max_weight){
   ## ... -> boolean
   ## check whether inputs are well-formed
 
@@ -117,6 +123,25 @@ validate_inputs <- function(object,  quantiles, threshold, newdata,
   check_quantiles_thres(quantiles, threshold)
 
   check_model_assessment(model_assessment, newdata, Y.test)
+
+  check_nonneg_numeric(lambda)
+
+  check_nonneg_numeric(max_weight)
+
+  return(TRUE)
+}
+
+check_nonneg_numeric <- function(x){
+  ## numeric -> boolean
+  ## check whether x is non-negative numeric of length 1
+
+  arg <- deparse(substitute(x))
+
+  if(length(x) != 1){
+    stop(paste0(arg, " must be non-negative numeric of length 1"))
+  } else if (x < 0 | !is.numeric(x)) {
+    stop(paste0(arg, " must be non-negative numeric of length 1"))
+  }
 
   return(TRUE)
 }
