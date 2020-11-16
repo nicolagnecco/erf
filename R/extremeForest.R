@@ -30,12 +30,15 @@
 #' @param out_of_bag Boolean. Use out-of-bag observations to compute thresholds
 #'                   \eqn{t(x_i)} for the GPD?
 #'                   Default is \code{FALSE}.
+#' @param param_est Character. One of "ML" and "Hill". Specifies the method to
+#'                  fit the shape and scale parameter of the GDP distribution.
+#'                  "ML" is the weighted maximum likelihood approach proposed by
+#'
+#'                  "Hill" is the weighted Hill's estimator approach proposed
+#'                  by
 #' @param lambda Numeric (>= 0). Penalty coefficient for the \eqn{\xi}{csi} parameter
 #'               in the weighted log-likelihood.
 #'               Default is \code{0}.
-#' @param max_weight Numeric (>= 0). Maximum value for GRF weights used in the
-#'                   weighted log-likelihood.
-#'                   Default is \code{1}, i.e., no constraint on maximum weight.
 #'
 #' @return Named list. The list is made of:
 #' \itemize{
@@ -50,14 +53,15 @@
 #'         in the weighted log-likelihood.
 #' \item \code{max_weight} --- Numeric. Maximum value for GRF weights used in the
 #'       weighted log-likelihood.
+#'       !!! remove this option
 #' \item \code{plot} (if \code{model_assessment = TRUE}). QQ-plot for model assessment.
 #' }
 #'
 #' @export
 predict_erf <- function(object, quantiles, threshold = 0.8,
                         newdata = NULL, model_assessment = FALSE,
-                        Y.test = NULL, out_of_bag = FALSE, lambda = 0,
-                        max_weight = 1){
+                        Y.test = NULL, out_of_bag = FALSE,
+                        param_est = c("ML", "Hill"), lambda = 0){
 
   predict_erf_internal(object, quantiles, threshold,
                        newdata, model_assessment, Y.test, out_of_bag, lambda,
@@ -67,15 +71,18 @@ predict_erf <- function(object, quantiles, threshold = 0.8,
 
 predict_erf_internal <- function(object, quantiles, threshold = 0.8,
                         newdata = NULL, model_assessment = FALSE,
-                        Y.test = NULL, out_of_bag = FALSE, lambda = 0,
-                        wi_x0 = NULL, max_weight = 1,
-                        t_xi = NULL, t_x0 = NULL) {
+                        Y.test = NULL, out_of_bag = FALSE,
+                        param_est = c("ML", "Hill"),
+                        lambda = 0,
+                        wi_x0 = NULL,
+                        t_xi = NULL, t_x0 = NULL, t_x0_2) {
 
   ## same inputs as predict_erf + weights, t_xi, t_x0 -> same output as predict_erf
   ## same purpose as predict_erf
 
   validate_inputs(object, quantiles, threshold, newdata, model_assessment,
                   Y.test, out_of_bag, lambda, max_weight)
+  # !!! add here param_est
 
   X0 <- set_test_observations(object, newdata)
 
@@ -85,6 +92,7 @@ predict_erf_internal <- function(object, quantiles, threshold = 0.8,
   }
 
   wi_x0[wi_x0 > max_weight] <- max_weight
+  # !!! remove this
 
   if (is.null(t_xi)){
   t_xi <- compute_thresholds(object, threshold = threshold,
@@ -95,7 +103,17 @@ predict_erf_internal <- function(object, quantiles, threshold = 0.8,
   t_x0 <- compute_thresholds(object, threshold = threshold, X = X0)
   }
 
-  gpd_pars <- fit_conditional_gpd(object, wi_x0, t_xi, lambda)
+  if (is.null(t_x0_2) & param_est == "Hill"){
+    threshold2 <- 1 - 2 * (1 - threshold)
+    t_x0_2 <- compute_thresholds(object, threshold = threshold2, X = X0)
+  }
+
+  if (param_est == "ML"){
+    gpd_pars <- fit_conditional_gpd(object, wi_x0, t_xi, lambda)
+
+  } else if (param_est == "Hill"){
+    gpd_pars <- fit_param_hill(object, wi_x0, t_xi, t_x0, t_x0_2, threshold)
+  }
 
   q_hat <- compute_extreme_quantiles(gpd_pars, t_x0, quantiles, threshold)
 
@@ -103,10 +121,11 @@ predict_erf_internal <- function(object, quantiles, threshold = 0.8,
     p <- compute_model_assessment(t_x0, Y.test, gpd_pars)
     return(list(predictions = q_hat, pars = gpd_pars, threshold = t_x0,
                 lambda = lambda, max_weight = max_weight,
-                plot = p))
+                plot = p)) # !!! do not return lambda when param_est == "Hill"
   } else {
     return(list(predictions = q_hat, pars = gpd_pars, threshold = t_x0,
                 lambda = lambda, max_weight = max_weight))
+    # !!! do not return lambda when param_est == "Hill"
   }
 }
 
@@ -272,6 +291,24 @@ fit_conditional_gpd <- function(object, wi_x0, t_xi, lambda){
                             exc_data, wi_x0, lambda, init_par[2])
 
   return(as.matrix(EVT_par))
+}
+
+fit_param_hill <- function(object, wi_x0, t_xi, t_x0, t_x0_2, threshold){
+  ## quantile_forest numeric_matrix numeric_vector (3x) numeric -> matrix
+  ## produce matrix with shape and scale param obtained with
+  ## weighted Hill's estimator, for each test point.
+
+  ntest <- nrow(wi_x0)
+  n <- ncol(wi_x0)
+  k <- floor(n * (1 - threshold))
+
+  Y <- object$Y.orig
+  exc_idx = which(Y - t_xi > 0)
+
+  xi <- 1 / k * wi_x0[, exc_idx] %*% log(Y[exc_idx] / t_xi[exc_idx])
+  sigma <- xi / (1 - 2 ^ (- xi)) * (t_x0 - t_x0_2)
+
+  return(cbind(sigma, xi))
 }
 
 optim_wrap <- function(i, init_par, obj_fun, exc_data, wi_x0, lambda, xi_prior){

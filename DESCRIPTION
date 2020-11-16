@@ -18,9 +18,11 @@ Imports:
     ismev,
     ggplot2,
     Rcpp,
-    purrr
+    purrr,
+    Rdpack
 URL: https://github.com/nicolagnecco/erf
 BugReports: https://github.com/nicolagnecco/erf/issues
+RdMacros: Rdpack
 LinkingTo: 
     Rcpp,
     RcppArmadillo

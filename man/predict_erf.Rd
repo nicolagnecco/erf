@@ -12,6 +12,7 @@ predict_erf(
   model_assessment = FALSE,
   Y.test = NULL,
   out_of_bag = FALSE,
+  param_est = c("ML", "Hill"),
   lambda = 0
 )
 }
@@ -50,9 +51,15 @@ Default is \code{NULL}.}
 \eqn{t(x_i)} for the GPD?
 Default is \code{FALSE}.}
 
-\item{lambda}{Numeric. Penalty coefficient for the \eqn{\xi}{csi} parameter
+\item{param_est}{Character. One of "ML" and "Hill". Specifies the method to
+fit the shape and scale parameter of the GDP distribution.
+"ML" is the weighted maximum likelihood approach proposed by\preformatted{             "Hill" is the weighted Hill's estimator approach proposed
+             by
+}}
+
+\item{lambda}{Numeric (>= 0). Penalty coefficient for the \eqn{\xi}{csi} parameter
 in the weighted log-likelihood.
-Default is 0.}
+Default is \code{0}.}
 }
 \value{
 Named list. The list is made of:
@@ -66,6 +73,9 @@ The columns contain the estimates for the \eqn{\sigma}{sigma} and
 estimated using \code{\link[grf]{quantile_forest}}.
 \item \code{lambda} --- Numeric. Penalty coefficient for the \eqn{\xi}{csi} parameter
 in the weighted log-likelihood.
+\item \code{max_weight} --- Numeric. Maximum value for GRF weights used in the
+weighted log-likelihood.
+!!! remove this option
 \item \code{plot} (if \code{model_assessment = TRUE}). QQ-plot for model assessment.
 }
 }
