@@ -180,9 +180,12 @@ Default is <code>FALSE</code>.</p></td>
       <th>param_est</th>
       <td><p>Character. One of "ML" and "Hill". Specifies the method to
 fit the shape and scale parameter of the GDP distribution.
-"ML" is the weighted maximum likelihood approach proposed by</p><pre>             "Hill" is the weighted Hill's estimator approach proposed
-             by
-</pre></td>
+"ML" is the weighted maximum likelihood approach proposed by
+
+.
+"Hill" is the weighted Hill's estimator approach proposed
+by 
+.</p></td>
     </tr>
     <tr>
       <th>lambda</th>
@@ -204,9 +207,6 @@ The columns contain the estimates for the \(\sigma\) and
 estimated using <code><a href='https://rdrr.io/pkg/grf/man/quantile_forest.html'>quantile_forest</a></code>.</p></li>
 <li><p><code>lambda</code> --- Numeric. Penalty coefficient for the \(\xi\) parameter
 in the weighted log-likelihood.</p></li>
-<li><p><code>max_weight</code> --- Numeric. Maximum value for GRF weights used in the
-weighted log-likelihood.
-!!! remove this option</p></li>
 <li><p><code>plot</code> (if <code>model_assessment = TRUE</code>). QQ-plot for model assessment.</p></li>
 </ul>
 
