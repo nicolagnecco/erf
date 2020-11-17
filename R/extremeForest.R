@@ -70,7 +70,7 @@ predict_erf_internal <- function(object, quantiles, threshold = 0.8,
                         param_est = c("ML", "Hill"),
                         lambda = 0,
                         wi_x0 = NULL,
-                        t_xi = NULL, t_x0 = NULL, t_x0_2) {
+                        t_xi = NULL, t_x0 = NULL, t_x0_2 = NULL) {
 
   ## same inputs as predict_erf + wi_x0, t_xi, t_x0, t_x0_2
   ##      -> same output as predict_erf
