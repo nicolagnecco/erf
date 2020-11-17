@@ -77,7 +77,7 @@ predict_erf_internal <- function(object, quantiles, threshold = 0.8,
   ## same purpose as predict_erf
 
   validate_inputs(object, quantiles, threshold, newdata, model_assessment,
-                  Y.test, out_of_bag, lambda, param_est)
+                  Y.test, out_of_bag, lambda)
 
   param_est <- match.arg(param_est)
 

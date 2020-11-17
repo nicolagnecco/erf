@@ -59,7 +59,7 @@ fit the shape and scale parameter of the GDP distribution.
 by \insertCite{deub2020;textual}{erf}.}
 
 \item{lambda}{Numeric (>= 0). Penalty coefficient for the \eqn{\xi}{csi} parameter
-in the weighted log-likelihood.
+in the weighted log-likelihood, i.e., when \code{param_est = "ML"}.
 Default is \code{0}.}
 }
 \value{
@@ -72,8 +72,6 @@ The columns contain the estimates for the \eqn{\sigma}{sigma} and
 \eqn{\xi}{csi} parameter, respectively.
 \item \code{threshold} --- Numeric matrix. Intermediate thresholds at each test point (on rows),
 estimated using \code{\link[grf]{quantile_forest}}.
-\item \code{lambda} --- Numeric. Penalty coefficient for the \eqn{\xi}{csi} parameter
-in the weighted log-likelihood.
 \item \code{plot} (if \code{model_assessment = TRUE}). QQ-plot for model assessment.
 }
 }
