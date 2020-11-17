@@ -33,11 +33,11 @@
 #' @param param_est Character. One of "ML" and "Hill". Specifies the method to
 #'                  fit the shape and scale parameter of the GDP distribution.
 #'                  "ML" is the weighted maximum likelihood approach proposed by
-#'
+#'                  \insertCite{merg2020;textual}{erf}.
 #'                  "Hill" is the weighted Hill's estimator approach proposed
-#'                  by
+#'                  by \insertCite{deub2020;textual}{erf}.
 #' @param lambda Numeric (>= 0). Penalty coefficient for the \eqn{\xi}{csi} parameter
-#'               in the weighted log-likelihood.
+#'               in the weighted log-likelihood, i.e., when \code{param_est = "ML"}.
 #'               Default is \code{0}.
 #'
 #' @return Named list. The list is made of:
@@ -49,11 +49,6 @@
 #'         \eqn{\xi}{csi} parameter, respectively.
 #' \item \code{threshold} --- Numeric matrix. Intermediate thresholds at each test point (on rows),
 #'         estimated using \code{\link[grf]{quantile_forest}}.
-#' \item \code{lambda} --- Numeric. Penalty coefficient for the \eqn{\xi}{csi} parameter
-#'         in the weighted log-likelihood.
-#' \item \code{max_weight} --- Numeric. Maximum value for GRF weights used in the
-#'       weighted log-likelihood.
-#'       !!! remove this option
 #' \item \code{plot} (if \code{model_assessment = TRUE}). QQ-plot for model assessment.
 #' }
 #'
@@ -64,8 +59,8 @@ predict_erf <- function(object, quantiles, threshold = 0.8,
                         param_est = c("ML", "Hill"), lambda = 0){
 
   predict_erf_internal(object, quantiles, threshold,
-                       newdata, model_assessment, Y.test, out_of_bag, lambda,
-                       max_weight)
+                       newdata, model_assessment, Y.test, out_of_bag,
+                       param_est, lambda)
 
 }
 
@@ -77,12 +72,14 @@ predict_erf_internal <- function(object, quantiles, threshold = 0.8,
                         wi_x0 = NULL,
                         t_xi = NULL, t_x0 = NULL, t_x0_2) {
 
-  ## same inputs as predict_erf + weights, t_xi, t_x0 -> same output as predict_erf
+  ## same inputs as predict_erf + wi_x0, t_xi, t_x0, t_x0_2
+  ##      -> same output as predict_erf
   ## same purpose as predict_erf
 
   validate_inputs(object, quantiles, threshold, newdata, model_assessment,
-                  Y.test, out_of_bag, lambda, max_weight)
-  # !!! add here param_est
+                  Y.test, out_of_bag, lambda, param_est)
+
+  param_est <- match.arg(param_est)
 
   X0 <- set_test_observations(object, newdata)
 
@@ -90,9 +87,6 @@ predict_erf_internal <- function(object, quantiles, threshold = 0.8,
   wi_x0 <-  as.matrix(grf::get_sample_weights(object, newdata = X0,
                                               num.threads = NULL))
   }
-
-  wi_x0[wi_x0 > max_weight] <- max_weight
-  # !!! remove this
 
   if (is.null(t_xi)){
   t_xi <- compute_thresholds(object, threshold = threshold,
@@ -120,18 +114,15 @@ predict_erf_internal <- function(object, quantiles, threshold = 0.8,
   if (model_assessment){
     p <- compute_model_assessment(t_x0, Y.test, gpd_pars)
     return(list(predictions = q_hat, pars = gpd_pars, threshold = t_x0,
-                lambda = lambda, max_weight = max_weight,
-                plot = p)) # !!! do not return lambda when param_est == "Hill"
+                plot = p))
   } else {
-    return(list(predictions = q_hat, pars = gpd_pars, threshold = t_x0,
-                lambda = lambda, max_weight = max_weight))
-    # !!! do not return lambda when param_est == "Hill"
+    return(list(predictions = q_hat, pars = gpd_pars, threshold = t_x0))
   }
 }
 
-validate_inputs <- function(object,  quantiles, threshold, newdata,
+validate_inputs <- function(object, quantiles, threshold, newdata,
                             model_assessment, Y.test, out_of_bag,
-                            lambda, max_weight){
+                            lambda){
   ## ... -> boolean
   ## check whether inputs are well-formed
 
@@ -144,8 +135,6 @@ validate_inputs <- function(object,  quantiles, threshold, newdata,
   check_model_assessment(model_assessment, newdata, Y.test)
 
   check_nonneg_numeric(lambda)
-
-  check_nonneg_numeric(max_weight)
 
   return(TRUE)
 }

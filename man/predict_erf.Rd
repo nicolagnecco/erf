@@ -53,9 +53,10 @@ Default is \code{FALSE}.}
 
 \item{param_est}{Character. One of "ML" and "Hill". Specifies the method to
 fit the shape and scale parameter of the GDP distribution.
-"ML" is the weighted maximum likelihood approach proposed by\preformatted{             "Hill" is the weighted Hill's estimator approach proposed
-             by
-}}
+"ML" is the weighted maximum likelihood approach proposed by
+\insertCite{merg2020;textual}{erf}.
+"Hill" is the weighted Hill's estimator approach proposed
+by \insertCite{deub2020;textual}{erf}.}
 
 \item{lambda}{Numeric (>= 0). Penalty coefficient for the \eqn{\xi}{csi} parameter
 in the weighted log-likelihood.
@@ -73,9 +74,6 @@ The columns contain the estimates for the \eqn{\sigma}{sigma} and
 estimated using \code{\link[grf]{quantile_forest}}.
 \item \code{lambda} --- Numeric. Penalty coefficient for the \eqn{\xi}{csi} parameter
 in the weighted log-likelihood.
-\item \code{max_weight} --- Numeric. Maximum value for GRF weights used in the
-weighted log-likelihood.
-!!! remove this option
 \item \code{plot} (if \code{model_assessment = TRUE}). QQ-plot for model assessment.
 }
 }

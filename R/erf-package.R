@@ -14,6 +14,11 @@ NULL
 ## usethis namespace: end
 NULL
 
+## usethis namespace: start
+#' @importFrom Rdpack reprompt
+## usethis namespace: end
+NULL
+
 # !!! continue from here
 # 1. references
 # 2. documentation

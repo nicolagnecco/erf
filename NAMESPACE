@@ -2,4 +2,5 @@
 
 export(predict_erf)
 importFrom(Rcpp,sourceCpp)
+importFrom(Rdpack,reprompt)
 useDynLib(erf, .registration = TRUE)
