@@ -190,7 +190,7 @@ by
     <tr>
       <th>lambda</th>
       <td><p>Numeric (&gt;= 0). Penalty coefficient for the \(\xi\) parameter
-in the weighted log-likelihood.
+in the weighted log-likelihood, i.e., when <code>param_est = "ML"</code>.
 Default is <code>0</code>.</p></td>
     </tr>
     </table>
@@ -205,8 +205,6 @@ The columns contain the estimates for the \(\sigma\) and
 \(\xi\) parameter, respectively.</p></li>
 <li><p><code>threshold</code> --- Numeric matrix. Intermediate thresholds at each test point (on rows),
 estimated using <code><a href='https://rdrr.io/pkg/grf/man/quantile_forest.html'>quantile_forest</a></code>.</p></li>
-<li><p><code>lambda</code> --- Numeric. Penalty coefficient for the \(\xi\) parameter
-in the weighted log-likelihood.</p></li>
 <li><p><code>plot</code> (if <code>model_assessment = TRUE</code>). QQ-plot for model assessment.</p></li>
 </ul>
 
