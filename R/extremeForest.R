@@ -52,6 +52,10 @@
 #' \item \code{plot} (if \code{model_assessment = TRUE}). QQ-plot for model assessment.
 #' }
 #'
+#'
+#' @references
+#'  \insertAllCited{}
+#'
 #' @export
 predict_erf <- function(object, quantiles, threshold = 0.8,
                         newdata = NULL, model_assessment = FALSE,
@@ -294,7 +298,7 @@ fit_param_hill <- function(object, wi_x0, t_xi, t_x0, t_x0_2, threshold){
   Y <- object$Y.orig
   exc_idx = which(Y - t_xi > 0)
 
-  xi <- 1 / k * wi_x0[, exc_idx] %*% log(Y[exc_idx] / t_xi[exc_idx])
+  xi <- n / k * wi_x0[, exc_idx] %*% log(Y[exc_idx] / t_xi[exc_idx])
   sigma <- xi / (1 - 2 ^ (- xi)) * (t_x0 - t_x0_2)
 
   return(cbind(sigma, xi))

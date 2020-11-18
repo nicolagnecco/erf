@@ -20,7 +20,6 @@ NULL
 NULL
 
 # !!! continue from here
-# 1. references
 # 2. documentation
 # 3. function of the packages
 # 4. simulations

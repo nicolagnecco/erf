@@ -79,3 +79,6 @@ estimated using \code{\link[grf]{quantile_forest}}.
 Predicts high conditional quantiles of Y given X using a quantile forest
 fitted using \code{\link[grf]{quantile_forest}}.
 }
+\references{
+\insertAllCited{}
+}
