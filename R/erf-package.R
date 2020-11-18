@@ -18,9 +18,3 @@ NULL
 #' @importFrom Rdpack reprompt
 ## usethis namespace: end
 NULL
-
-# !!! continue from here
-# 2. documentation
-# 3. function of the packages
-# 4. simulations
-

@@ -51,12 +51,13 @@ Default is \code{NULL}.}
 \eqn{t(x_i)} for the GPD?
 Default is \code{FALSE}.}
 
-\item{param_est}{Character. One of "ML" and "Hill". Specifies the method to
+\item{param_est}{Character. One of \code{"ML"} and \code{"Hill"}. Specifies the method to
 fit the shape and scale parameter of the GDP distribution.
-"ML" is the weighted maximum likelihood approach proposed by
+\code{"ML"} is the weighted maximum likelihood approach proposed by
 \insertCite{merg2020;textual}{erf}.
-"Hill" is the weighted Hill's estimator approach proposed
-by \insertCite{deub2020;textual}{erf}.}
+\code{"Hill"} is the weighted Hill's estimator approach proposed
+by \insertCite{deub2020;textual}{erf}.
+Default is \code{"ML"}.}
 
 \item{lambda}{Numeric (>= 0). Penalty coefficient for the \eqn{\xi}{csi} parameter
 in the weighted log-likelihood, i.e., when \code{param_est = "ML"}.
