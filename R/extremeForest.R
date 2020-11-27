@@ -70,12 +70,12 @@ predict_erf <- function(object, quantiles, threshold = 0.8,
 }
 
 predict_erf_internal <- function(object, quantiles, threshold = 0.8,
-                        newdata = NULL, model_assessment = FALSE,
-                        Y.test = NULL, out_of_bag = FALSE,
-                        param_est = c("ML", "Hill"),
-                        lambda = 0,
-                        wi_x0 = NULL,
-                        t_xi = NULL, t_x0 = NULL, t_x0_2 = NULL) {
+                                 newdata = NULL, model_assessment = FALSE,
+                                 Y.test = NULL, out_of_bag = FALSE,
+                                 param_est = c("ML", "Hill"),
+                                 lambda = 0,
+                                 wi_x0 = NULL,
+                                 t_xi = NULL, t_x0 = NULL, t_x0_2 = NULL) {
 
   ## same inputs as predict_erf + wi_x0, t_xi, t_x0, t_x0_2
   ##      -> same output as predict_erf
@@ -89,17 +89,17 @@ predict_erf_internal <- function(object, quantiles, threshold = 0.8,
   X0 <- set_test_observations(object, newdata)
 
   if (is.null(wi_x0)){
-  wi_x0 <-  as.matrix(grf::get_sample_weights(object, newdata = X0,
-                                              num.threads = NULL))
+    wi_x0 <-  as.matrix(grf::get_sample_weights(object, newdata = X0,
+                                                num.threads = NULL))
   }
 
   if (is.null(t_xi)){
-  t_xi <- compute_thresholds(object, threshold = threshold,
-                             X = object$X.orig, out_of_bag = out_of_bag)
+    t_xi <- compute_thresholds(object, threshold = threshold,
+                               X = object$X.orig, out_of_bag = out_of_bag)
   }
 
   if (is.null(t_x0)){
-  t_x0 <- compute_thresholds(object, threshold = threshold, X = X0)
+    t_x0 <- compute_thresholds(object, threshold = threshold, X = X0)
   }
 
   if (is.null(t_x0_2) & param_est == "Hill"){
@@ -123,6 +123,56 @@ predict_erf_internal <- function(object, quantiles, threshold = 0.8,
   } else {
     return(list(predictions = q_hat, pars = gpd_pars, threshold = t_x0))
   }
+}
+
+
+erf_cv <- function(Y, X, t_xi, min.node.size = c(5), K = 5, n_rep = 1,
+                   args_grf, args_erf,
+                   rng = NULL){
+
+  check_rng(rng, n_rep, K, min.node.size) # !!! check size of rng if not null
+  folds <- create_folds(n_rep, K, seed = rng[1]) # !!!
+  grid <- expand.grid(1:n_rep, 1:K, min.node.size) %>%
+    bind_cols(tibble(rng = rng[-1]))
+
+  grf_fit_fn <- purrr::partial(grf::quantile_forest, !!!args_grf)
+  erf_predict_fn <- purrr::partial(erf_predict_internal, !!!args_erf)
+
+  iterations <- seq_len(nrow(grid))
+
+  ll <- foreach(i = iterations, .combine = bind_rows,
+                .options.future = list(scheduling = FALSE),
+                .errorhandling = "remove") %dopar% {
+
+                  rng_curr <- grid$rng[[i]]
+                  n_rep <- grid$n_rep[i]
+                  K <- grid$K[i]
+                  min.node.size <- grid$min.node.size[i]
+
+                  rngtools::setRNG(grid$rng[[i]])
+
+                  dat_train <- split_data(Y, X, t_xi, folds[i], K)
+                  dat_valid <- split_data2(Y, X, t_xi, folds[i], K)
+
+                  fit.grf <- grf_fit_fn(X = dat_train$X, dat_train$Y,
+                                        min.node.size = min.node.size)
+
+                  gpd_pars <- erf_predict_fn(fit.grf, newdata = dat_valid$X,
+                                             t_xi = dat_train$t_xi,
+                                             t_x0 = dat_valid$t_xi)
+
+                  evaluate_deviance(gpd_pars, dat_valid$Y, dat_valid$t_xi) # !!!
+                }
+
+
+}
+
+
+chunk <- function(x, K){
+  ## numeric_vector integer -> list
+  ## split x into K chunks
+  unname(split(x, factor(sort(rank(x)%%K))))
+
 }
 
 validate_inputs <- function(object, quantiles, threshold, newdata,
@@ -456,4 +506,12 @@ q_GPD <- function(p, p0, t_x0, sigma, xi){
   ## produce the estimated extreme quantiles of GPD
 
   (((1-p)/(1-p0))^{-xi} - 1) * (sigma / xi) + t_x0
+}
+
+extract_fn_params <- function(fn, lst){
+  ## function list -> list
+  ## extracts from named lst the elements which are valid arguments to fn
+
+  required_args <- formals(fn)
+  lst[names(lst) %in% names(required_args)]
 }
