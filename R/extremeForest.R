@@ -81,6 +81,14 @@ predict_erf_internal <- function(object, quantiles, threshold = 0.8,
   ##      -> same output as predict_erf
   ## same purpose as predict_erf
 
+  ## !!! in the future,
+  ## 1. remove args:
+  ## - param_est = "Hill",
+  ## - t_x0_2,
+  ## 2. export args:
+  ## - t_xi,
+  ## - t_x0
+
   validate_inputs(object, quantiles, threshold, newdata, model_assessment,
                   Y.test, out_of_bag, lambda)
 
