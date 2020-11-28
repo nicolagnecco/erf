@@ -8,3 +8,4 @@
 ^README\.Rmd$
 ^analysis$
 ^reproduce_paper_results$
+^other_scripts$

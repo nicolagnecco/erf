@@ -6,7 +6,7 @@
 \usage{
 predict_erf(
   object,
-  quantiles,
+  quantiles = c(0.95, 0.99),
   threshold = 0.8,
   newdata = NULL,
   model_assessment = FALSE,
@@ -21,7 +21,8 @@ predict_erf(
 \code{\link[grf]{quantile_forest}}.}
 
 \item{quantiles}{Numeric vector (0, 1).
-Extreme quantiles at which estimates are required.}
+Extreme quantiles at which estimates are required.
+Default is \code{quantiles = c(0.95, 0.99)}.}
 
 \item{threshold}{Numeric (0, 1). Intermediate quantile used to compute
 thresholds \eqn{t(x_i)} for the GPD.

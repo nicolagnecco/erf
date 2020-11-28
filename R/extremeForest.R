@@ -7,6 +7,7 @@
 #'               \code{\link[grf]{quantile_forest}}.
 #' @param quantiles Numeric vector (0, 1).
 #'                  Extreme quantiles at which estimates are required.
+#'                  Default is \code{quantiles = c(0.95, 0.99)}.
 #' @param threshold Numeric (0, 1). Intermediate quantile used to compute
 #'                  thresholds \eqn{t(x_i)} for the GPD.
 #'                  Note that \code{threshold} < \code{quantiles}.
@@ -58,7 +59,7 @@
 #'  \insertAllCited{}
 #'
 #' @export
-predict_erf <- function(object, quantiles, threshold = 0.8,
+predict_erf <- function(object, quantiles = c(0.95, 0.99), threshold = 0.8,
                         newdata = NULL, model_assessment = FALSE,
                         Y.test = NULL, out_of_bag = FALSE,
                         param_est = c("ML", "Hill"), lambda = 0){
@@ -69,7 +70,8 @@ predict_erf <- function(object, quantiles, threshold = 0.8,
 
 }
 
-predict_erf_internal <- function(object, quantiles, threshold = 0.8,
+predict_erf_internal <- function(object, quantiles = c(0.95, 0.99),
+                                 threshold = 0.8,
                                  newdata = NULL, model_assessment = FALSE,
                                  Y.test = NULL, out_of_bag = FALSE,
                                  param_est = c("ML", "Hill"),
@@ -133,54 +135,167 @@ predict_erf_internal <- function(object, quantiles, threshold = 0.8,
   }
 }
 
-
-erf_cv <- function(Y, X, t_xi, min.node.size = c(5), K = 5, n_rep = 1,
-                   args_grf, args_erf,
+#' Cross validation (CV) for Extreme Random Forest
+#'
+#' Runs repeated CV for Extreme Random Forest.
+#'
+#' @param X Numeric matrix. Matrix of predictors.
+#' @param Y Numeric vector. Vector of responses.
+#' @param t_xi Numeric vector. Vector of thresholds.
+#' @param min.node.size Numeric vector. Grid of values of \code{min.node.size}
+#'        to cross validate.
+#'        Default is \code{min.node.size = c(5)}.
+#' @param K Positive integer. Number of folds in CV.
+#'        Default is \code{K = 5}.
+#' @param n_rep Positive integer. Number of CV repetitions.
+#'        Default is \code{n_rep = 1}.
+#' @param args_grf List. List of named arguments for
+#'        \code{\link[grf]{quantile_forest}}.
+#'        Default is \code{args_grf = list()}.
+#' @param args_erf List. List of named arguments for
+#'        \code{\link[erf]{predict_erf}}.
+#'        Default is \code{args_erf = list()}.
+#' @param rng Numeric vector. Vector with
+#'        \code{K * n_rep * length(min.node.size) + 1} seeds used to
+#'        reproduce the random splits and fitting.
+#'        Default is \code{rng = NULL}.
+#'
+#' @return Named list. The list is made of:
+#' \itemize{
+#' \item \code{min.node.size} --- Numeric vector. Grid of values of \code{min.node.size}
+#'        to cross validate.
+#' \item \code{cv_error} --- Numeric vector. Vector of cross validation errors.
+#' \item \code{cv_se} --- Numeric vector. Vector of cross validation standard errors.
+#' }
+#'
+#'
+#' @references
+#'  \insertAllCited{}
+#'
+#' @export
+#'
+#' @importFrom foreach foreach %dopar%
+#' @importFrom magrittr %>%
+erf_cv <- function(X, Y, t_xi, min.node.size = 5, K = 5, n_rep = 1,
+                   args_grf = list(), args_erf = list(),
                    rng = NULL){
 
-  check_rng(rng, n_rep, K, min.node.size) # !!! check size of rng if not null
-  folds <- create_folds(n_rep, K, seed = rng[1]) # !!!
-  grid <- expand.grid(1:n_rep, 1:K, min.node.size) %>%
-    bind_cols(tibble(rng = rng[-1]))
+  if (is.null(rng)){
+    rng <- as.numeric(sample(1:1e6,
+                             size = n_rep * K * length(min.node.size) + 1))
+  }
+
+  check_rng(rng, n_rep, K, min.node.size)
+
+  check_fn_params(grf::quantile_forest, lst = args_grf)
+  check_fn_params(predict_erf, lst = args_erf)
+
+  n <- nrow(X)
+
+  folds <- create_folds(n, n_rep, K, seed = rng[1])
+
+  grid <- expand.grid(n_rep = 1:n_rep, K_fold_out = 1:K,
+                      min.node.size = min.node.size) %>%
+    dplyr::bind_cols(tibble::tibble(rng = rng[-1])) %>%
+    tibble::as_tibble()
 
   grf_fit_fn <- purrr::partial(grf::quantile_forest, !!!args_grf)
-  erf_predict_fn <- purrr::partial(erf_predict_internal, !!!args_erf)
+  erf_predict_fn <- purrr::partial(predict_erf_internal, !!!args_erf)
 
   iterations <- seq_len(nrow(grid))
 
-  ll <- foreach(i = iterations, .combine = bind_rows,
-                .options.future = list(scheduling = FALSE),
-                .errorhandling = "remove") %dopar% {
+  ll <- foreach(i = iterations, .combine = c,
+                .options.future = list(scheduling = FALSE)) %dopar% {
 
                   rng_curr <- grid$rng[[i]]
                   n_rep <- grid$n_rep[i]
-                  K <- grid$K[i]
+                  K <- grid$K_fold_out[i]
                   min.node.size <- grid$min.node.size[i]
 
-                  rngtools::setRNG(grid$rng[[i]])
+                  dat <- split_data(X, Y, t_xi, folds[[n_rep]], K)
 
-                  dat_train <- split_data(Y, X, t_xi, folds[i], K)
-                  dat_valid <- split_data2(Y, X, t_xi, folds[i], K)
+                  rngtools::setRNG(rng_curr)
 
-                  fit.grf <- grf_fit_fn(X = dat_train$X, dat_train$Y,
+                  fit.grf <- grf_fit_fn(X = dat$train$X, dat$train$Y,
                                         min.node.size = min.node.size)
 
-                  gpd_pars <- erf_predict_fn(fit.grf, newdata = dat_valid$X,
-                                             t_xi = dat_train$t_xi,
-                                             t_x0 = dat_valid$t_xi)
+                  gpd_pars <- erf_predict_fn(fit.grf, newdata = dat$valid$X,
+                                             t_xi = dat$train$t_xi,
+                                             t_x0 = dat$valid$t_xi)$pars
 
-                  evaluate_deviance(gpd_pars, dat_valid$Y, dat_valid$t_xi) # !!!
+                  evaluate_deviance(gpd_pars, dat$valid$Y, dat$valid$t_xi)
                 }
 
+  res <- dplyr::bind_cols(grid, tibble::tibble(cv_K_fold_out = ll)) %>%
+    dplyr::filter(cv_K_fold_out < 1e6) %>%
+    dplyr::group_by(min.node.size) %>%
+    dplyr::summarise(cv_err = mean(cv_K_fold_out),
+                     cv_se = 1 / dplyr::n() * stats::sd(cv_K_fold_out))
+
+  # !!! ask Sebastian if cv_se for repeated CV is correct
+  # !!! add warning if some cv_K_fold_out = 1e6?
+
+  return(res)
+}
+
+evaluate_deviance <- function(gpd_pars, Y, t_xi){
+  ## numeric_matrix numeric_vector (2x) -> numeric
+  ## evaluate the GDP deviance
+
+  exc <- Y - t_xi
+  data <- exc[exc > 0]
+  sig <- gpd_pars[exc > 0, 1]
+  xi <- gpd_pars[exc > 0, 2]
+  y <- 1 + (xi/sig) * data
+
+  if (min(sig) <= 0)
+    return(10^6)
+  else {
+    if (min(y) <= 0)
+      return(10^6)
+    else {
+      return(mean(log(sig) + (1 + 1/xi) * log(y)))
+    }
+  }
+}
+
+split_data <- function(X, Y, t_xi, fold, K){
+  ## numeric_matrix numeric_vector (2x) list integer -> list
+  ## produce a list made of:
+  ## train (contains all rows not in fold[[K]])
+  ## - X, Y, t_xi
+  ## valid (contains all rows in fold[[K]])
+  ## - X, Y, t_xi
+
+  ll <- list()
+  ll$train$X <- X[-fold[[K]], ]
+  ll$train$Y <- Y[-fold[[K]]]
+  ll$train$t_xi <- t_xi[-fold[[K]]]
+
+  ll$valid$X <- X[fold[[K]], ]
+  ll$valid$Y <- Y[fold[[K]]]
+  ll$valid$t_xi <- t_xi[fold[[K]]]
+
+  return(ll)
 
 }
 
+create_folds <- function(n, n_rep, K, seed){
+  ## integer (4x) -> list
+  ## produce a list with n_rep splits for K-fold CV
+
+  rows_id <- 1:n
+
+  rngtools::setRNG(seed)
+  lapply(X = rep(1, n_rep), FUN = function(x){
+    chunk(sample(rows_id), K)
+  })
+}
 
 chunk <- function(x, K){
   ## numeric_vector integer -> list
   ## split x into K chunks
   unname(split(x, factor(sort(rank(x)%%K))))
-
 }
 
 validate_inputs <- function(object, quantiles, threshold, newdata,
@@ -201,6 +316,23 @@ validate_inputs <- function(object, quantiles, threshold, newdata,
 
   return(TRUE)
 }
+
+check_rng <- function(rng, K, n_rep, min.node.size){
+  ## numeric_vector integer integer numeric_vector -> boolean
+  ## check whether rng has the right size
+
+  arg <- deparse(substitute(rng))
+
+  correct_size <- K * n_rep * length(min.node.size) + 1
+  cond <- (length(rng) == correct_size)
+
+  if(!cond){
+    stop(paste0(arg, " must contain ", correct_size, " elements"))
+  }
+
+  return(TRUE)
+}
+
 
 check_nonneg_numeric <- function(x){
   ## numeric -> boolean
@@ -374,12 +506,12 @@ optim_wrap <- function(i, init_par, obj_fun, exc_data, wi_x0, lambda, xi_prior){
 }
 
 compute_extreme_quantiles <- function(gpd_pars, t_x0, quantiles, threshold){
-  ## numeric_matrix numeric_matrix numeric_vector(0, 1)
+  ## numeric_matrix numeric_vector numeric_vector(0, 1)
   ## numeric(0, 1) -> numeric_matrix
   ## produce matrix with estimated extremes quantiles. The value at (i, j) gives
   ## the estimated quantile j for test sample i
 
-  res <- matrix(nrow = nrow(t_x0), ncol = length(quantiles))
+  res <- matrix(nrow = length(t_x0), ncol = length(quantiles))
 
   for(j in seq_along(quantiles)){
     res[, j] <- q_GPD(p = quantiles[j], p0 = threshold, t_x0 = t_x0,
@@ -392,7 +524,7 @@ compute_extreme_quantiles <- function(gpd_pars, t_x0, quantiles, threshold){
 }
 
 compute_model_assessment <- function(t_x0, Y.test, gpd_pars){
-  ## numeric_matrix numeric_vector numeric_matrix -> plot
+  ## numeric_vector numeric_vector numeric_matrix -> plot
   ## produce QQ-plot of standardized estimated quantiles vs exponential data
 
   Y <- Y.test
@@ -472,7 +604,6 @@ sample_exponentials <- function(dat_plot){
 
   n <- nrow(dat_plot)
 
-
   dat <- data.frame(random_exp = double(), theoretical_quantiles = double(),
                     rep = double())
   for (i in 1:100) {
@@ -509,7 +640,7 @@ weighted_LLH <- function(par, data, weights, lambda, xi_prior) {
 }
 
 q_GPD <- function(p, p0, t_x0, sigma, xi){
-  ## numeric(0, 1) numeric(0, 1) numeric_matrix numeric_vector
+  ## numeric(0, 1) numeric(0, 1) numeric_vector numeric_vector
   ## numeric_vector -> numeric_vector
   ## produce the estimated extreme quantiles of GPD
 
@@ -522,4 +653,22 @@ extract_fn_params <- function(fn, lst){
 
   required_args <- formals(fn)
   lst[names(lst) %in% names(required_args)]
+}
+
+check_fn_params <- function(fn, lst){
+  ## function list -> boolean
+  ## produce true if elements lst are valid arguments for fn
+
+  arg1 <- deparse(substitute(fn))
+  arg2 <- deparse(substitute(lst))
+
+  required_args <- formals(fn)
+  cond <- names(lst) %in% names(required_args)
+
+  if (!all(cond)){
+    stop(paste0(arg2, " contains the wrong arguments for ", arg1,
+                ". These are: ", names(lst)[!cond]))
+  } else {
+    return(TRUE)
+  }
 }
