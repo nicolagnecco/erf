@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Extreme predictions with a quantile forest — predict_erf • erf</title>
+<title>Cross validation (CV) for Extreme Random Forest — erf_cv • erf</title>
 
 
 <!-- jquery -->
@@ -39,9 +39,8 @@
 
 
 
-<meta property="og:title" content="Extreme predictions with a quantile forest — predict_erf" />
-<meta property="og:description" content="Predicts high conditional quantiles of Y given X using a quantile forest
-fitted using quantile_forest." />
+<meta property="og:title" content="Cross validation (CV) for Extreme Random Forest — erf_cv" />
+<meta property="og:description" content="Runs repeated CV for Extreme Random Forest." />
 
 
 
@@ -103,120 +102,91 @@ fitted using quantile_forest." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Extreme predictions with a quantile forest</h1>
+    <h1>Cross validation (CV) for Extreme Random Forest</h1>
     <small class="dont-index">Source: <a href='https://github.com/nicolagnecco/erf/blob/master/R/extremeForest.R'><code>R/extremeForest.R</code></a></small>
-    <div class="hidden name"><code>predict_erf.Rd</code></div>
+    <div class="hidden name"><code>erf_cv.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Predicts high conditional quantiles of Y given X using a quantile forest
-fitted using <code><a href='https://rdrr.io/pkg/grf/man/quantile_forest.html'>quantile_forest</a></code>.</p>
+    <p>Runs repeated CV for Extreme Random Forest.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>predict_erf</span><span class='op'>(</span>
-  <span class='va'>object</span>,
-  quantiles <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>0.95</span>, <span class='fl'>0.99</span><span class='op'>)</span>,
-  threshold <span class='op'>=</span> <span class='fl'>0.8</span>,
-  newdata <span class='op'>=</span> <span class='cn'>NULL</span>,
-  model_assessment <span class='op'>=</span> <span class='cn'>FALSE</span>,
-  Y.test <span class='op'>=</span> <span class='cn'>NULL</span>,
-  out_of_bag <span class='op'>=</span> <span class='cn'>FALSE</span>,
-  param_est <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"ML"</span>, <span class='st'>"Hill"</span><span class='op'>)</span>,
-  lambda <span class='op'>=</span> <span class='fl'>0</span>
+    <pre class="usage"><span class='fu'>erf_cv</span><span class='op'>(</span>
+  <span class='va'>X</span>,
+  <span class='va'>Y</span>,
+  <span class='va'>t_xi</span>,
+  min.node.size <span class='op'>=</span> <span class='fl'>5</span>,
+  K <span class='op'>=</span> <span class='fl'>5</span>,
+  n_rep <span class='op'>=</span> <span class='fl'>1</span>,
+  args_grf <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span><span class='op'>)</span>,
+  args_erf <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span><span class='op'>)</span>,
+  rng <span class='op'>=</span> <span class='cn'>NULL</span>
 <span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>object</th>
-      <td><p>Quantile forest object. The trained forest obtained with
-<code><a href='https://rdrr.io/pkg/grf/man/quantile_forest.html'>quantile_forest</a></code>.</p></td>
+      <th>X</th>
+      <td><p>Numeric matrix. Matrix of predictors.</p></td>
     </tr>
     <tr>
-      <th>quantiles</th>
-      <td><p>Numeric vector (0, 1).
-Extreme quantiles at which estimates are required.
-Default is <code>quantiles = c(0.95, 0.99)</code>.</p></td>
+      <th>Y</th>
+      <td><p>Numeric vector. Vector of responses.</p></td>
     </tr>
     <tr>
-      <th>threshold</th>
-      <td><p>Numeric (0, 1). Intermediate quantile used to compute
-thresholds \(t(x_i)\) for the GPD.
-Note that <code>threshold</code> &lt; <code>quantiles</code>.
-Default is 0.8.</p></td>
+      <th>t_xi</th>
+      <td><p>Numeric vector. Vector of thresholds.</p></td>
     </tr>
     <tr>
-      <th>newdata</th>
-      <td><p>Numeric matrix.
-Rows contain observation at which predictions should be made.
-If NULL, makes out-of-bag predictions on the training set
-instead (i.e., provides predictions at Xi using only trees
-that did not use the i-th training example). Note
-that this matrix should have the number of columns as the
-training matrix, and that the columns must appear in the same
-order. This argument is needed if
-<code>model_assessment = TRUE</code>.
-Default is <code>NULL</code>.</p></td>
+      <th>min.node.size</th>
+      <td><p>Numeric vector. Grid of values of <code>min.node.size</code>
+to cross validate.
+Default is <code>min.node.size = c(5)</code>.</p></td>
     </tr>
     <tr>
-      <th>model_assessment</th>
-      <td><p>Boolean. Assess GPD fit with QQ-plot against
-exponential distribution?
-Default is <code>FALSE</code>.</p></td>
+      <th>K</th>
+      <td><p>Positive integer. Number of folds in CV.
+Default is <code>K = 5</code>.</p></td>
     </tr>
     <tr>
-      <th>Y.test</th>
-      <td><p>Numeric vector. Responses for the test set, needed
-if <code>model_assessment = TRUE</code>.
-Default is <code>NULL</code>.</p></td>
+      <th>n_rep</th>
+      <td><p>Positive integer. Number of CV repetitions.
+Default is <code>n_rep = 1</code>.</p></td>
     </tr>
     <tr>
-      <th>out_of_bag</th>
-      <td><p>Boolean. Use out-of-bag observations to compute thresholds
-\(t(x_i)\) for the GPD?
-Default is <code>FALSE</code>.</p></td>
+      <th>args_grf</th>
+      <td><p>List. List of named arguments for
+<code><a href='https://rdrr.io/pkg/grf/man/quantile_forest.html'>quantile_forest</a></code>.
+Default is <code>args_grf = list()</code>.</p></td>
     </tr>
     <tr>
-      <th>param_est</th>
-      <td><p>Character. One of <code>"ML"</code> and <code>"Hill"</code>. Specifies the method to
-fit the shape and scale parameter of the GDP distribution.
-<code>"ML"</code> is the weighted maximum likelihood approach proposed by
-Terefe et al. (2020)
-.
-<code>"Hill"</code> is the weighted Hill's estimator approach proposed
-by Deuber (2020)
-.
-Default is <code>"ML"</code>.</p></td>
+      <th>args_erf</th>
+      <td><p>List. List of named arguments for
+<code><a href='predict_erf.html'>predict_erf</a></code>.
+Default is <code>args_erf = list()</code>.</p></td>
     </tr>
     <tr>
-      <th>lambda</th>
-      <td><p>Numeric (&gt;= 0). Penalty coefficient for the \(\xi\) parameter
-in the weighted log-likelihood, i.e., when <code>param_est = "ML"</code>.
-Default is <code>0</code>.</p></td>
+      <th>rng</th>
+      <td><p>Numeric vector. Vector with
+<code>K * n_rep * length(min.node.size) + 1</code> seeds used to
+reproduce the random splits and fitting.
+Default is <code>rng = NULL</code>.</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>Named list. The list is made of:</p><ul>
-<li><p><code>predictions</code> --- Numeric matrix. Predictions at each test point (on rows) for
-each desired quantile (on columns).</p></li>
-<li><p><code>pars</code> --- Numeric matrix. Estimated parameters at each test point (on rows).
-The columns contain the estimates for the \(\sigma\) and
-\(\xi\) parameter, respectively.</p></li>
-<li><p><code>threshold</code> --- Numeric matrix. Intermediate thresholds at each test point (on rows),
-estimated using <code><a href='https://rdrr.io/pkg/grf/man/quantile_forest.html'>quantile_forest</a></code>.</p></li>
-<li><p><code>plot</code> (if <code>model_assessment = TRUE</code>). QQ-plot for model assessment.</p></li>
+<li><p><code>min.node.size</code> --- Numeric vector. Grid of values of <code>min.node.size</code>
+to cross validate.</p></li>
+<li><p><code>cv_error</code> --- Numeric vector. Vector of cross validation errors.</p></li>
+<li><p><code>cv_se</code> --- Numeric vector. Vector of cross validation standard errors.</p></li>
 </ul>
 
     <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
 
-    <p>Deuber D (2020).
-&#8220;A Quantile Extrapolation Approach for Extreme Quantile Treatment Effect Estimation.&#8221;
-<em>arXiv preprint arXiv:_._</em>.<br /><br /> Terefe EM, Gnecco N, Engelke S (2020).
-&#8220;Extreme Random Forests.&#8221;
-<em>arXiv preprint arXiv:_._</em>.</p>
+    <p>There are no references for Rd macro <code>\insertAllCites</code> on this help page.</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
