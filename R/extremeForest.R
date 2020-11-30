@@ -232,7 +232,7 @@ erf_cv <- function(X, Y, t_xi, min.node.size = 5, K = 5, n_rep = 1,
     dplyr::summarise(cv_err = mean(cv_K_fold_out),
                      cv_se = 1 / dplyr::n() * stats::sd(cv_K_fold_out))
 
-  # !!! ask Sebastian if cv_se for repeated CV is correct
+  # !!! ask Sebastian if cv_se for repeated CV is correct -> should not get smaller
   # !!! add warning if some cv_K_fold_out = 1e6?
 
   return(res)
