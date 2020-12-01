@@ -201,13 +201,16 @@ erf_cv <- function(X, Y, t_xi, threshold, min.node.size = 5, K = 5, n_rep = 1,
     dplyr::bind_cols(tibble::tibble(rng = rng[-1])) %>%
     tibble::as_tibble()
 
-  grf_fit_fn <- purrr::partial(grf::quantile_forest, !!!args_grf)
-  erf_predict_fn <- purrr::partial(predict_erf_internal, !!!args_erf)
-
   iterations <- seq_len(nrow(grid))
 
   ll <- foreach(i = iterations, .combine = c,
                 .options.future = list(scheduling = FALSE)) %dopar% {
+
+
+                  grf_fit_fn <- purrr::partial(grf::quantile_forest,
+                                               !!!args_grf)
+                  erf_predict_fn <- purrr::partial(predict_erf_internal,
+                                                   !!!args_erf)
 
                   rng_curr <- grid$rng[[i]]
                   n_rep <- grid$n_rep[i]
