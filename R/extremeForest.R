@@ -192,7 +192,7 @@ erf_cv <- function(X, Y, t_xi, min.node.size = 5, K = 5, n_rep = 1,
 
   n <- nrow(X)
 
-  folds <- create_folds(n, n_rep, K, seed = rng[1])
+  folds <- create_folds(n, n_rep, K, seed = rng[[1]])
 
   grid <- expand.grid(n_rep = 1:n_rep, K_fold_out = 1:K,
                       min.node.size = min.node.size) %>%
