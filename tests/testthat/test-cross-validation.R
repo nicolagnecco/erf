@@ -15,7 +15,7 @@
 # test_that("multiplication works", {
 #   debug(erf_cv)
 #   res <- erf_cv(X, Y, t_xi, threshold = 0.8, min.node.size = min.node.size,
-#                 K = 5, n_rep = 1, args_grf = args_grf)
+#                 K = 5, n_rep = 1, args_grf = args_grf, verbose = TRUE)
 #
 #   res2plot <- res %>%
 #     dplyr::group_by(min.node.size) %>%

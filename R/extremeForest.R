@@ -161,6 +161,11 @@ predict_erf_internal <- function(object, quantiles = c(0.95, 0.99),
 #'        \code{K * n_rep * length(min.node.size) + 1} seeds used to
 #'        reproduce the random splits and fitting.
 #'        Default is \code{rng = NULL}.
+#' @param verbose (logical): whether to print cross validation logs. If \code{TRUE},
+#'        they are printed to \code{log_file}
+#'        Default is \code{verbose = FALSE}.
+#' @param log_file (character): file where cross validation logs are saved.
+#'        Default is \code{log_file = "./log.txt"}.
 #'
 #' @return Named list. The list is made of:
 #' \itemize{
@@ -180,7 +185,7 @@ predict_erf_internal <- function(object, quantiles = c(0.95, 0.99),
 #' @importFrom magrittr %>%
 erf_cv <- function(X, Y, t_xi, threshold, min.node.size = 5, K = 5, n_rep = 1,
                    args_grf = list(), args_erf = list(),
-                   rng = NULL){
+                   rng = NULL, verbose = FALSE, log_file = "./log.txt"){
 
   if (is.null(rng)){
     rng <- as.numeric(sample(1:1e6,
@@ -206,7 +211,6 @@ erf_cv <- function(X, Y, t_xi, threshold, min.node.size = 5, K = 5, n_rep = 1,
   ll <- foreach(i = iterations, .combine = c,
                 .options.future = list(scheduling = FALSE)) %dopar% {
 
-
                   grf_fit_fn <- purrr::partial(grf::quantile_forest,
                                                !!!args_grf)
                   erf_predict_fn <- purrr::partial(predict_erf_internal,
@@ -216,6 +220,12 @@ erf_cv <- function(X, Y, t_xi, threshold, min.node.size = 5, K = 5, n_rep = 1,
                   n_rep <- grid$n_rep[i]
                   K <- grid$K_fold_out[i]
                   min.node.size <- grid$min.node.size[i]
+
+                  if (verbose){
+                  cat("n_rep =", n_rep, "--- K =", K,
+                      "--- min.node.size =", min.node.size, "\n",
+                      file = log_file, append = TRUE)
+                  }
 
                   dat <- split_data(X, Y, t_xi, folds[[n_rep]], K)
 
@@ -240,8 +250,10 @@ erf_cv <- function(X, Y, t_xi, threshold, min.node.size = 5, K = 5, n_rep = 1,
                 }
 
   if (any(!isnt_out_mad(ll))){
-    warning(paste0("Some repetitions produced unreliable ",
-                   "cross validation errors and were discarded."))
+    msg <- paste0("Some repetitions produced unreliable ",
+                  "cross validation errors and were discarded.")
+    warning(msg)
+    if (verbose){cat(msg, "\n", file = log_file, append = TRUE)}
   }
 
   res <- dplyr::bind_cols(grid, tibble::tibble(cv_K_fold_out = ll)) %>%
