@@ -1,4 +1,4 @@
-# n <- 1000
+# n <- 2000
 # p <- 3
 # X <- matrix(runif(n * p, min = -1, max = 1), ncol = p)
 # Y <- ifelse(X[, 1] > 0,
@@ -13,10 +13,20 @@
 #
 #
 # test_that("multiplication works", {
-#   res <- erf_cv(X, Y, t_xi, min.node.size, K = 5, n_rep = 5, args_grf = args_grf)
+#   debug(erf_cv)
+#   res <- erf_cv(X, Y, t_xi, threshold = 0.8, min.node.size = min.node.size,
+#                 K = 5, n_rep = 1, args_grf = args_grf)
+#
+#   res2plot <- res %>%
+#     dplyr::group_by(min.node.size) %>%
+#     dplyr::summarise(cv_err = mean(cv_K_fold_out),
+#                      cv_se = 1/sqrt(5) * sd(cv_K_fold_out))
 # })
 #
 # library(ggplot2)
 #
 # ggplot(res %>% dplyr::mutate(min.node.size = factor(min.node.size))) +
+#   geom_point(aes(x = min.node.size, y = cv_K_fold_out))
+#
+# ggplot(res2plot %>% dplyr::mutate(min.node.size = factor(min.node.size))) +
 #   geom_point(aes(x = min.node.size, y = cv_err))
