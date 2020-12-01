@@ -142,6 +142,8 @@ predict_erf_internal <- function(object, quantiles = c(0.95, 0.99),
 #' @param X Numeric matrix. Matrix of predictors.
 #' @param Y Numeric vector. Vector of responses.
 #' @param t_xi Numeric vector. Vector of thresholds.
+#' @param threshold Numeric (0, 1). Intermediate quantile used to compute
+#'                  thresholds \eqn{t(x_i)}.
 #' @param min.node.size Numeric vector. Grid of values of \code{min.node.size}
 #'        to cross validate.
 #'        Default is \code{min.node.size = c(5)}.
@@ -176,7 +178,7 @@ predict_erf_internal <- function(object, quantiles = c(0.95, 0.99),
 #'
 #' @importFrom foreach foreach %dopar%
 #' @importFrom magrittr %>%
-erf_cv <- function(X, Y, t_xi, min.node.size = 5, K = 5, n_rep = 1,
+erf_cv <- function(X, Y, t_xi, threshold, min.node.size = 5, K = 5, n_rep = 1,
                    args_grf = list(), args_erf = list(),
                    rng = NULL){
 
@@ -219,24 +221,73 @@ erf_cv <- function(X, Y, t_xi, min.node.size = 5, K = 5, n_rep = 1,
                   fit.grf <- grf_fit_fn(X = dat$train$X, dat$train$Y,
                                         min.node.size = min.node.size)
 
-                  gpd_pars <- erf_predict_fn(fit.grf, newdata = dat$valid$X,
-                                             t_xi = dat$train$t_xi,
-                                             t_x0 = dat$valid$t_xi)$pars
+                  exc_id <- dat$valid$Y > dat$valid$t_xi
 
-                  evaluate_deviance(gpd_pars, dat$valid$Y, dat$valid$t_xi)
+                  gpd_pars <- erf_predict_fn(fit.grf,
+                                             newdata = dat$valid$X[exc_id, ],
+                                             t_xi = dat$train$t_xi,
+                                             t_x0 = dat$valid$t_xi[exc_id])$pars
+
+                  summary(gpd_pars[, 2])
+
+                  n_valid <- length(dat$valid$Y)
+
+                  evaluate_deviance(gpd_pars,
+                                    dat$valid$Y[exc_id],
+                                    dat$valid$t_xi[exc_id]) / (n_valid * (1 - threshold))
                 }
 
+  if (any(!isnt_out_mad(ll))){
+    warning(paste0("Some repetitions produced unreliable ",
+                   "cross validation errors and were discarded."))
+  }
+
   res <- dplyr::bind_cols(grid, tibble::tibble(cv_K_fold_out = ll)) %>%
-    dplyr::filter(cv_K_fold_out < 1e6) %>%
+    remove_outliers_cv() %>%
     dplyr::group_by(min.node.size) %>%
     dplyr::summarise(cv_err = mean(cv_K_fold_out),
-                     cv_se = 1 / dplyr::n() * stats::sd(cv_K_fold_out))
+                     cv_se = 1 / sqrt(K) * stats::sd(cv_K_fold_out))
 
-  # !!! ask Sebastian if cv_se for repeated CV is correct -> should not get smaller
-  # !!! add warning if some cv_K_fold_out = 1e6?
+
 
   return(res)
 }
+
+remove_outliers_cv <- function(tbl){
+  ## tibble function -> tibble
+  ## remove all cross validation repetitions where some outliers occured
+
+  # identify the repetition with outliers
+  cond <- isnt_out_mad(tbl$cv_K_fold_out)
+
+  # identify the fold associated with outliers
+  if (any(!cond)){
+    Ks <- unique(tbl$K_fold_out[!cond])
+    n_reps <- unique(tbl$n_rep[!cond])
+
+    tbl %>%
+      dplyr::filter(!((K_fold_out %in% Ks) & (n_rep %in% n_reps)))
+  }
+
+}
+
+
+isnt_out_z <- function(x, thres = 3, na.rm = TRUE) {
+  ## numeric_vector numeric logical -> logical_vector
+  ## produce a logical vector with TRUE if the corresponding element is within
+  ## thres standard deviations from its mean
+
+   abs(x - mean(x, na.rm = na.rm)) <= thres * sd(x, na.rm = na.rm)
+}
+
+
+isnt_out_mad <- function(x, thres = 3, na.rm = TRUE) {
+  ## numeric_vector numeric logical -> logical_vector
+  ## produce a logical vector with TRUE if the corresponding element is within
+  ## thres mad from its median
+  abs(x - median(x, na.rm = na.rm)) <= thres * mad(x, na.rm = na.rm)
+}
+
 
 evaluate_deviance <- function(gpd_pars, Y, t_xi){
   ## numeric_matrix numeric_vector (2x) -> numeric
@@ -254,7 +305,7 @@ evaluate_deviance <- function(gpd_pars, Y, t_xi){
     if (min(y) <= 0)
       return(10^6)
     else {
-      return(mean(log(sig) + (1 + 1/xi) * log(y)))
+      return(sum(log(sig) + (1 + 1/xi) * log(y)))
     }
   }
 }
