@@ -228,7 +228,6 @@ erf_cv <- function(X, Y, t_xi, threshold, min.node.size = 5, K = 5, n_rep = 1,
                                              t_xi = dat$train$t_xi,
                                              t_x0 = dat$valid$t_xi[exc_id])$pars
 
-                  summary(gpd_pars[, 2])
 
                   n_valid <- length(dat$valid$Y)
 
