@@ -267,8 +267,10 @@ remove_outliers_cv <- function(tbl){
     Ks <- unique(tbl$K_fold_out[!cond])
     n_reps <- unique(tbl$n_rep[!cond])
 
-    tbl %>%
-      dplyr::filter(!((K_fold_out %in% Ks) & (n_rep %in% n_reps)))
+    return(tbl %>%
+      dplyr::filter(!((K_fold_out %in% Ks) & (n_rep %in% n_reps))))
+  } else {
+    return(tbl)
   }
 
 }
