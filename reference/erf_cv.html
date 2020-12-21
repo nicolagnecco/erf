@@ -115,12 +115,16 @@
   <span class='va'>X</span>,
   <span class='va'>Y</span>,
   <span class='va'>t_xi</span>,
+  <span class='va'>threshold</span>,
   min.node.size <span class='op'>=</span> <span class='fl'>5</span>,
+  lambda <span class='op'>=</span> <span class='fl'>0</span>,
   K <span class='op'>=</span> <span class='fl'>5</span>,
   n_rep <span class='op'>=</span> <span class='fl'>1</span>,
   args_grf <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span><span class='op'>)</span>,
   args_erf <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span><span class='op'>)</span>,
-  rng <span class='op'>=</span> <span class='cn'>NULL</span>
+  rng <span class='op'>=</span> <span class='cn'>NULL</span>,
+  verbose <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  log_file <span class='op'>=</span> <span class='st'>"./log.txt"</span>
 <span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -139,10 +143,21 @@
       <td><p>Numeric vector. Vector of thresholds.</p></td>
     </tr>
     <tr>
+      <th>threshold</th>
+      <td><p>Numeric (0, 1). Intermediate quantile used to compute
+thresholds \(t(x_i)\).</p></td>
+    </tr>
+    <tr>
       <th>min.node.size</th>
       <td><p>Numeric vector. Grid of values of <code>min.node.size</code>
-to cross validate.
+to cross-validate.
 Default is <code>min.node.size = c(5)</code>.</p></td>
+    </tr>
+    <tr>
+      <th>lambda</th>
+      <td><p>Numeric vector. Grid of values of <code>lambda</code>
+to cross-validate.
+Default is <code>lambda = 0</code>.</p></td>
     </tr>
     <tr>
       <th>K</th>
@@ -173,14 +188,27 @@ Default is <code>args_erf = list()</code>.</p></td>
 reproduce the random splits and fitting.
 Default is <code>rng = NULL</code>.</p></td>
     </tr>
+    <tr>
+      <th>verbose</th>
+      <td><p>(logical): whether to print cross validation logs. If <code>TRUE</code>,
+they are printed to <code>log_file</code>
+Default is <code>verbose = FALSE</code>.</p></td>
+    </tr>
+    <tr>
+      <th>log_file</th>
+      <td><p>(character): file where cross validation logs are saved.
+Default is <code>log_file = "./log.txt"</code>.</p></td>
+    </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>Named list. The list is made of:</p><ul>
+    <p>Tibble. The columns are</p><ul>
 <li><p><code>min.node.size</code> --- Numeric vector. Grid of values of <code>min.node.size</code>
-to cross validate.</p></li>
-<li><p><code>cv_error</code> --- Numeric vector. Vector of cross validation errors.</p></li>
+to cross-validate.
+<code>lambda</code> --- Numeric vector. Grid of values of <code>lambda</code>
+to cross-validate.</p></li>
+<li><p><code>cv_err</code> --- Numeric vector. Vector of cross validation errors.</p></li>
 <li><p><code>cv_se</code> --- Numeric vector. Vector of cross validation standard errors.</p></li>
 </ul>
 
