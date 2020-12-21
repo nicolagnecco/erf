@@ -8,12 +8,16 @@ erf_cv(
   X,
   Y,
   t_xi,
+  threshold,
   min.node.size = 5,
+  lambda = 0,
   K = 5,
   n_rep = 1,
   args_grf = list(),
   args_erf = list(),
-  rng = NULL
+  rng = NULL,
+  verbose = FALSE,
+  log_file = "./log.txt"
 )
 }
 \arguments{
@@ -23,9 +27,16 @@ erf_cv(
 
 \item{t_xi}{Numeric vector. Vector of thresholds.}
 
+\item{threshold}{Numeric (0, 1). Intermediate quantile used to compute
+thresholds \eqn{t(x_i)}.}
+
 \item{min.node.size}{Numeric vector. Grid of values of \code{min.node.size}
-to cross validate.
+to cross-validate.
 Default is \code{min.node.size = c(5)}.}
+
+\item{lambda}{Numeric vector. Grid of values of \code{lambda}
+to cross-validate.
+Default is \code{lambda = 0}.}
 
 \item{K}{Positive integer. Number of folds in CV.
 Default is \code{K = 5}.}
@@ -45,13 +56,22 @@ Default is \code{args_erf = list()}.}
 \code{K * n_rep * length(min.node.size) + 1} seeds used to
 reproduce the random splits and fitting.
 Default is \code{rng = NULL}.}
+
+\item{verbose}{(logical): whether to print cross validation logs. If \code{TRUE},
+they are printed to \code{log_file}
+Default is \code{verbose = FALSE}.}
+
+\item{log_file}{(character): file where cross validation logs are saved.
+Default is \code{log_file = "./log.txt"}.}
 }
 \value{
-Named list. The list is made of:
+Tibble. The columns are
 \itemize{
 \item \code{min.node.size} --- Numeric vector. Grid of values of \code{min.node.size}
-to cross validate.
-\item \code{cv_error} --- Numeric vector. Vector of cross validation errors.
+to cross-validate.
+\code{lambda} --- Numeric vector. Grid of values of \code{lambda}
+to cross-validate.
+\item \code{cv_err} --- Numeric vector. Vector of cross validation errors.
 \item \code{cv_se} --- Numeric vector. Vector of cross validation standard errors.
 }
 }
