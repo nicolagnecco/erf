@@ -145,8 +145,11 @@ predict_erf_internal <- function(object, quantiles = c(0.95, 0.99),
 #' @param threshold Numeric (0, 1). Intermediate quantile used to compute
 #'                  thresholds \eqn{t(x_i)}.
 #' @param min.node.size Numeric vector. Grid of values of \code{min.node.size}
-#'        to cross validate.
+#'        to cross-validate.
 #'        Default is \code{min.node.size = c(5)}.
+#' @param lambda Numeric vector. Grid of values of \code{lambda}
+#'        to cross-validate.
+#'        Default is \code{lambda = 0}.
 #' @param K Positive integer. Number of folds in CV.
 #'        Default is \code{K = 5}.
 #' @param n_rep Positive integer. Number of CV repetitions.
@@ -167,11 +170,13 @@ predict_erf_internal <- function(object, quantiles = c(0.95, 0.99),
 #' @param log_file (character): file where cross validation logs are saved.
 #'        Default is \code{log_file = "./log.txt"}.
 #'
-#' @return Named list. The list is made of:
+#' @return Tibble. The columns are
 #' \itemize{
 #' \item \code{min.node.size} --- Numeric vector. Grid of values of \code{min.node.size}
-#'        to cross validate.
-#' \item \code{cv_error} --- Numeric vector. Vector of cross validation errors.
+#'        to cross-validate.
+#'        \code{lambda} --- Numeric vector. Grid of values of \code{lambda}
+#'        to cross-validate.
+#' \item \code{cv_err} --- Numeric vector. Vector of cross validation errors.
 #' \item \code{cv_se} --- Numeric vector. Vector of cross validation standard errors.
 #' }
 #'
@@ -183,16 +188,18 @@ predict_erf_internal <- function(object, quantiles = c(0.95, 0.99),
 #'
 #' @importFrom foreach foreach %dopar%
 #' @importFrom magrittr %>%
-erf_cv <- function(X, Y, t_xi, threshold, min.node.size = 5, K = 5, n_rep = 1,
+erf_cv <- function(X, Y, t_xi, threshold, min.node.size = 5, lambda = 0,
+                   K = 5, n_rep = 1,
                    args_grf = list(), args_erf = list(),
                    rng = NULL, verbose = FALSE, log_file = "./log.txt"){
 
   if (is.null(rng)){
     rng <- as.numeric(sample(1:1e6,
-                             size = n_rep * K * length(min.node.size) + 1))
+                             size = n_rep *
+                               K * length(min.node.size) * length(lambda) + 1))
   }
 
-  check_rng(rng, n_rep, K, min.node.size)
+  check_rng(rng, n_rep, K, min.node.size, lambda)
 
   check_fn_params(grf::quantile_forest, lst = args_grf)
   check_fn_params(predict_erf, lst = args_erf)
@@ -202,9 +209,11 @@ erf_cv <- function(X, Y, t_xi, threshold, min.node.size = 5, K = 5, n_rep = 1,
   folds <- create_folds(n, n_rep, K, seed = rng[[1]])
 
   grid <- expand.grid(n_rep = 1:n_rep, K_fold_out = 1:K,
-                      min.node.size = min.node.size) %>%
+                      min.node.size = min.node.size,
+                      lambda = lambda) %>%
     dplyr::bind_cols(tibble::tibble(rng = rng[-1])) %>%
-    tibble::as_tibble()
+    tibble::as_tibble() %>%
+    dplyr::arrange(n_rep, K, min.node.size, lambda)
 
   iterations <- seq_len(nrow(grid))
 
@@ -220,10 +229,12 @@ erf_cv <- function(X, Y, t_xi, threshold, min.node.size = 5, K = 5, n_rep = 1,
                   n_rep <- grid$n_rep[i]
                   K <- grid$K_fold_out[i]
                   min.node.size <- grid$min.node.size[i]
+                  lambda <- grid$lambda[i]
 
                   if (verbose){
                   cat("n_rep =", n_rep, "--- K =", K,
-                      "--- min.node.size =", min.node.size, "\n",
+                      "--- min.node.size =", min.node.size,
+                      "--- lambda =", lambda, "\n",
                       file = log_file, append = TRUE)
                   }
 
@@ -239,7 +250,8 @@ erf_cv <- function(X, Y, t_xi, threshold, min.node.size = 5, K = 5, n_rep = 1,
                   gpd_pars <- erf_predict_fn(fit.grf,
                                              newdata = dat$valid$X[exc_id, ],
                                              t_xi = dat$train$t_xi,
-                                             t_x0 = dat$valid$t_xi[exc_id])$pars
+                                             t_x0 = dat$valid$t_xi[exc_id],
+                                             lambda = lambda)$pars
 
 
                   n_valid <- length(dat$valid$Y)
@@ -258,7 +270,7 @@ erf_cv <- function(X, Y, t_xi, threshold, min.node.size = 5, K = 5, n_rep = 1,
 
   res <- dplyr::bind_cols(grid, tibble::tibble(cv_K_fold_out = ll)) %>%
     remove_outliers_cv() %>%
-    dplyr::group_by(min.node.size) %>%
+    dplyr::group_by(min.node.size, lambda) %>%
     dplyr::summarise(cv_err = mean(cv_K_fold_out),
                      cv_se = 1 / sqrt(K) * stats::sd(cv_K_fold_out))
 
@@ -384,13 +396,13 @@ validate_inputs <- function(object, quantiles, threshold, newdata,
   return(TRUE)
 }
 
-check_rng <- function(rng, K, n_rep, min.node.size){
-  ## numeric_vector integer integer numeric_vector -> boolean
+check_rng <- function(rng, K, n_rep, min.node.size, lambda){
+  ## numeric_vector integer integer numeric_vector (2x) -> boolean
   ## check whether rng has the right size
 
   arg <- deparse(substitute(rng))
 
-  correct_size <- K * n_rep * length(min.node.size) + 1
+  correct_size <- K * n_rep * length(min.node.size) * length(lambda) + 1
   cond <- (length(rng) == correct_size)
 
   if(!cond){
