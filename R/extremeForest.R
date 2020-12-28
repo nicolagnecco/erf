@@ -709,7 +709,7 @@ weighted_LLH <- function(par, data, weights, lambda, xi_prior) {
   if (min(sig) <= 0)
     nl = 10^6
   else {
-    if (min(y) <= 0)
+    if (min(y) <= 1e-1)
       nl = 10^6
     else {
       nl = sum(weights*(log(sig) + (1 + 1/xi)*log(y))) / length(weights) +

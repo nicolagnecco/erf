@@ -97,20 +97,28 @@ gr_weighted_LLH(par, data, weights, lambda = 2, xi_prior = -0.3)
 pracma::grad(weighted_LLH, par, data = data, weights = weights,
              lambda = 2, xi_prior = -0.3)
 
+data <- data[-89]
+weights <- weights[-89]
 
-stats::optim(par = par, fn = weighted_LLH, gr = gr_weighted_LLH,
+pars <- stats::optim(par = par, fn = weighted_LLH, gr = gr_weighted_LLH,
              data = data,
              weights = weights, lambda = 0,
              xi_prior = par[2],
              method = "Nelder-Mead")$par
 
-stats::optim(par = par, fn = weighted_llh, gr = gr_weighted_LLH,
+
+pars
+-pars[1]/pars[2]
+
+pars <- stats::optim(par = par, fn = weighted_llh, gr = gr_weighted_LLH,
              data = data,
              weights = weights, lambda = 0,
              xi_prior = par[2],
              method = "Nelder-Mead")$par
+pars
 
-optim2(par = par, fn = LLH_moment,
+
+optim2(par = c(0.1, 0.0000), fn = LLH_moment,
        data = data,
        weights = weights)$par
 
