@@ -93,7 +93,7 @@ weighted_LLH(data = data, weights = weights, par = par, lambda = 1,
              xi_prior = -0.3)
 
 
-#
+# Halton's sequence
 library(randtoolbox)
 set.seed(3)
 halton(30, 4)
