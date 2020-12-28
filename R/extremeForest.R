@@ -577,11 +577,9 @@ fit_param_hill <- function(object, wi_x0, t_xi, t_x0, t_x0_2, threshold){
 optim_wrap <- function(i, init_par, obj_fun, exc_data, wi_x0, lambda, xi_prior){
 
   curr_wi_x0 <- wi_x0[i, ]
-  res <- stats::optim(par = init_par, fn = obj_fun, gr = gr_weighted_LLH,
-                      data = exc_data,
+  res <- stats::optim(par = init_par, fn = obj_fun, data = exc_data,
                       weights = curr_wi_x0, lambda = lambda,
-                      xi_prior = xi_prior,
-                      method = "BFGS")$par
+                      xi_prior = xi_prior)$par
   names(res) <- c("sigma", "csi")
   return(res)
 }
@@ -714,34 +712,6 @@ weighted_LLH <- function(par, data, weights, lambda, xi_prior) {
     else {
       nl = sum(weights*(log(sig) + (1 + 1/xi)*log(y))) / length(weights) +
         lambda * (xi - xi_prior) ^ 2
-
-    }
-  }
-  return(nl)
-}
-
-gr_weighted_LLH <- function(par, data, weights, lambda, xi_prior) {
-  ## numeric_vector numeric_matrix numeric_vector numeric numeric -> numeric
-  ## returns the gradient of the weighted penalized GPD log-likelihood
-
-  sig = par[1] # sigma
-  xi = par[2] # xi
-  y = 1 + (xi/sig) * data
-  if (min(sig) <= 0)
-    nl = c(0, -1)
-  else {
-    if (min(y) <= 0)
-      nl = c(-1, 0)
-    else {
-      nl_sig = sum(weights*(1 / sig +
-                              (1 + 1/xi) * 1/y * xi * data /(-sig^2))) /
-        length(weights)
-
-      nl_xi = sum(weights*(-log(y)/xi^2 + (1 + 1/xi) * 1/ y * data / sig)) /
-        length(weights) +
-        2 * lambda * (xi - xi_prior)
-
-      nl <- c(nl_sig, nl_xi)
 
     }
   }
