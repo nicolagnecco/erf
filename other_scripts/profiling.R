@@ -76,7 +76,7 @@ profvis(
 # C++
 library(Rcpp)
 library(bench)
-load("other_scripts/cpp_test_data.Rdata")
+load("other_scripts/gaussian_data.Rdata")
 
 sourceCpp("src/weighted_llh.cpp")
 
@@ -100,9 +100,21 @@ pracma::grad(weighted_LLH, par, data = data, weights = weights,
 
 stats::optim(par = par, fn = weighted_LLH, gr = gr_weighted_LLH,
              data = data,
-             weights = weights, lambda = 1,
+             weights = weights, lambda = 0,
              xi_prior = par[2],
-             method = "BFGS")
+             method = "Nelder-Mead")$par
+
+stats::optim(par = par, fn = weighted_llh, gr = gr_weighted_LLH,
+             data = data,
+             weights = weights, lambda = 0,
+             xi_prior = par[2],
+             method = "Nelder-Mead")$par
+
+optim2(par = par, fn = LLH_moment,
+       data = data,
+       weights = weights)$par
+
+
 
 # Halton's sequence
 library(randtoolbox)

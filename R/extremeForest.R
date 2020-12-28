@@ -781,3 +781,40 @@ check_fn_params <- function(fn, lst){
     return(TRUE)
   }
 }
+
+LLH_moment <- function(par, data, weights) {
+  ## numeric_vector numeric_matrix numeric_vector -> numeric
+  ## returns the weighted GPD moment-likelihood
+
+  theta <- par # theta
+
+  if (- theta > 1 / max(data))
+    return(10^6)
+  else {
+    xi <- xi_moment_condition(theta, data, weights)
+    nl <- abs(mean((1 + theta * data) ^ (- 1 / xi)) - 1 / 2)
+    return(nl)
+  }
+}
+
+xi_moment_condition <- function(theta, data, weights){
+  sum(weights * log(1 + theta * data)) / sum(weights)
+}
+
+
+optim2 <- function(par, fn, ..., method = "BFGS"){
+  sig = par[1] # sigma
+  xi = par[2] # xi
+  theta <- xi / sig # theta
+
+  opt <- stats::optim(theta, fn, ..., method = method)
+
+  theta <- opt$par
+
+  xi <- xi_moment_condition(theta, ...)
+  scale <- xi / theta
+
+  opt$par <- c(scale, xi)
+
+  return(opt)
+}
