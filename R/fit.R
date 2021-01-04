@@ -31,6 +31,11 @@
 #' @export
 fit_erf <- function(X, Y, min.node.size = 40){
 
+  # validate arguments
+  validate_X(X)
+  validate_Y(Y) # !!! write + test
+  validate_mns(min.node.size) # !!! write + test
+
   args_model_1 <- list(X = X, Y = Y, min.node.size = min.node.size)
   model_2 <- grf::quantile_forest
   args_model_2 <- list(X = X, Y = Y)
@@ -74,10 +79,14 @@ fit_erf_developer <- function(args_model_1, model_2, args_model_2){
 
   # check args_model_2
   validate_fn_args(fn = model_2, lst = args_model_2)
-  # ...
+
+  # fit model_1
+
+  # fit model_2
 
   # return erf object
   new_erf(...) # !!! create constructor
+
 }
 
 

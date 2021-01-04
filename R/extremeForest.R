@@ -733,21 +733,3 @@ extract_fn_params <- function(fn, lst){
   required_args <- formals(fn)
   lst[names(lst) %in% names(required_args)]
 }
-
-validate_fn_args <- function(fn, lst){
-  ## function list -> boolean
-  ## produce true if elements lst are valid arguments for fn
-
-  arg1 <- deparse(substitute(fn))
-  arg2 <- deparse(substitute(lst))
-
-  required_args <- formals(fn)
-  cond <- names(lst) %in% names(required_args)
-
-  if (!all(cond)){
-    stop(paste0(arg2, " contains the wrong arguments for ", arg1,
-                ". These are: ", names(lst)[!cond]))
-  } else {
-    return(TRUE)
-  }
-}
