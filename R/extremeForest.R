@@ -751,3 +751,99 @@ check_fn_params <- function(fn, lst){
     return(TRUE)
   }
 }
+
+
+predict_erf_internal2 <- function(object, quantiles = c(0.95, 0.99),
+                                 threshold = 0.8,
+                                 newdata = NULL, model_assessment = FALSE,
+                                 Y.test = NULL, out_of_bag = FALSE,
+                                 param_est = c("ML", "Hill"),
+                                 lambda = 0,
+                                 wi_x0 = NULL,
+                                 t_xi = NULL, t_x0 = NULL, t_x0_2 = NULL) {
+
+  ## same inputs as predict_erf + wi_x0, t_xi, t_x0, t_x0_2
+  ##      -> same output as predict_erf
+  ## same purpose as predict_erf
+
+  ## !!! in the future,
+  ## 1. remove args:
+  ## - param_est = "Hill",
+  ## - t_x0_2,
+  ## 2. export args:
+  ## - t_xi,
+  ## - t_x0
+
+  validate_inputs(object, quantiles, threshold, newdata, model_assessment,
+                  Y.test, out_of_bag, lambda)
+
+  param_est <- match.arg(param_est)
+
+  X0 <- set_test_observations(object, newdata)
+
+  if (is.null(wi_x0)){
+    wi_x0 <-  as.matrix(grf::get_sample_weights(object, newdata = X0,
+                                                num.threads = NULL))
+  }
+
+  if (is.null(t_xi)){
+    t_xi <- compute_thresholds(object, threshold = threshold,
+                               X = object$X.orig, out_of_bag = out_of_bag)
+  }
+
+  if (is.null(t_x0)){
+    t_x0 <- compute_thresholds(object, threshold = threshold, X = X0)
+  }
+
+  if (is.null(t_x0_2) & param_est == "Hill"){
+    threshold2 <- 1 - 2 * (1 - threshold)
+    t_x0_2 <- compute_thresholds(object, threshold = threshold2, X = X0)
+  }
+
+  if (param_est == "ML"){
+    gpd_pars <- fit_conditional_gpd2(object, wi_x0, t_xi, lambda)
+
+  } else if (param_est == "Hill"){
+    gpd_pars <- fit_param_hill(object, wi_x0, t_xi, t_x0, t_x0_2, threshold)
+  }
+
+  q_hat <- compute_extreme_quantiles(gpd_pars, t_x0, quantiles, threshold)
+
+  if (model_assessment){
+    p <- compute_model_assessment(t_x0, Y.test, gpd_pars)
+    return(list(predictions = q_hat, pars = gpd_pars, threshold = t_x0,
+                plot = p))
+  } else {
+    return(list(predictions = q_hat, pars = gpd_pars, threshold = t_x0))
+  }
+}
+
+fit_conditional_gpd2 <- function(object, wi_x0, t_xi, lambda){
+  ## quantile_forest numeric_matrix numeric_vector numeric -> matrix
+  ## produce matrix with MLE GPD scale and shape parameter for each test point
+
+  ntest <- nrow(wi_x0)
+  Y <- object$Y.orig
+  exc_idx = which(Y - t_xi > 0)
+  exc_data = (Y - t_xi)[exc_idx]
+  init_par <- ismev::gpd.fit(exc_data, 0, show=FALSE)$mle
+
+  wi_x0 <- wi_x0
+  EVT_par <- purrr::map_dfr(1:ntest, optim_wrap2, init_par, weighted_llh,
+                            exc_data, wi_x0, lambda, init_par[2], exc_idx)
+
+  return(as.matrix(EVT_par))
+}
+
+optim_wrap2 <- function(i, init_par, obj_fun, exc_data, wi_x0, lambda, xi_prior,
+                       exc_idx){
+
+  exclude_obs <- c(i, exc_idx)
+
+  curr_wi_x0 <- wi_x0[i, -exclude_obs]
+  res <- stats::optim(par = init_par, fn = obj_fun, data = exc_data,
+                      weights = curr_wi_x0, lambda = lambda,
+                      xi_prior = xi_prior)$par
+  names(res) <- c("sigma", "csi")
+  return(res)
+}
