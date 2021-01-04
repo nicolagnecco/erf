@@ -838,7 +838,7 @@ fit_conditional_gpd2 <- function(object, wi_x0, t_xi, lambda){
 optim_wrap2 <- function(i, init_par, obj_fun, exc_data, wi_x0, lambda, xi_prior,
                        exc_idx){
 
-  exclude_obs <- c(i, 1:length(exc_data)[-exc_idx])
+  exclude_obs <- c(i, (1:length(exc_data))[-exc_idx])
   exc_data <- exc_data[-exclude_obs]
 
   curr_wi_x0 <- wi_x0[i, -exclude_obs]
