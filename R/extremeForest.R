@@ -201,8 +201,8 @@ erf_cv <- function(X, Y, t_xi, threshold, min.node.size = 5, lambda = 0,
 
   check_rng(rng, n_rep, K, min.node.size, lambda)
 
-  check_fn_params(grf::quantile_forest, lst = args_grf)
-  check_fn_params(predict_erf, lst = args_erf)
+  validate_fn_args(grf::quantile_forest, lst = args_grf)
+  validate_fn_args(predict_erf, lst = args_erf)
 
   n <- nrow(X)
 
@@ -734,7 +734,7 @@ extract_fn_params <- function(fn, lst){
   lst[names(lst) %in% names(required_args)]
 }
 
-check_fn_params <- function(fn, lst){
+validate_fn_args <- function(fn, lst){
   ## function list -> boolean
   ## produce true if elements lst are valid arguments for fn
 
