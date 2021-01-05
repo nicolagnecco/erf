@@ -261,15 +261,15 @@ erf_cv <- function(X, Y, t_xi, threshold, min.node.size = 5, lambda = 0,
                                     dat$valid$t_xi[exc_id]) / (n_valid * (1 - threshold))
                 }
 
-  if (any(!isnt_out_mad(ll))){
-    msg <- paste0("Some repetitions produced unreliable ",
-                  "cross validation errors and were discarded.")
-    warning(msg)
-    if (verbose){cat(msg, "\n", file = log_file, append = TRUE)}
-  }
+  # if (any(!isnt_out_mad(ll))){
+  #   msg <- paste0("Some repetitions produced unreliable ",
+  #                 "cross validation errors and were discarded.")
+  #   warning(msg)
+  #   if (verbose){cat(msg, "\n", file = log_file, append = TRUE)}
+  # }
 
   res <- dplyr::bind_cols(grid, tibble::tibble(cv_K_fold_out = ll)) %>%
-    remove_outliers_cv() %>%
+    # remove_outliers_cv() %>%
     dplyr::group_by(min.node.size, lambda) %>%
     dplyr::summarise(cv_err = mean(cv_K_fold_out),
                      cv_se = 1 / sqrt(K) * stats::sd(cv_K_fold_out))
