@@ -1,13 +1,15 @@
 #' Fit an extremal random forest (ERF)
 #'
-#' Fit an extremal random forest ... !!!
+#' Fit an extremal random forest ... !!! write description
+#'
+#' !!! write details
 #'
 #' @param X (numeric matrix)
 #' @param Y (numeric vector)
 #' @param min.node.size (numeric \eqn{\geq}{>=} 0)
 #' @param lambda (numeric \eqn{\geq}{>=} 0)
-#' @param intermediate_estimator ok
-#' @param ... ok
+#' @param intermediate_estimator !!! document this
+#' @param ... !!! document this
 #'
 #' @return An object with S3 class "\code{extreme_forest}",
 #' that is a named list with the following elements.
@@ -22,12 +24,12 @@
 #' For example, \code{predict(intermediate_estimator, newdata, ...)}
 #' must execute with no errors.}
 #'
-#' \item{min.node.size}{!!!}
+#' \item{min.node.size}{!!! document this}
 #'
-#' \item{lambda}{!!!}
+#' \item{lambda}{!!! document this}
 #'
 #' @examples
-#' 2 + 2
+#' "!!! add examples"
 #'
 #'
 extreme_forest <- function(X, Y, min.node.size, lambda,
@@ -55,6 +57,10 @@ extreme_forest <- function(X, Y, min.node.size, lambda,
 
 new_extreme_forest <- function(X, Y, min.node.size, lambda,
                                intermediate_estimator, ...){
+  ## numeric_matrix numeric_vector numeric numeric intermediate_estimator dots
+  ## -> extreme_forest
+  ## fits an extreme_forest
+
   # fit intermediate threshold estimator
   intermediate_estimator <- fit_intermediate_quantile(X, Y,
                                                    intermediate_estimator, ...)
@@ -64,17 +70,12 @@ new_extreme_forest <- function(X, Y, min.node.size, lambda,
                                                min.node.size = min.node.size)
 
   # return extreme_forest object
-  new_extreme_forest(extreme_quantile_fit,
-                     intermediate_estimator,
-                     min.node.size,
-                     lambda,
-                     ...)
+  extreme_forest_1
 }
 
 
-
-# S3
-# extreme_forest
+# Ideal usage of the package
+# 1. Fit extreme_forest
 # erf.fit <- extreme_forest(X, Y, min.node.size = 40, lambda = 0.001, base_threshold = NULL, ...)
 #
 # predict(erf.fit, newdata = X_test, quantile_levels = c(0.999), ...) # ... any argument for predict(base_threshold, ...) e.g., base_levels = 0.8
@@ -82,8 +83,8 @@ new_extreme_forest <- function(X, Y, min.node.size, lambda,
 # plot(erf.fit) # diagnostic plot
 # print(erf.fit) # variable importance
 #
-#
-# # extreme_forest_cv
+
+# 2. CV extreme_forest
 # erf.fit.cv <- extreme_forest_cv(X, Y,
 #                   min.node.size = c(5, 40, 100),
 #                   lambda = c(0, 0.001, 0.1, 1),
@@ -92,13 +93,7 @@ new_extreme_forest <- function(X, Y, min.node.size, lambda,
 #                   ...)
 #
 # predict(erf.fit.cv, newdata = X_test, quantile_levels = c(0.999), ...)
-
-
+#
 # plot(erf.fit.cv) # ???
 # print(erf.fit.cv) # ???
 #
-# a <- grf::get_sample_weights(fit.grf)
-# (a)
-# d <- class(a)
-# str(d)
-# class(matrix(0, nrow = 10))

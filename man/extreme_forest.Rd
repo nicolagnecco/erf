@@ -15,9 +15,9 @@ extreme_forest(X, Y, min.node.size, lambda, intermediate_estimator, ...)
 
 \item{lambda}{(numeric \eqn{\geq}{>=} 0)}
 
-\item{intermediate_estimator}{ok}
+\item{intermediate_estimator}{!!! document this}
 
-\item{...}{ok}
+\item{...}{!!! document this}
 }
 \value{
 An object with S3 class "\code{extreme_forest}",
@@ -33,15 +33,18 @@ as \strong{second} argument a numeric matrix with the test predictors, e.g.,
 For example, \code{predict(intermediate_estimator, newdata, ...)}
 must execute with no errors.}
 
-\item{min.node.size}{!!!}
+\item{min.node.size}{!!! document this}
 
-\item{lambda}{!!!}
+\item{lambda}{!!! document this}
 }
 \description{
-Fit an extremal random forest ... !!!
+Fit an extremal random forest ... !!! write description
+}
+\details{
+!!! write details
 }
 \examples{
-2 + 2
+"!!! add examples"
 
 
 }
