@@ -51,5 +51,3 @@ extreme_forest_1 <- structure(list(
   min.node.size = min.node.size,
   lambda = lambda),
   class = "extreme_forest")
-
-extreme_forest_1
