@@ -6,14 +6,14 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>erf — extreme_forest • erf</title>
+<title>Fit an extremal random forest (ERF) — extreme_forest • erf</title>
 
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/yeti/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous" />
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
 
@@ -39,8 +39,10 @@
 
 
 
-<meta property="og:title" content="erf — extreme_forest" />
-<meta property="og:description" content="Computes quantile extreme forest ..." />
+<meta property="og:title" content="Fit an extremal random forest (ERF) — extreme_forest" />
+<meta property="og:description" content="Fit an extremal random forest ... !!!" />
+
+
 
 
 
@@ -79,19 +81,13 @@
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
-     
-  </a>
-</li>
-<li>
   <a href="../reference/index.html">Reference</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/nicolagnecco/erf/">
-    <span class="fab fa fab fa-github fa-lg"></span>
+    <span class="fab fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -108,67 +104,70 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>erf</h1>
-    <small class="dont-index">Source: <a href='https://github.com/nicolagnecco/erf/blob/master/R/extremeForest.R'><code>R/extremeForest.R</code></a></small>
+    <h1>Fit an extremal random forest (ERF)</h1>
+    <small class="dont-index">Source: <a href='https://github.com/nicolagnecco/erf/blob/master/R/extreme_forest.R'><code>R/extreme_forest.R</code></a></small>
     <div class="hidden name"><code>extreme_forest.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Computes quantile extreme forest ...</p>
+    <p>Fit an extremal random forest ... !!!</p>
     </div>
 
-    <pre class="usage"><span class='fu'><a href='https://rdrr.io/pkg/erf/man/extreme_forest.html'>extreme_forest</a></span>(
-  <span class='kw'>X.train</span>,
-  <span class='kw'>Y</span>,
-  <span class='kw'>X.test</span>,
-  <span class='kw'>alpha</span>,
-  <span class='kw'>alpha.new</span>,
-  min.node.size = <span class='fl'>5</span>,
-  Y.test = <span class='kw'>NULL</span>,
-  grf = <span class='fl'>FALSE</span>
-)</pre>
+    <pre class="usage"><span class='fu'>extreme_forest</span><span class='op'>(</span><span class='va'>X</span>, <span class='va'>Y</span>, <span class='va'>min.node.size</span>, <span class='va'>lambda</span>, <span class='va'>intermediate_estimator</span>, <span class='va'>...</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>X.train</th>
-      <td><p>...</p></td>
+      <th>X</th>
+      <td><p>(numeric matrix)</p></td>
     </tr>
     <tr>
       <th>Y</th>
-      <td><p>...</p></td>
-    </tr>
-    <tr>
-      <th>X.test</th>
-      <td><p>...</p></td>
-    </tr>
-    <tr>
-      <th>alpha</th>
-      <td><p>...</p></td>
-    </tr>
-    <tr>
-      <th>alpha.new</th>
-      <td><p>...</p></td>
+      <td><p>(numeric vector)</p></td>
     </tr>
     <tr>
       <th>min.node.size</th>
-      <td><p>...</p></td>
+      <td><p>(numeric \(\geq\) 0)</p></td>
     </tr>
     <tr>
-      <th>Y.test</th>
-      <td><p>...</p></td>
+      <th>lambda</th>
+      <td><p>(numeric \(\geq\) 0)</p></td>
     </tr>
     <tr>
-      <th>grf</th>
-      <td><p>...</p></td>
+      <th>intermediate_estimator</th>
+      <td><p>ok</p></td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td><p>ok</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>...</p>
+    <p>An object with S3 class "<code>extreme_forest</code>",
+that is a named list with the following elements.</p>
+<dt>quantile_forest</dt><dd><p>An object with S3 class "<code>quantile_forest</code>". See
+<code><a href='https://rdrr.io/pkg/grf/man/quantile_forest.html'>grf::quantile_forest()</a></code>.</p></dd>
 
+<dt>intermediate_estimator</dt><dd><p>An object with arbitrary S3 class that possesses the
+"<code>predict</code>" method. Such "<code>predict</code>" method must accept
+as <strong>second</strong> argument a numeric matrix with the test predictors, e.g.,
+<code>newdata</code>.
+For example, <code><a href='https://rdrr.io/r/stats/predict.html'>predict(intermediate_estimator, newdata, ...)</a></code>
+must execute with no errors.</p></dd>
+
+<dt>min.node.size</dt><dd><p>!!!</p></dd>
+
+<dt>lambda</dt><dd><p>!!!</p></dd>
+
+
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'><span class='fl'>2</span> <span class='op'>+</span> <span class='fl'>2</span>
+</div><div class='output co'>#&gt; [1] 4</div><div class='input'>
+
+</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -180,11 +179,11 @@
 
       <footer>
       <div class="copyright">
-  <p>Developed by Edossa Merga.</p>
+  <p>Developed by Edossa Merga, Nicola Gnecco, Sebastian Engelke.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.9000.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.9000.</p>
 </div>
 
       </footer>
