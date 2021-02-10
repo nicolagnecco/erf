@@ -113,54 +113,67 @@
     <p>Fit an extremal random forest ... !!! write description</p>
     </div>
 
-    <pre class="usage"><span class='fu'>extreme_forest</span><span class='op'>(</span><span class='va'>X</span>, <span class='va'>Y</span>, <span class='va'>min.node.size</span>, <span class='va'>lambda</span>, <span class='va'>intermediate_estimator</span>, <span class='va'>...</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>extreme_forest</span><span class='op'>(</span>
+  <span class='va'>X</span>,
+  <span class='va'>Y</span>,
+  min.node.size <span class='op'>=</span> <span class='fl'>5</span>,
+  lambda <span class='op'>=</span> <span class='fl'>0.001</span>,
+  intermediate_estimator <span class='op'>=</span> <span class='cn'>NULL</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>X</th>
-      <td><p>(numeric matrix)</p></td>
+      <td><p>Numeric matrix of predictors, where each row corresponds to
+an observation and each column to a predictor.</p></td>
     </tr>
     <tr>
       <th>Y</th>
-      <td><p>(numeric vector)</p></td>
+      <td><p>Numeric response vector.</p></td>
     </tr>
     <tr>
       <th>min.node.size</th>
-      <td><p>(numeric \(\geq\) 0)</p></td>
+      <td><p>Minimum number of observations in each tree leaf used
+in <code><a href='https://rdrr.io/pkg/grf/man/quantile_forest.html'>grf::quantile_forest()</a></code>.
+Nodes with size smaller than <code>min.node.size</code> can occur,
+as in the original <span class="pkg">randomForest</span> package.
+Default is 5.</p></td>
     </tr>
     <tr>
       <th>lambda</th>
-      <td><p>(numeric \(\geq\) 0)</p></td>
+      <td><p>Penalty for the shape parameter used in the weighted likelihood.
+Default is 0.001.</p></td>
     </tr>
     <tr>
       <th>intermediate_estimator</th>
-      <td><p>!!! document this</p></td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td><p>!!! document this</p></td>
+      <td><p>An object with arbitrary S3 class that possesses
+a <code>predict</code> method or <code>NULL</code>.
+If <code>NULL</code>, a quantile forest with default arguments is fitted by calling
+<code><a href='https://rdrr.io/pkg/grf/man/quantile_forest.html'>grf::quantile_forest(X, Y)</a></code> from <span class="pkg">grf</span> package.
+Default is <code>NULL</code>.</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>An object with S3 class "<code>extreme_forest</code>",
-that is a named list with the following elements.</p>
+    <p>An object with S3 class "<code>extreme_forest</code>".
+It is a named list with the following elements:</p>
 <dt>quantile_forest</dt><dd><p>An object with S3 class "<code>quantile_forest</code>". See
 <code><a href='https://rdrr.io/pkg/grf/man/quantile_forest.html'>grf::quantile_forest()</a></code>.</p></dd>
 
-<dt>intermediate_estimator</dt><dd><p>An object with arbitrary S3 class that possesses the
-"<code>predict</code>" method. Such "<code>predict</code>" method must accept
-as <strong>second</strong> argument a numeric matrix with the test predictors, e.g.,
-<code>newdata</code>.
+<dt>intermediate_estimator</dt><dd><p>An object with arbitrary S3 class that possesses
+a <code>predict</code> method.
+Such <code>predict</code>" method must accept a numeric matrix with the test
+predictors, e.g., <code>newdata</code>, as <strong>second</strong> argument.
 For example, <code><a href='https://rdrr.io/r/stats/predict.html'>predict(intermediate_estimator, newdata, ...)</a></code>
 must execute with no errors.</p></dd>
 
-<dt>min.node.size</dt><dd><p>!!! document this</p></dd>
+<dt>min.node.size</dt><dd><p>Minimum number of observations in each tree leaf used
+in <code><a href='https://rdrr.io/pkg/grf/man/quantile_forest.html'>grf::quantile_forest()</a></code>.</p></dd>
 
-<dt>lambda</dt><dd><p>!!! document this</p></dd>
+<dt>lambda</dt><dd><p>Penalty for the shape parameter used in the weighted likelihood.</p></dd>
 
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
@@ -169,7 +182,6 @@ must execute with no errors.</p></dd>
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='st'>"!!! add examples"</span>
 </div><div class='output co'>#&gt; [1] "!!! add examples"</div><div class='input'>
-
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
