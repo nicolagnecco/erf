@@ -13,8 +13,8 @@ extreme_forest(
 )
 }
 \arguments{
-\item{X}{Numeric matrix of predictors, where each row corresponds to
-an observation and each column to a predictor.}
+\item{X}{Numeric matrix or data.frame of predictors, where each row
+corresponds to an observation and each column to a predictor.}
 
 \item{Y}{Numeric response vector.}
 
@@ -29,6 +29,10 @@ Default is 0.001.}
 
 \item{intermediate_estimator}{An object with arbitrary S3 class that possesses
 a \code{predict} method or \code{NULL}.
+Note that in order to be a valid S3 class, the code
+\code{predict(intermediate_estimator, X)} must exectute with no errors.
+Please ensure that \code{X} has the correct data type, i.e., \code{matrix} or
+\code{data.frame}.
 If \code{NULL}, a quantile forest with default arguments is fitted by calling
 \code{grf::quantile_forest(X, Y)} from \pkg{grf} package.
 Default is \code{NULL}.}
@@ -44,7 +48,7 @@ It is a named list with the following elements:
 a \code{predict} method.
 Such \code{predict}" method must accept a numeric matrix with the test
 predictors, e.g., \code{newdata}, as \strong{second} argument.
-For example, \code{predict(intermediate_estimator, newdata, ...)}
+For example, \code{predict(intermediate_estimator, X)}
 must execute with no errors.}
 
 \item{min.node.size}{Minimum number of observations in each tree leaf used
