@@ -9,7 +9,6 @@ df <- 4
 
 
 
-
 ## Data definitions:
 
 ## X is numeric_matrix with n rows and p columns
