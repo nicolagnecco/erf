@@ -33,64 +33,32 @@
 # ggplot(res2plot %>% dplyr::mutate(min.node.size = factor(min.node.size))) +
 #   geom_point(aes(x = min.node.size, y = cv_err))
 
-# Understand classes
-n <- 2000
-p <- 3
-X <- matrix(runif(n * p, min = -1, max = 1), ncol = p)
-Y <- ifelse(X[, 1] > 0,
-            rt(n, df = 4) * 2,
-            rt(n, df = 4))
-fit.grf <- grf::quantile_forest(X, Y, min.node.size = -10)
 
-library(methods)
-class(fit.grf)
-methods(class = "quantile_forest")
-grf:::print.grf
 
-print(fit.grf)
+# Ideal usage of the package
+# 1. Fit extreme_forest
+# erf.fit <- extreme_forest(X, Y, min.node.size = 40, lambda = 0.001, base_threshold = NULL, ...)
+#
+# predict(erf.fit, newdata = X_test, quantile_levels = c(0.999), ...) # ... any argument for predict(base_threshold, ...) e.g., base_levels = 0.8
+#
+# plot(erf.fit) # diagnostic plot
+# print(erf.fit) # variable importance
+#
 
-grf::get_sample_weights(fit.grf)
+# 2. CV extreme_forest
+# erf.fit.cv <- extreme_forest_cv(X, Y,
+#                   min.node.size = c(5, 40, 100),
+#                   lambda = c(0, 0.001, 0.1, 1),
+#                   nfolds = 5, nrep = 3,
+#                   base_threshold = NULL,
+#                   ...)
+#
+# predict(erf.fit.cv, newdata = X_test, quantile_levels = c(0.999), ...)
+#
+# plot(erf.fit.cv) # ???
+# print(erf.fit.cv) # ???
+#
 
-rboot <- list(month = "August", year = 2015, instructor = "Nicola", attendance = 100)
-class(rboot) <- "workshop"
-
-rboot
-is(rboot, "workshop")
-coef.default
-print.workshop <- function(x){
-  with(x,
-       cat("A class held in ", month, " ", year, ". The instructor was ",
-           instructor, ". The course attendance was ", attendance, ".\n",
-           sep = ""))
-}
-
-print(rboot)
-
-a <- glm(Y ~ X, method = "model.frame")
-class(a)
-
-grf::tune_causal_forest()
-
-str(fit.grf)
-
-cv.glmnet()
-
-?glmnet::glmnet
-?glmnet::cv.glmnet()
-?grf::predict.quantile_forest
-predict_erf
-
-###
-lm
-?args(lm)
-?formals(lm)
-myf <- function(x = 2){
-  print(missing(x))
-  invisible(x)
-}
-
-myf()
-?missing
 
 
 
