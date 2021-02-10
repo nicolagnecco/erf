@@ -1,8 +1,11 @@
 #' Fit an extremal random forest (ERF)
 #'
+#'
 #' Fit an extremal random forest ... !!! write description
 #'
+#'
 #' !!! write details
+#'
 #'
 #' @param X Numeric matrix of predictors, where each row corresponds to
 #'  an observation and each column to a predictor.
@@ -32,8 +35,8 @@
 #'   [grf::quantile_forest()].}
 #'
 #'  \item{intermediate_estimator}{An object with arbitrary S3 class that possesses
-#'   a `predict`" method.
-#'   Such "`predict`" method must accept a numeric matrix with the test
+#'   a `predict` method.
+#'   Such `predict`" method must accept a numeric matrix with the test
 #'   predictors, e.g., `newdata`, as **second** argument.
 #'   For example, `predict(intermediate_estimator, newdata, ...)`
 #'   must execute with no errors.}
@@ -42,6 +45,7 @@
 #'  in [grf::quantile_forest()].}
 #'
 #' \item{lambda}{Penalty for the shape parameter used in the weighted likelihood.}
+#'
 #'
 #' @examples
 #' "!!! add examples"
@@ -54,22 +58,72 @@ extreme_forest <- function(X, Y, min.node.size = 5, lambda = 0.001,
 
   validate_params(min.node.size, lambda)
 
-  validate_estimator(intermediate_estimator, ...)
+  validate_estimator(intermediate_estimator)
 
   # return extreme_forest object
   validate_extreme_forest(new_extreme_forest(
     X, Y, min.node.size, lambda,
-    intermediate_estimator, ...
+    intermediate_estimator
   ))
 }
 
 
-# WISHLIST
-# validate_data
-# validate_params
-# validate_estimator
-# validate_extreme_forest
-# new_extreme_forest
+validate_data <- function(X, Y){
+  ## numeric_matrix numeric_vector -> invisible(list)
+  ## checks whether the given data are well formed, throws error if not
+
+  # !!!
+  # examples
+  # template / inventory
+  # body
+  # run test and debug until correct
+
+  invisible(list(X, Y))
+}
+
+
+validate_params <- function(min.node.size, lambda) {
+  ## numeric numeric -> invisible(list)
+  ## checks whether the given parameters are well formed, throws error if not
+
+  # !!!
+  # examples
+  # template / inventory
+  # body
+  # run test and debug until correct
+
+  invisible(list(min.node.size, lambda))
+
+}
+
+
+validate_estimator <- function(estimator){
+  ## intermdiate_estimator -> invisible(intermediate_estimator)
+  ## checks if the intermediate_estimator is well formed, throws error if not
+
+  # !!!
+  # examples
+  # template / inventory
+  # body
+  # run test and debug until correct
+
+  invisible(estimator)
+}
+
+
+validate_extreme_forest <- function(ef){
+  ## extreme_forest -> extreme_forest
+  ## returns ef if it is well formed, throws error if not
+
+  # !!!
+  # examples
+  # template / inventory
+  # body
+  # run test and debug until correct
+
+  return(ef)
+}
+
 
 new_extreme_forest <- function(X, Y, min.node.size, lambda,
                                intermediate_estimator, ...) {
@@ -77,10 +131,16 @@ new_extreme_forest <- function(X, Y, min.node.size, lambda,
   ## -> extreme_forest
   ## fits an extreme_forest
 
-  # fit intermediate threshold estimator
+  # !!!
+  # examples
+  # template / inventory
+  # body
+  # run test and debug until correct
+
+  # fit intermediate quantile estimator
   intermediate_estimator <- fit_intermediate_quantile(
     X, Y,
-    intermediate_estimator, ...
+    intermediate_estimator
   )
 
   # fit generalized random forest
@@ -90,7 +150,27 @@ new_extreme_forest <- function(X, Y, min.node.size, lambda,
   )
 
   # return extreme_forest object
-  extreme_forest_1
+  structure(list(
+    "quantile_forest" = structure(list(), class = "quantile_forest"),
+    "intermediate_estimator" = structure(list(), class = "lm"),
+    min.node.size = min.node.size,
+    lambda = lambda),
+    class = "extreme_forest")
+}
+
+
+fit_intermediate_quantile <- function(X, Y, intermediate_estimator){
+  ## numeric_matrix numeric_vector intermediate_estimator|NULL ->
+  ## intermediate_estimator
+  ## return intermediate_estimator or, if NULL, fits quantile forest
+
+  # !!!
+  # examples
+  # template / inventory
+  # body
+  # run test and debug until correct
+
+  return(structure(list(), class = "quantile_forest"))
 }
 
 

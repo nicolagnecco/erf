@@ -41,8 +41,8 @@ It is a named list with the following elements:
 \code{\link[grf:quantile_forest]{grf::quantile_forest()}}.}
 
 \item{intermediate_estimator}{An object with arbitrary S3 class that possesses
-a \code{predict}" method.
-Such "\code{predict}" method must accept a numeric matrix with the test
+a \code{predict} method.
+Such \code{predict}" method must accept a numeric matrix with the test
 predictors, e.g., \code{newdata}, as \strong{second} argument.
 For example, \code{predict(intermediate_estimator, newdata, ...)}
 must execute with no errors.}
