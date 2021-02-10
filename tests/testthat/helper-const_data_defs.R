@@ -33,8 +33,9 @@ quantile_forest_1 <- grf::quantile_forest(X, Y, min.node.size = min.node.size)
 ## - the second argument of such predict is the numeric_matrix of test predictors
 ## interp. a fitted object to estimate intermediate quantile
 intermediate_estimator_1 <- grf::quantile_forest(X, Y)
-any(grepl("predict",
-          sapply(class(intermediate_estimator_1), function(cl){methods("class" = cl)})))
+intermediate_estimator_2 <- structure(list(), class = "foo")
+intermediate_estimator_3 <- structure(list(), class = "lm")
+intermediate_estimator_4 <- lm(Y ~ X)
 
 
 structure(list(), class = "extreme_forest")
@@ -50,3 +51,5 @@ extreme_forest_1 <- structure(list(
   min.node.size = min.node.size,
   lambda = lambda),
   class = "extreme_forest")
+
+
