@@ -7,8 +7,8 @@
 #' !!! write details
 #'
 #'
-#' @param X Numeric matrix of predictors, where each row corresponds to
-#'  an observation and each column to a predictor.
+#' @param X Numeric matrix or data.frame of predictors, where each row
+#'  corresponds to an observation and each column to a predictor.
 #'
 #' @param Y Numeric response vector.
 #'
@@ -22,7 +22,8 @@
 #'  Default is 0.001.
 #'
 #' @param intermediate_estimator An object with arbitrary S3 class that possesses
-#'  a `predict` method or `NULL`.
+#'  a `predict` method and can run the code
+#'  `predict(intermediate_estimator, X)`.
 #'  If `NULL`, a quantile forest with default arguments is fitted by calling
 #'  `grf::quantile_forest(X, Y)` from \pkg{grf} package.
 #'  Default is `NULL`.
@@ -38,7 +39,7 @@
 #'   a `predict` method.
 #'   Such `predict`" method must accept a numeric matrix with the test
 #'   predictors, e.g., `newdata`, as **second** argument.
-#'   For example, `predict(intermediate_estimator, newdata, ...)`
+#'   For example, `predict(intermediate_estimator, X)`
 #'   must execute with no errors.}
 #'
 #' \item{min.node.size}{Minimum number of observations in each tree leaf used
@@ -58,7 +59,7 @@ extreme_forest <- function(X, Y, min.node.size = 5, lambda = 0.001,
 
   validate_params(min.node.size, lambda)
 
-  validate_estimator(intermediate_estimator)
+  validate_intermediate_estimator(intermediate_estimator, X)
 
   # return extreme_forest object
   validate_extreme_forest(new_extreme_forest(
@@ -97,15 +98,30 @@ validate_params <- function(min.node.size, lambda) {
 }
 
 
-validate_estimator <- function(estimator){
-  ## intermdiate_estimator -> invisible(intermediate_estimator)
-  ## checks if the intermediate_estimator is well formed, throws error if not
+validate_intermediate_estimator <- function(estimator, X){
+  ## intermdiate_estimator numeric_matrix -> intermediate_estimator
+  ## returns estimator if it is well formed, throws error if not
 
-  # !!!
-  # examples
-  # template / inventory
-  # body
-  # run test and debug until correct
+  # if not NULL inspect
+  if (!is.null(estimator)){
+
+    # check whether estimator has method predict
+    if (!has_method(estimator, predict)){
+      stop("error", call. = FALSE)
+    }
+
+    # check whether predict(estimator, X) runs
+    tryCatch(
+      error = function(cnd) {
+        abort_predict_on_fail("intermediate_estimator",
+                              class(estimator)[1],
+                              "X",
+                              cnd$message)
+      },
+      predict(estimator, X)
+    )
+
+  }
 
   invisible(estimator)
 }
@@ -172,3 +188,19 @@ fit_intermediate_quantile <- function(X, Y, intermediate_estimator){
 
   return(structure(list(), class = "quantile_forest"))
 }
+
+
+has_method <- function(object, generic){
+  ## object generic -> boolean
+  ## produces true if `object` has method `generic`, false otherwise
+
+  ch <- deparse(substitute(generic))
+
+  any(grepl(ch,
+            sapply(class(object),
+                   function(cl){methods("class" = cl)})))
+
+}
+
+
+
