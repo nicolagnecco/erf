@@ -4,9 +4,14 @@
 #'
 #' !!! write details
 #'
-#' @param X (numeric matrix)
-#' @param Y (numeric vector)
-#' @param min.node.size (numeric \eqn{\geq}{>=} 0)
+#' @param X \code{numeric matrix} --- Matrix of predictors, where each row corresponds to
+#'  an observation and each column to a predictor.
+#' @param Y (numeric vector) response vector.
+#' @param min.node.size \code{numeric >= 0} --- A target for the minimum
+#'  number of observations in each tree leaf used in [grf::quantile_forest()].
+#'  Nodes with size smaller than \code{min.node.size} can occur,
+#'  as in the original \pkg{randomForest} package.
+#'  Default is 5.
 #' @param lambda (numeric \eqn{\geq}{>=} 0)
 #' @param intermediate_estimator !!! document this
 #' @param ... !!! document this

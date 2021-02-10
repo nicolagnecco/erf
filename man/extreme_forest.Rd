@@ -7,11 +7,16 @@
 extreme_forest(X, Y, min.node.size, lambda, intermediate_estimator, ...)
 }
 \arguments{
-\item{X}{(numeric matrix)}
+\item{X}{\code{numeric matrix} --- Matrix of predictors, where each row corresponds to
+an observation and each column to a predictor.}
 
-\item{Y}{(numeric vector)}
+\item{Y}{(numeric vector) response vector.}
 
-\item{min.node.size}{(numeric \eqn{\geq}{>=} 0)}
+\item{min.node.size}{\code{numeric >= 0} --- A target for the minimum
+number of observations in each tree leaf used in \code{\link[grf:quantile_forest]{grf::quantile_forest()}}.
+Nodes with size smaller than \code{min.node.size} can occur,
+as in the original \pkg{randomForest} package.
+Default is 5.}
 
 \item{lambda}{(numeric \eqn{\geq}{>=} 0)}
 
