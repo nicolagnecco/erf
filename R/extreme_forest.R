@@ -50,7 +50,6 @@
 #'
 #' @examples
 #' "!!! add examples"
-#'
 extreme_forest <- function(X, Y, min.node.size = 5, lambda = 0.001,
                            intermediate_estimator = NULL) {
 
@@ -69,7 +68,7 @@ extreme_forest <- function(X, Y, min.node.size = 5, lambda = 0.001,
 }
 
 
-validate_data <- function(X, Y){
+validate_data <- function(X, Y) {
   ## numeric_matrix numeric_vector -> invisible(list)
   ## checks whether the given data are well formed, throws error if not
 
@@ -94,40 +93,40 @@ validate_params <- function(min.node.size, lambda) {
   # run test and debug until correct
 
   invisible(list(min.node.size, lambda))
-
 }
 
 
-validate_intermediate_estimator <- function(estimator, X){
+validate_intermediate_estimator <- function(estimator, X) {
   ## intermdiate_estimator numeric_matrix -> intermediate_estimator
   ## returns estimator if it is well formed, throws error if not
 
   # if not NULL inspect
-  if (!is.null(estimator)){
+  if (!is.null(estimator)) {
 
     # check whether estimator has method predict
-    if (!has_method(estimator, predict)){
+    if (!has_method(estimator, predict)) {
       stop("error", call. = FALSE)
     }
 
     # check whether predict(estimator, X) runs
     tryCatch(
       error = function(cnd) {
-        abort_predict_on_fail("intermediate_estimator",
-                              class(estimator)[1],
-                              "X",
-                              cnd$message)
+        abort_predict_on_fail(
+          "intermediate_estimator",
+          class(estimator)[1],
+          "X",
+          cnd$message
+        )
       },
       predict(estimator, X)
     )
-
   }
 
   invisible(estimator)
 }
 
 
-validate_extreme_forest <- function(ef){
+validate_extreme_forest <- function(ef) {
   ## extreme_forest -> extreme_forest
   ## returns ef if it is well formed, throws error if not
 
@@ -170,12 +169,14 @@ new_extreme_forest <- function(X, Y, min.node.size, lambda,
     "quantile_forest" = structure(list(), class = "quantile_forest"),
     "intermediate_estimator" = structure(list(), class = "lm"),
     min.node.size = min.node.size,
-    lambda = lambda),
-    class = "extreme_forest")
+    lambda = lambda
+  ),
+  class = "extreme_forest"
+  )
 }
 
 
-fit_intermediate_quantile <- function(X, Y, intermediate_estimator){
+fit_intermediate_quantile <- function(X, Y, intermediate_estimator) {
   ## numeric_matrix numeric_vector intermediate_estimator|NULL ->
   ## intermediate_estimator
   ## return intermediate_estimator or, if NULL, fits quantile forest
@@ -190,17 +191,19 @@ fit_intermediate_quantile <- function(X, Y, intermediate_estimator){
 }
 
 
-has_method <- function(object, generic){
+has_method <- function(object, generic) {
   ## object generic -> boolean
   ## produces true if `object` has method `generic`, false otherwise
 
   ch <- deparse(substitute(generic))
 
-  any(grepl(ch,
-            sapply(class(object),
-                   function(cl){methods("class" = cl)})))
-
+  any(grepl(
+    ch,
+    sapply(
+      class(object),
+      function(cl) {
+        methods("class" = cl)
+      }
+    )
+  ))
 }
-
-
-

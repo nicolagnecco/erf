@@ -7,22 +7,35 @@ test_that("validate_intermediate_estimator works", {
   expect_error(validate_intermediate_estimator(intermediate_estimator_2, X))
 
   # estimator has predict method but predict call does not work
-  expect_error(validate_intermediate_estimator(intermediate_estimator_1,
-                                               X[, -1]))
-  expect_error(validate_intermediate_estimator(intermediate_estimator_3,
-                                               X[, -1]))
-  expect_error(validate_intermediate_estimator(intermediate_estimator_4,
-                                               X[, -1]))
-  expect_error(validate_intermediate_estimator(intermediate_estimator_4,
-                                               X))
+  expect_error(validate_intermediate_estimator(
+    intermediate_estimator_1,
+    X[, -1]
+  ))
+  expect_error(validate_intermediate_estimator(
+    intermediate_estimator_3,
+    X[, -1]
+  ))
+  expect_error(validate_intermediate_estimator(
+    intermediate_estimator_4,
+    X[, -1]
+  ))
+  expect_error(validate_intermediate_estimator(
+    intermediate_estimator_4,
+    X
+  ))
 
   # estimator has correct class and predict works
-  expect_equal(validate_intermediate_estimator(intermediate_estimator_1, X),
-               intermediate_estimator_1)
-  expect_equal(validate_intermediate_estimator(intermediate_estimator_4,
-                                               as.data.frame(X)),
-               intermediate_estimator_4)
-
+  expect_equal(
+    validate_intermediate_estimator(intermediate_estimator_1, X),
+    intermediate_estimator_1
+  )
+  expect_equal(
+    validate_intermediate_estimator(
+      intermediate_estimator_4,
+      as.data.frame(X)
+    ),
+    intermediate_estimator_4
+  )
 })
 
 test_that("has_method works", {

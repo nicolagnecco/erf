@@ -1,4 +1,4 @@
-abort_predict_on_fail <- function(estimator, class, X, msg){
+abort_predict_on_fail <- function(estimator, class, X, msg) {
   ## character character character character -> error_condition
   ## produce error condition
 
@@ -6,11 +6,13 @@ abort_predict_on_fail <- function(estimator, class, X, msg){
     c(glue::glue("Problem when calling `predict({estimator}, {X})`."),
       x = glue::glue("Message: ", msg),
       i = glue::glue("Can you run `predict({estimator}, {X})`?"),
-      i = glue::glue("Does `{X}` have the correct data type? Check with `?predict.{class}`."
-                     ))
+      i = glue::glue("Does `{X}` have the correct data type? Check with `?predict.{class}`.")
+    )
 
-  rlang::abort(message = full_msg,
-               class = "error_predict_fails")
+  rlang::abort(
+    message = full_msg,
+    class = "error_predict_fails"
+  )
 }
 
 
@@ -28,13 +30,13 @@ abort_bad_argument <- function(arg, must, not = NULL) {
   }
 
   msg <- c(glue::glue("Problem with the argument `{arg}`."),
-           x = msg)
+    x = msg
+  )
 
   rlang::abort(
     message = msg,
     class = "error_bad_argument"
   )
-
 }
 
 my_log <- function(x, base = exp(1)) {
@@ -51,7 +53,7 @@ my_log <- function(x, base = exp(1)) {
 # my_log(2, base = letters)
 
 
-my_f <- function(x = 1){
+my_f <- function(x = 1) {
   match.call()[[1]]
 }
 

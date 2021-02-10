@@ -19,7 +19,7 @@ X_test <- matrix(runif(n_test * p, min = -1, max = 1), nrow = n_test, ncol = p)
 
 ## Y is numeric_vector with n elements
 ## interp. vector of responses
-Y <-  (1 + 1 * (X[, 1] > 0)) * rt(n, df)
+Y <- (1 + 1 * (X[, 1] > 0)) * rt(n, df)
 Y_test <- (1 + 1 * (X_test[, 1] > 0)) * rt(n_test, df)
 
 
@@ -49,7 +49,7 @@ extreme_forest_1 <- structure(list(
   "quantile_forest" = quantile_forest_1,
   "intermediate_estimator" = intermediate_estimator_1,
   min.node.size = min.node.size,
-  lambda = lambda),
-  class = "extreme_forest")
-
-
+  lambda = lambda
+),
+class = "extreme_forest"
+)
