@@ -4,43 +4,53 @@
 \alias{extreme_forest}
 \title{Fit an extremal random forest (ERF)}
 \usage{
-extreme_forest(X, Y, min.node.size, lambda, intermediate_estimator, ...)
+extreme_forest(
+  X,
+  Y,
+  min.node.size = 5,
+  lambda = 0.001,
+  intermediate_estimator = NULL
+)
 }
 \arguments{
-\item{X}{\code{numeric matrix} --- Matrix of predictors, where each row corresponds to
+\item{X}{Numeric matrix of predictors, where each row corresponds to
 an observation and each column to a predictor.}
 
-\item{Y}{(numeric vector) response vector.}
+\item{Y}{Numeric response vector.}
 
-\item{min.node.size}{\code{numeric >= 0} --- A target for the minimum
-number of observations in each tree leaf used in \code{\link[grf:quantile_forest]{grf::quantile_forest()}}.
+\item{min.node.size}{Minimum number of observations in each tree leaf used
+in \code{\link[grf:quantile_forest]{grf::quantile_forest()}}.
 Nodes with size smaller than \code{min.node.size} can occur,
 as in the original \pkg{randomForest} package.
 Default is 5.}
 
-\item{lambda}{(numeric \eqn{\geq}{>=} 0)}
+\item{lambda}{Penalty for the shape parameter used in the weighted likelihood.
+Default is 0.001.}
 
-\item{intermediate_estimator}{!!! document this}
-
-\item{...}{!!! document this}
+\item{intermediate_estimator}{An object with arbitrary S3 class that possesses
+a \code{predict} method or \code{NULL}.
+If \code{NULL}, a quantile forest with default arguments is fitted by calling
+\code{grf::quantile_forest(X, Y)} from \pkg{grf} package.
+Default is \code{NULL}.}
 }
 \value{
-An object with S3 class "\code{extreme_forest}",
-that is a named list with the following elements.
+An object with S3 class "\code{extreme_forest}".
+It is a named list with the following elements:
 
 \item{quantile_forest}{An object with S3 class "\code{quantile_forest}". See
 \code{\link[grf:quantile_forest]{grf::quantile_forest()}}.}
 
-\item{intermediate_estimator}{An object with arbitrary S3 class that possesses the
-"\code{predict}" method. Such "\code{predict}" method must accept
-as \strong{second} argument a numeric matrix with the test predictors, e.g.,
-\code{newdata}.
+\item{intermediate_estimator}{An object with arbitrary S3 class that possesses
+a \code{predict}" method.
+Such "\code{predict}" method must accept a numeric matrix with the test
+predictors, e.g., \code{newdata}, as \strong{second} argument.
 For example, \code{predict(intermediate_estimator, newdata, ...)}
 must execute with no errors.}
 
-\item{min.node.size}{!!! document this}
+\item{min.node.size}{Minimum number of observations in each tree leaf used
+in \code{\link[grf:quantile_forest]{grf::quantile_forest()}}.}
 
-\item{lambda}{!!! document this}
+\item{lambda}{Penalty for the shape parameter used in the weighted likelihood.}
 }
 \description{
 Fit an extremal random forest ... !!! write description
@@ -50,6 +60,5 @@ Fit an extremal random forest ... !!! write description
 }
 \examples{
 "!!! add examples"
-
 
 }

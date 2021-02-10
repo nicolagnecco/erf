@@ -4,41 +4,50 @@
 #'
 #' !!! write details
 #'
-#' @param X \code{numeric matrix} --- Matrix of predictors, where each row corresponds to
+#' @param X Numeric matrix of predictors, where each row corresponds to
 #'  an observation and each column to a predictor.
-#' @param Y (numeric vector) response vector.
-#' @param min.node.size \code{numeric >= 0} --- A target for the minimum
-#'  number of observations in each tree leaf used in [grf::quantile_forest()].
-#'  Nodes with size smaller than \code{min.node.size} can occur,
+#'
+#' @param Y Numeric response vector.
+#'
+#' @param min.node.size Minimum number of observations in each tree leaf used
+#'  in [grf::quantile_forest()].
+#'  Nodes with size smaller than `min.node.size` can occur,
 #'  as in the original \pkg{randomForest} package.
 #'  Default is 5.
-#' @param lambda (numeric \eqn{\geq}{>=} 0)
-#' @param intermediate_estimator !!! document this
-#' @param ... !!! document this
 #'
-#' @return An object with S3 class "\code{extreme_forest}",
-#' that is a named list with the following elements.
+#' @param lambda Penalty for the shape parameter used in the weighted likelihood.
+#'  Default is 0.001.
 #'
-#' \item{quantile_forest}{An object with S3 class "\code{quantile_forest}". See
-#' [grf::quantile_forest()].}
+#' @param intermediate_estimator An object with arbitrary S3 class that possesses
+#'  a `predict` method or `NULL`.
+#'  If `NULL`, a quantile forest with default arguments is fitted by calling
+#'  `grf::quantile_forest(X, Y)` from \pkg{grf} package.
+#'  Default is `NULL`.
 #'
-#' \item{intermediate_estimator}{An object with arbitrary S3 class that possesses the
-#' "\code{predict}" method. Such "\code{predict}" method must accept
-#' as **second** argument a numeric matrix with the test predictors, e.g.,
-#' \code{newdata}.
-#' For example, \code{predict(intermediate_estimator, newdata, ...)}
-#' must execute with no errors.}
 #'
-#' \item{min.node.size}{!!! document this}
+#' @return An object with S3 class "`extreme_forest`".
+#'  It is a named list with the following elements:
 #'
-#' \item{lambda}{!!! document this}
+#'  \item{quantile_forest}{An object with S3 class "`quantile_forest`". See
+#'   [grf::quantile_forest()].}
+#'
+#'  \item{intermediate_estimator}{An object with arbitrary S3 class that possesses
+#'   a `predict`" method.
+#'   Such "`predict`" method must accept a numeric matrix with the test
+#'   predictors, e.g., `newdata`, as **second** argument.
+#'   For example, `predict(intermediate_estimator, newdata, ...)`
+#'   must execute with no errors.}
+#'
+#' \item{min.node.size}{Minimum number of observations in each tree leaf used
+#'  in [grf::quantile_forest()].}
+#'
+#' \item{lambda}{Penalty for the shape parameter used in the weighted likelihood.}
 #'
 #' @examples
 #' "!!! add examples"
 #'
-#'
-extreme_forest <- function(X, Y, min.node.size, lambda,
-                           intermediate_estimator, ...){
+extreme_forest <- function(X, Y, min.node.size = 5, lambda = 0.001,
+                           intermediate_estimator = NULL) {
 
   # validate inputs
   validate_data(X, Y)
@@ -48,8 +57,10 @@ extreme_forest <- function(X, Y, min.node.size, lambda,
   validate_estimator(intermediate_estimator, ...)
 
   # return extreme_forest object
-  validate_extreme_forest(new_extreme_forest(X, Y, min.node.size, lambda,
-                                             intermediate_estimator, ...))
+  validate_extreme_forest(new_extreme_forest(
+    X, Y, min.node.size, lambda,
+    intermediate_estimator, ...
+  ))
 }
 
 
@@ -61,18 +72,22 @@ extreme_forest <- function(X, Y, min.node.size, lambda,
 # new_extreme_forest
 
 new_extreme_forest <- function(X, Y, min.node.size, lambda,
-                               intermediate_estimator, ...){
+                               intermediate_estimator, ...) {
   ## numeric_matrix numeric_vector numeric numeric intermediate_estimator dots
   ## -> extreme_forest
   ## fits an extreme_forest
 
   # fit intermediate threshold estimator
-  intermediate_estimator <- fit_intermediate_quantile(X, Y,
-                                                   intermediate_estimator, ...)
+  intermediate_estimator <- fit_intermediate_quantile(
+    X, Y,
+    intermediate_estimator, ...
+  )
 
   # fit generalized random forest
-  extreme_quantile_fit <- grf::quantile_forest(X = X, Y = Y,
-                                               min.node.size = min.node.size)
+  extreme_quantile_fit <- grf::quantile_forest(
+    X = X, Y = Y,
+    min.node.size = min.node.size
+  )
 
   # return extreme_forest object
   extreme_forest_1
