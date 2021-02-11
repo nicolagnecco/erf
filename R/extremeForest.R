@@ -255,7 +255,7 @@ erf_cv <- function(X, Y, t_xi, threshold, min.node.size = 5, lambda = 0,
 
     dat <- split_data(X, Y, t_xi, folds[[n_rep]], K)
 
-    rngtools::setRNG(rng_curr)
+    #rngtools::setRNG(rng_curr)
 
     fit.grf <- grf_fit_fn(
       X = dat$train$X, dat$train$Y,
