@@ -28,6 +28,15 @@
 #'  `grf::quantile_forest(X, Y)` from \pkg{grf} package.
 #'  Default is `NULL`.
 #'
+#'  !!! one of `grf`, (then add `neural_network`, etc.)
+#'
+#'  !!! ensure `intermediate_estimator` is one of `grf`, etc...
+#'
+#'  !!! code `predict.extreme_forest(object, newdata = NULL, quantiles = NULL, quantile_intermediate = NULL)`
+#'  handle errors for
+#'   * `object` that is not `extreme_forest`
+#'   * ...
+#'
 #'
 #' @return An object with S3 class "`extreme_forest`".
 #'  It is a named list with the following elements:
