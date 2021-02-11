@@ -39,7 +39,7 @@
 # 1. Fit extreme_forest
 # erf.fit <- extreme_forest(X, Y, min.node.size = 40, lambda = 0.001, base_threshold = NULL, ...)
 #
-# predict(erf.fit, newdata = X_test, quantile_levels = c(0.999), ...) # ... any argument for predict(base_threshold, ...) e.g., base_levels = 0.8
+# predict(erf.fit, newdata = X_test, quantiles = c(0.999), ...) # ... any argument for predict(base_threshold, ...) e.g., base_levels = 0.8
 #
 # plot(erf.fit) # diagnostic plot
 # print(erf.fit) # variable importance
@@ -53,7 +53,7 @@
 #                   base_threshold = NULL,
 #                   ...)
 #
-# predict(erf.fit.cv, newdata = X_test, quantile_levels = c(0.999), ...)
+# predict(erf.fit.cv, newdata = X_test, quantiles = c(0.999), ...)
 #
 # plot(erf.fit.cv) # ???
 # print(erf.fit.cv) # ???
