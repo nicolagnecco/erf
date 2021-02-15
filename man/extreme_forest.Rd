@@ -9,14 +9,15 @@ extreme_forest(
   Y,
   min.node.size = 5,
   lambda = 0.001,
-  intermediate_estimator = NULL
+  intermediate_threshold = c("grf", "neural_nets"),
+  ...
 )
 }
 \arguments{
-\item{X}{Numeric matrix or data.frame of predictors, where each row
+\item{X}{Numeric matrix of predictors, where each row
 corresponds to an observation and each column to a predictor.}
 
-\item{Y}{Numeric response vector.}
+\item{Y}{Numeric vector of responses.}
 
 \item{min.node.size}{Minimum number of observations in each tree leaf used
 in \code{\link[grf:quantile_forest]{grf::quantile_forest()}}.
@@ -27,34 +28,38 @@ Default is 5.}
 \item{lambda}{Penalty for the shape parameter used in the weighted likelihood.
 Default is 0.001.}
 
-\item{intermediate_estimator}{An object with arbitrary S3 class that possesses
-a \code{predict} method or \code{NULL}.
-Note that in order to be a valid S3 class, the code
-\code{predict(intermediate_estimator, X)} must exectute with no errors.
-Please ensure that \code{X} has the correct data type, i.e., \code{matrix} or
-\code{data.frame}.
-If \code{NULL}, a quantile forest with default arguments is fitted by calling
-\code{grf::quantile_forest(X, Y)} from \pkg{grf} package.
-Default is \code{NULL}.}
+\item{intermediate_threshold}{A character specifying the estimator used to
+fit the intermediate threshold.
+Options available are:
+\itemize{
+\item \code{grf}, see \code{\link[grf:quantile_forest]{grf::quantile_forest()}}.
+\item \code{neural_nets}, (coming soon).
+}}
+
+\item{...}{Additional arguments used to fit the given
+\code{intermediate_threshold}.}
 }
 \value{
 An object with S3 class "\code{extreme_forest}".
 It is a named list with the following elements:
 
-\item{quantile_forest}{An object with S3 class "\code{quantile_forest}". See
-\code{\link[grf:quantile_forest]{grf::quantile_forest()}}.}
-
-\item{intermediate_estimator}{An object with arbitrary S3 class that possesses
-a \code{predict} method.
-Such \code{predict}" method must accept a numeric matrix with the test
-predictors, e.g., \code{newdata}, as \strong{second} argument.
-For example, \code{predict(intermediate_estimator, X)}
-must execute with no errors.}
+\item{quantile_forest}{An object with S3 class "\code{quantile_forest}" (see
+\code{\link[grf:quantile_forest]{grf::quantile_forest()}}). This is a fitted generalized random forest that
+contains the similarity weights used in the log-likelihood.}
 
 \item{min.node.size}{Minimum number of observations in each tree leaf used
-in \code{\link[grf:quantile_forest]{grf::quantile_forest()}}.}
+to fit the \code{quantile_forest}.}
 
-\item{lambda}{Penalty for the shape parameter used in the weighted likelihood.}
+\item{lambda}{Penalty for the shape parameter used in the weighted
+log-likelihood.}
+
+\item{intermediate_estimator}{An object with S3 class:
+\itemize{
+\item "\code{quantile_forest}", if \code{intermediate_estimator = "grf"}.
+? "\code{...}", if \verb{intermediate_estimator = "neural_nets}.
+}
+
+This is a fitted object used to predict the intermediate threshold.}
 }
 \description{
 Fit an extremal random forest ... !!! write description
@@ -64,5 +69,4 @@ Fit an extremal random forest ... !!! write description
 }
 \examples{
 "!!! add examples"
-
 }
