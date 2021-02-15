@@ -32,7 +32,7 @@ validate_intermediate_estimator <- function(estimator
   ## intermediate_estimator -> intermediate_estimator
   ## produce intermediate_estimator if it is well formed, throws error if not
   tryCatch(
-    error = function(cnd){
+    error = function(cnd) {
       abort_wrong_estimator(cnd$message)
     },
     invisible(match.arg(estimator))
@@ -70,4 +70,3 @@ has_method <- function(object, generic) {
     )
   ))
 }
-

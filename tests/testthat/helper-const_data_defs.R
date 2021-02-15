@@ -17,8 +17,9 @@ df <- 4
 #' interp. matrix with `n` observations with `p` predictors
 X <- matrix(runif(n * p, min = -1, max = 1), nrow = n, ncol = p)
 X_test <- matrix(runif(n_test * p, min = -1, max = 1), nrow = n_test, ncol = p)
-X_small <-  matrix(runif(n_small * p_small, min = -1, max = 1),
-                   nrow = n_small, ncol = p_small)
+X_small <- matrix(runif(n_small * p_small, min = -1, max = 1),
+  nrow = n_small, ncol = p_small
+)
 
 
 #' `Y` is `numeric_vector` with `n` elements
@@ -58,7 +59,8 @@ extreme_forest_1 <- structure(list(
   "quantile_forest" = quantile_forest_1,
   "min.node.size" = min.node.size,
   "lambda" = lambda,
-  "intermediate_threshold" = intermediate_threshold_1),
+  "intermediate_threshold" = intermediate_threshold_1
+),
 class = "extreme_forest"
 )
 
