@@ -1,3 +1,31 @@
+abort_wrong_dimension <- function(arg, must, not){
+  ## character character character -> error_condition
+  ## produce error condition
+
+  full_msg <- c(glue::glue("Problem with the argument `{arg}`."),
+                x = glue::glue("`{arg}` must {must}; not {not}."))
+
+  rlang::abort(
+    message = full_msg,
+    class = "error_wrong_dimension"
+  )
+
+}
+
+abort_wrong_columns <- function(arg, must_have, columns_not){
+  ## character character character -> error_condition
+  ## produce error condition
+
+  full_msg <- c(glue::glue("Problem with the argument `{arg}`."),
+                x = glue::glue("`{arg}` must have {must_have} columns; not {columns_not}."))
+
+  rlang::abort(
+    message = full_msg,
+    class = "error_wrong_columns"
+  )
+
+}
+
 abort_not_implemented <- function(chr) {
   ## character -> error_condition
   ## produce error condition
