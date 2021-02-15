@@ -1,3 +1,15 @@
+abort_wrong_estimator <- function(cnd){
+  ## error_condition -> error_condition
+  ## produce error condition
+
+  full_msg <- c(glue::glue("Wrong `intermediate_estimator` supplied."),
+                x = cnd$message)
+
+  rlang::abort(
+    message = full_msg
+  )
+}
+
 abort_predict_on_fail <- function(estimator, class, X, msg) {
   ## character character character character -> error_condition
   ## produce error condition
