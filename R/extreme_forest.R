@@ -46,7 +46,7 @@
 #'  \item{intermediate_threshold}{An object with S3 class:
 #'
 #'  - "`quantile_forest`", if `intermediate_estimator = "grf"`.
-#'  - "`...`", if `intermediate_estimator = "neural_nets`.
+#'  - "`???`", if `intermediate_estimator = "neural_nets`.
 #'
 #'  This is a fitted object used to predict the intermediate thresholds.}
 #'
