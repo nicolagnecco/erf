@@ -53,8 +53,7 @@ extreme_forest_1 <- structure(list(
   "quantile_forest" = quantile_forest_1,
   "min.node.size" = min.node.size,
   "lambda" = lambda,
-  "intermediate_threshold" = intermediate_threshold_1,
-),
+  "intermediate_threshold" = intermediate_threshold_1),
 class = "extreme_forest"
 )
 
