@@ -1,9 +1,22 @@
-abort_wrong_estimator <- function(cnd){
-  ## error_condition -> error_condition
+abort_not_implemented <- function(chr){
+  ## character -> error_condition
+  ## produce error condition
+
+  full_msg <- c(glue::glue("Not-implemented problem."),
+                x = glue::glue("The method `{chr}` is not implemented yet."))
+
+  rlang::abort(
+    message = full_msg
+  )
+
+}
+
+abort_wrong_estimator <- function(chr){
+  ## character -> error_condition
   ## produce error condition
 
   full_msg <- c(glue::glue("Wrong `intermediate_estimator` supplied."),
-                x = cnd$message)
+                x = chr)
 
   rlang::abort(
     message = full_msg

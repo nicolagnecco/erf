@@ -1,6 +1,6 @@
 validate_data <- function(X, Y) {
   ## numeric_matrix numeric_vector -> invisible(list)
-  ## checks whether the given data are well formed, throws error if not
+  ## produce list(X, Y) if the parameters are well formed, throws error if not
 
   # !!!
   # examples
@@ -13,8 +13,9 @@ validate_data <- function(X, Y) {
 
 
 validate_params <- function(min.node.size, lambda) {
-  ## numeric numeric -> invisible(list)
-  ## checks whether the given parameters are well formed, throws error if not
+  ## numeric numeric -> list
+  ## produce list(min.node.size, lambda) if the parameters are well formed,
+  ## throws error if not
 
   # !!!
   # examples
@@ -28,20 +29,20 @@ validate_params <- function(min.node.size, lambda) {
 
 validate_intermediate_estimator <- function(estimator
                                             = c("grf", "neural_nets")) {
-  ## character -> character
-  ## returns estimator if it is well formed, throws error if not
+  ## intermediate_estimator -> intermediate_estimator
+  ## produce intermediate_estimator if it is well formed, throws error if not
   tryCatch(
     error = function(cnd){
-      abort_wrong_estimator(cnd)
+      abort_wrong_estimator(cnd$message)
     },
-    match.arg(estimator, several.ok = FALSE)
+    invisible(match.arg(estimator))
   )
 }
 
 
 validate_extreme_forest <- function(ef) {
   ## extreme_forest -> extreme_forest
-  ## returns ef if it is well formed, throws error if not
+  ## produce ef if it is well formed, throws error if not
 
   # !!!
   # examples
@@ -51,6 +52,7 @@ validate_extreme_forest <- function(ef) {
 
   return(ef)
 }
+
 
 has_method <- function(object, generic) {
   ## object generic -> boolean
