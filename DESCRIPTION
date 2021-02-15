@@ -7,7 +7,7 @@ Authors@R:
     "Nicola Gnecco [aut]",
     "Sebastian Engelke [aut]"
     ))
-Description: Extreme quantile prediction for quantile random forest.
+Description: Extreme quantile prediction in high-dimensions.
 Depends: R (>= 3.6.0)
 License: GPL-3
 Encoding: UTF-8
