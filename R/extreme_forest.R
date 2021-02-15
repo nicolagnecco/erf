@@ -55,6 +55,8 @@
 #'
 #' @examples
 #' "!!! add examples"
+#'
+#' @export
 extreme_forest <- function(X, Y, min.node.size = 5, lambda = 0.001,
                            intermediate_estimator = c("grf", "neural_nets"),
                            ...) {

@@ -9,7 +9,7 @@ extreme_forest(
   Y,
   min.node.size = 5,
   lambda = 0.001,
-  intermediate_threshold = c("grf", "neural_nets"),
+  intermediate_estimator = c("grf", "neural_nets"),
   ...
 )
 }
@@ -28,7 +28,7 @@ Default is 5.}
 \item{lambda}{Penalty for the shape parameter used in the weighted likelihood.
 Default is 0.001.}
 
-\item{intermediate_threshold}{A character specifying the estimator used to
+\item{intermediate_estimator}{A character specifying the estimator used to
 fit the intermediate threshold.
 Options available are:
 \itemize{
@@ -36,8 +36,7 @@ Options available are:
 \item \code{neural_nets}, (coming soon).
 }}
 
-\item{...}{Additional arguments used to fit the given
-\code{intermediate_threshold}.}
+\item{...}{Additional arguments used by the \code{intermediate_estimator}.}
 }
 \value{
 An object with S3 class "\code{extreme_forest}".
@@ -53,13 +52,13 @@ to fit the \code{quantile_forest}.}
 \item{lambda}{Penalty for the shape parameter used in the weighted
 log-likelihood.}
 
-\item{intermediate_estimator}{An object with S3 class:
+\item{intermediate_threshold}{An object with S3 class:
 \itemize{
 \item "\code{quantile_forest}", if \code{intermediate_estimator = "grf"}.
-? "\code{...}", if \verb{intermediate_estimator = "neural_nets}.
+\item "\code{...}", if \verb{intermediate_estimator = "neural_nets}.
 }
 
-This is a fitted object used to predict the intermediate threshold.}
+This is a fitted object used to predict the intermediate thresholds.}
 }
 \description{
 Fit an extremal random forest ... !!! write description
@@ -69,4 +68,5 @@ Fit an extremal random forest ... !!! write description
 }
 \examples{
 "!!! add examples"
+
 }
