@@ -3,12 +3,6 @@ fit_intermediate_threshold <- function(X, Y, estimator, ...) {
   ## intermediate_estimator
   ## return intermediate_threshold
 
-  # !!!
-  # examples
-  # template / inventory
-  # body
-  # run test and debug until correct
-
   if (estimator == "grf") {
     return(grf::quantile_forest(X, Y, ...))
   } else if (estimator == "neural_nets") {
