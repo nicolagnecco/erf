@@ -26,34 +26,16 @@ validate_params <- function(min.node.size, lambda) {
 }
 
 
-# !!! change
-validate_intermediate_estimator <- function(estimator, X) {
-  ## intermdiate_estimator numeric_matrix -> intermediate_estimator
+validate_intermediate_estimator <- function(estimator
+                                            = c("grf", "neural_nets")) {
+  ## character -> character
   ## returns estimator if it is well formed, throws error if not
-
-  # if not NULL inspect
-  if (!is.null(estimator)) {
-
-    # check whether estimator has method predict
-    if (!has_method(estimator, predict)) {
-      stop("error", call. = FALSE)
-    }
-
-    # check whether predict(estimator, X) runs
-    tryCatch(
-      error = function(cnd) {
-        abort_predict_on_fail(
-          "intermediate_estimator",
-          class(estimator)[1],
-          "X",
-          cnd$message
-        )
-      },
-      predict(estimator, X)
-    )
-  }
-
-  invisible(estimator)
+  tryCatch(
+    error = function(cnd){
+      abort_wrong_estimator(cnd)
+    },
+    match.arg(estimator, several.ok = FALSE)
+  )
 }
 
 
