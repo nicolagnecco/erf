@@ -51,6 +51,8 @@ intermediate_threshold_1 <- grf::quantile_forest(X, Y)
 intermediate_threshold_2 <- fit_intermediate_threshold(X_small, Y_small,
                                                        estimator = "grf")
 intermediate_threshold_3 <- structure(list(), class = "quantile_forest")
+intermediate_threshold_4 <- lm(Y ~ ., data = data.frame(X_small,
+                                                        Y = Y_small))
 
 
 
