@@ -1,4 +1,4 @@
-fit_intermediate_quantile <- function(X, Y, intermediate_estimator) {
+fit_intermediate_threshold <- function(X, Y, intermediate_estimator) {
   ## numeric_matrix numeric_vector intermediate_estimator|NULL ->
   ## intermediate_estimator
   ## return intermediate_estimator or, if NULL, fits quantile forest
