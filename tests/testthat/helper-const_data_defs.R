@@ -20,6 +20,7 @@ X_test <- matrix(runif(n_test * p, min = -1, max = 1), nrow = n_test, ncol = p)
 X_small <- matrix(runif(n_small * p_small, min = -1, max = 1),
   nrow = n_small, ncol = p_small
 )
+X_test_small <- matrix(runif(n_test * p_small, min = -1, max = 1), nrow = n_test, ncol = p_small)
 
 
 #' `Y` is `numeric_vector` with `n` elements
@@ -68,6 +69,8 @@ extreme_forest_1 <- structure(list(
 ),
 class = "extreme_forest"
 )
+
+extreme_forest_2 <- extreme_forest(X_small, Y_small, intermediate_estimator = "grf")
 
 
 structure(list(), class = "extreme_forest_cv")

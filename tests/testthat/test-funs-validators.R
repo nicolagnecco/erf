@@ -20,6 +20,19 @@ test_that("validate_intermediate_estimator works", {
 })
 
 
+test_that("validata_newdata works", {
+  expect_equal(validate_newdata(X_test_small, extreme_forest_2),
+                X_test_small)
+
+  cnd <- rlang::catch_cnd(validate_newdata(X_test_small[, 1], extreme_forest_2))
+  expect_s3_class(cnd, "error_wrong_dimension")
+
+  cnd <- rlang::catch_cnd(validate_newdata(X_test, extreme_forest_2))
+  expect_s3_class(cnd, "error_wrong_columns")
+
+})
+
+
 test_that("has_method works", {
   # S3 object with method
   expect_true(has_method(intermediate_threshold_1, predict))

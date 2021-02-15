@@ -54,6 +54,30 @@ validate_extreme_forest <- function(ef) {
 }
 
 
+validate_newdata <- function(newdata, ef) {
+  ## numeric_matrix extreme_forest -> numeric_matrix
+  ## produce newdata if it is well formed, throws an error if not
+
+  # check it is tabular
+  if (length(dim(newdata)) != 2){
+    abort_wrong_dimension("newdata", must = "have 2 dimensions",
+                       not = as.character(length(dim)))
+  }
+
+  # check it has right columns
+  p <- ncol(newdata)
+  p_expect <- ncol(ef$quantile_forest$X.orig)
+
+  if (p != p_expect) {
+    abort_wrong_columns(arg = "newdata", must_have = as.character(p_expect),
+                        columns_not = as.character(p))
+  }
+
+  invisible(newdata)
+
+}
+
+
 has_method <- function(object, generic) {
   ## object generic -> boolean
   ## produces true if `object` has method `generic`, false otherwise
