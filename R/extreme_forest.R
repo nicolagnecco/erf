@@ -67,7 +67,7 @@ extreme_forest <- function(X, Y, min.node.size = 5, lambda = 0.001,
   validate_intermediate_estimator(intermediate_estimator)
 
   # fit intermediate quantile estimator
-  intermediate_threshold <- fit_intermediate_quantile(
+  intermediate_threshold <- fit_intermediate_threshold(
     X, Y,
     intermediate_estimator,
     ...
