@@ -255,6 +255,14 @@ erf_cv <- function(X, Y, t_xi, threshold, min.node.size = 5, lambda = 0,
 
     dat <- split_data(X, Y, t_xi, folds[[n_rep]], K)
 
+    # # fit extreme_forest on training data
+    # ef <- extreme_forest(X = dat$train$X, Y = dat$train$X,
+    #                      min.node.size = min.node.size,
+    #                      lambda = lambda)
+    #
+    # # evaluate extreme_forest on test data
+    # evaluate_extreme_forest(ef, dat$valid$X, dat$valid$Y)
+
     # rngtools::setRNG(rng_curr)
 
     fit.grf <- grf_fit_fn(
