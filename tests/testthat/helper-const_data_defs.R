@@ -38,6 +38,8 @@ quantile_forest_1 <- grf::quantile_forest(X, Y, min.node.size = min.node.size)
 #' - `"grf"`
 #' - `"neural_nets"`
 #' interp. type of estimator used to fit the intermediate threshold.
+intermediate_estimator_1 <- "grf"
+intermediate_estimator_2 <- "neural_nets"
 
 
 #' `intermediate_threshold` is one of
@@ -45,7 +47,10 @@ quantile_forest_1 <- grf::quantile_forest(X, Y, min.node.size = min.node.size)
 #' - `"..."`, if `intermediate_threshold = "neural_nets"`.
 #' interp. a fitted object to predict intermediate thresholds.
 intermediate_threshold_1 <- grf::quantile_forest(X, Y)
-intermediate_threshold_2 <- structure(list(), class = "quantile_forest")
+intermediate_threshold_2 <- fit_intermediate_threshold(X_small, Y_small,
+                                                       estimator = "grf")
+intermediate_threshold_3 <- structure(list(), class = "quantile_forest")
+
 
 
 structure(list(), class = "extreme_forest")
