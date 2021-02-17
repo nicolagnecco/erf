@@ -23,7 +23,7 @@ predict.extreme_forest <- function(object, newdata = NULL,
   )
 
   # compute optimal GPD parameters
-  gpd_pars <- fit_conditional_gpd(object, lambda) # !!! recode this
+  gpd_pars <- fit_conditional_gpd(object, newdata) # !!! recode this
 
   # predict quantiles
   compute_extreme_quantiles(gpd_pars, t_x0, quantiles, quantile_intermediate) # !!! recode this
