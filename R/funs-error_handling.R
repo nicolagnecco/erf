@@ -12,6 +12,19 @@ abort_wrong_dimension <- function(arg, must, not){
 
 }
 
+abort_zero_rows <- function(arg) {
+  ## character -> error_condition
+  ## produce error condition
+
+  full_msg <- c(glue::glue("Problem with the argument `{arg}`."),
+                x = glue::glue("`{arg}` must have at least 1 row."))
+
+  rlang::abort(
+    message = full_msg,
+    class = "error_zero_rows"
+  )
+}
+
 abort_wrong_columns <- function(arg, must_have, columns_not){
   ## character character character -> error_condition
   ## produce error condition
