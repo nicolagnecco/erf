@@ -8,6 +8,8 @@ n_test <- 1e3
 min.node.size <- 40
 lambda <- 0.001
 df <- 4
+quantile_intermediate <- 0.8
+quantiles <- c(0.8, 0.9, 0.99, 0.995, 0.999, 0.9995, 0.9999)
 
 
 
@@ -20,7 +22,8 @@ X_test <- matrix(runif(n_test * p, min = -1, max = 1), nrow = n_test, ncol = p)
 X_small <- matrix(runif(n_small * p_small, min = -1, max = 1),
   nrow = n_small, ncol = p_small
 )
-X_test_small <- matrix(runif(n_test * p_small, min = -1, max = 1), nrow = n_test, ncol = p_small)
+X_test_small <- matrix(runif(n_test * p_small, min = -1, max = 1),
+                       nrow = n_test, ncol = p_small)
 
 
 #' `Y` is `numeric_vector` with `n` elements
@@ -76,11 +79,11 @@ erf_2 <- erf(X_small, Y_small, intermediate_estimator = "grf")
 
 
 structure(list(), class = "erf_cv")
-#'' `erf_cv` is a named list made of:
-#'' * `scores`: a `tibble` with columns: `min.node.size`, `lambda`, `cvm`
-#''  (mean cross-validated error).
-#'' * `erf.fit`: a fitted "`erf`" object on the full data.
-#'' interp. a cross-validated extreme forest.
+#' `erf_cv` is a named list made of:
+#' * `scores`: a `tibble` with columns: `min.node.size`, `lambda`, `cvm`
+#'  (mean cross-validated error).
+#' * `erf.fit`: a fitted "`erf`" object on the full data.
+#' interp. a cross-validated extreme forest.
 erf_cv_1 <- list(
   "scores" = tibble::tibble(
     min.node.size = c(5, 40),
