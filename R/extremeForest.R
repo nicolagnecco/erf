@@ -129,7 +129,7 @@ predict_erf_internal <- function(object, quantiles = c(0.95, 0.99),
     gpd_pars <- fit_param_hill(object, wi_x0, t_xi, t_x0, t_x0_2, threshold)
   }
 
-  q_hat <- compute_extreme_quantiles(gpd_pars, t_x0, quantiles, threshold)
+  q_hat <- compute_extreme_quantiles_deprecated(gpd_pars, t_x0, quantiles, threshold)
 
   if (model_assessment) {
     p <- compute_model_assessment(t_x0, Y.test, gpd_pars)
@@ -607,7 +607,7 @@ optim_wrap <- function(i, init_par, obj_fun, exc_data, wi_x0, lambda, xi_prior) 
   return(res)
 }
 
-compute_extreme_quantiles <- function(gpd_pars, t_x0, quantiles, threshold) {
+compute_extreme_quantiles_deprecated <- function(gpd_pars, t_x0, quantiles, threshold) {
   ## numeric_matrix numeric_vector numeric_vector(0, 1)
   ## numeric(0, 1) -> numeric_matrix
   ## produce matrix with estimated extremes quantiles. The value at (i, j) gives
@@ -758,17 +758,6 @@ weighted_LLH <- function(par, data, weights, lambda, xi_prior) {
   return(nl)
 }
 
-q_GPD <- function(p, p0, t_x0, sigma, xi) {
-  ## numeric(0, 1) numeric(0, 1) numeric_vector numeric_vector
-  ## numeric_vector -> numeric_vector
-  ## produce the estimated extreme quantiles of GPD
-
-  (((1 - p) / (1 - p0))^
-    {
-      -xi
-    } - 1) * (sigma / xi) + t_x0
-}
-
 extract_fn_params <- function(fn, lst) {
   ## function list -> list
   ## extracts from named lst the elements which are valid arguments to fn
@@ -857,7 +846,7 @@ predict_erf_internal2 <- function(object, quantiles = c(0.95, 0.99),
     gpd_pars <- fit_param_hill(object, wi_x0, t_xi, t_x0, t_x0_2, threshold)
   }
 
-  q_hat <- compute_extreme_quantiles(gpd_pars, t_x0, quantiles, threshold)
+  q_hat <- compute_extreme_quantiles_deprecated(gpd_pars, t_x0, quantiles, threshold)
 
   if (model_assessment) {
     p <- compute_model_assessment(t_x0, Y.test, gpd_pars)
