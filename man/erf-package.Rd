@@ -6,7 +6,7 @@
 \alias{erf-package}
 \title{erf: Extreme Random Forest}
 \description{
-Extreme quantile prediction for quantile random forest.
+Extreme quantile prediction in high-dimensions.
 }
 \seealso{
 Useful links:

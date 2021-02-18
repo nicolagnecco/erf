@@ -1,15 +1,15 @@
-#' !!! code `predict.extreme_forest(object, newdata = NULL, quantiles = NULL, quantile_intermediate = NULL)`
+#' !!! code `predict.erf(object, newdata = NULL, quantiles = NULL, quantile_intermediate = NULL)`
 #'  handle errors for
-#'   - `object` that is not `extreme_forest`
+#'   - `object` that is not `erf`
 #'   - `...`
 #'   @export
-predict.extreme_forest <- function(object, newdata = NULL,
+predict.erf <- function(object, newdata = NULL,
                                    quantiles = c(0.95, 0.99),
                                    quantile_intermediate = 0.8,
                                    ...) {
 
   # validate object
-  validate_extreme_forest(object)
+  validate_erf(object)
 
   # validate newdata
   validate_newdata(newdata, object)

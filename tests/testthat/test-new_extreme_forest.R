@@ -1,8 +1,8 @@
-test_that("new_extreme_forest works", {
+test_that("new_erf works", {
 
   expect_equal({
   set.seed(42)
-  new_extreme_forest(X_small, Y_small,
+  new_erf(X_small, Y_small,
                      min.node.size, lambda, intermediate_threshold_2)},
   {
 
@@ -15,7 +15,7 @@ test_that("new_extreme_forest works", {
     "lambda" = lambda,
     "intermediate_threshold" = intermediate_threshold_2
   ),
-  class = "extreme_forest")
+  class = "erf")
   })
 
 })

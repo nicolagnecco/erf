@@ -31,7 +31,7 @@
 #'  This is a fitted object used to predict the intermediate thresholds.
 #'
 #'
-#' @return An object with S3 class "`extreme_forest`".
+#' @return An object with S3 class "`erf`".
 #'  It is a named list with the following elements:
 #'
 #'  \item{quantile_forest}{An object with S3 class "`quantile_forest`" (see
@@ -51,7 +51,7 @@
 #'
 #' @examples
 #' "!!! add examples"
-new_extreme_forest <- function(X, Y, min.node.size, lambda,
+new_erf <- function(X, Y, min.node.size, lambda,
                                intermediate_threshold) {
   # !!!
   # examples
@@ -65,13 +65,13 @@ new_extreme_forest <- function(X, Y, min.node.size, lambda,
     min.node.size = min.node.size
   )
 
-  # return extreme_forest object
+  # return erf object
   structure(list(
     "quantile_forest" = extreme_quantile_fit,
     min.node.size = min.node.size,
     lambda = lambda,
     "intermediate_threshold" = intermediate_threshold
   ),
-  class = "extreme_forest"
+  class = "erf"
   )
 }

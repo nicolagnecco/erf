@@ -36,8 +36,8 @@
 
 
 # Ideal usage of the package
-# 1. Fit extreme_forest
-# erf.fit <- extreme_forest(X, Y, min.node.size = 40, lambda = 0.001, base_threshold = NULL, ...)
+# 1. Fit erf
+# erf.fit <- erf(X, Y, min.node.size = 40, lambda = 0.001, base_threshold = NULL, ...)
 #
 # predict(erf.fit, newdata = X_test, quantiles = c(0.999), ...) # ... any argument for predict(base_threshold, ...) e.g., base_levels = 0.8
 #
@@ -45,8 +45,8 @@
 # print(erf.fit) # variable importance
 #
 
-# 2. CV extreme_forest
-# erf.fit.cv <- extreme_forest_cv(X, Y,
+# 2. CV erf
+# erf.fit.cv <- erf_cv(X, Y,
 #                   min.node.size = c(5, 40, 100),
 #                   lambda = c(0, 0.001, 0.1, 1),
 #                   nfolds = 5, nrep = 3,

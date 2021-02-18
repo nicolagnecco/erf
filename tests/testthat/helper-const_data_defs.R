@@ -56,36 +56,36 @@ intermediate_threshold_4 <- lm(Y ~ ., data = data.frame(X_small,
 
 
 
-structure(list(), class = "extreme_forest")
-#' `extreme_forest` is a named list made of:
+structure(list(), class = "erf")
+#' `erf` is a named list made of:
 #' - `quantile_forest` is `quantile_forest`.
 #' - `min.node.size` is numeric.
 #' - `lambda` is numeric.
 #' - `intermediate_threshold` is `intermediate_threshold`.
 #' interp. an extreme forest.
-extreme_forest_1 <- structure(list(
+erf_1 <- structure(list(
   "quantile_forest" = quantile_forest_1,
   "min.node.size" = min.node.size,
   "lambda" = lambda,
   "intermediate_threshold" = intermediate_threshold_1
 ),
-class = "extreme_forest"
+class = "erf"
 )
 
-extreme_forest_2 <- extreme_forest(X_small, Y_small, intermediate_estimator = "grf")
+erf_2 <- erf(X_small, Y_small, intermediate_estimator = "grf")
 
 
-structure(list(), class = "extreme_forest_cv")
-#'' `extreme_forest_cv` is a named list made of:
+structure(list(), class = "erf_cv")
+#'' `erf_cv` is a named list made of:
 #'' * `scores`: a `tibble` with columns: `min.node.size`, `lambda`, `cvm`
 #''  (mean cross-validated error).
-#'' * `extreme_forest.fit`: a fitted "`extreme_forest`" object on the full data.
+#'' * `erf.fit`: a fitted "`erf`" object on the full data.
 #'' interp. a cross-validated extreme forest.
-extreme_forest_cv_1 <- list(
+erf_cv_1 <- list(
   "scores" = tibble::tibble(
     min.node.size = c(5, 40),
     lambda = c(0, 0.001),
     cvm = c(40, 36)
   ),
-  "extreme_forest.fit" = extreme_forest_1
+  "erf.fit" = erf_1
 )

@@ -30,7 +30,7 @@
 #' @param ... Additional arguments used by the `intermediate_estimator`.
 #'
 #'
-#' @return An object with S3 class "`extreme_forest`".
+#' @return An object with S3 class "`erf`".
 #'  It is a named list with the following elements:
 #'
 #'  \item{quantile_forest}{An object with S3 class "`quantile_forest`" (see
@@ -57,7 +57,7 @@
 #' "!!! add examples"
 #'
 #' @export
-extreme_forest <- function(X, Y, min.node.size = 5, lambda = 0.001,
+erf <- function(X, Y, min.node.size = 5, lambda = 0.001,
                            intermediate_estimator = c("grf", "neural_nets"),
                            ...) {
 
@@ -75,8 +75,8 @@ extreme_forest <- function(X, Y, min.node.size = 5, lambda = 0.001,
     ...
   )
 
-  # return extreme_forest object
-  validate_extreme_forest(new_extreme_forest(
+  # return erf object
+  validate_erf(new_erf(
     X, Y, min.node.size, lambda,
     intermediate_threshold
   ))

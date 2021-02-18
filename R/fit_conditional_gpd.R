@@ -1,5 +1,5 @@
-fit_conditional_gpd <- function(extreme_forest, newdata) {
-  ## extreme_forest numeric_matrix -> numeric_matrix
+fit_conditional_gpd <- function(erf, newdata) {
+  ## erf numeric_matrix -> numeric_matrix
   ## produce matrix with MLE GPD scale and shape parameter for each test point
   ## each row corresponds to a test point, each column to a GPD parameter,
   ## namely, scale and shape

@@ -40,8 +40,8 @@ validate_intermediate_estimator <- function(estimator
 }
 
 
-validate_extreme_forest <- function(ef) {
-  ## extreme_forest -> extreme_forest
+validate_erf <- function(ef) {
+  ## erf -> erf
   ## produce ef if it is well formed, throws error if not
 
   # !!!
@@ -55,7 +55,7 @@ validate_extreme_forest <- function(ef) {
 
 
 validate_newdata <- function(newdata, ef) {
-  ## numeric_matrix extreme_forest -> numeric_matrix
+  ## numeric_matrix erf -> numeric_matrix
   ## produce newdata if it is well formed, throws an error if not
 
   # if NULL exit
