@@ -14,6 +14,10 @@ predict.extreme_forest <- function(object, newdata = NULL,
   # validate newdata
   validate_newdata(newdata, object)
 
+  # validate quantiles
+
+  # validate intermediate_quantiles
+
   # predict intermediate quantile
   t_x0 <- predict_intermediate_quantile(
     object$intermediate_threshold,
