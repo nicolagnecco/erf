@@ -124,7 +124,7 @@ predict_erf_internal <- function(object, quantiles = c(0.95, 0.99),
   }
 
   if (param_est == "ML") {
-    gpd_pars <- fit_conditional_gpd(object, wi_x0, t_xi, lambda)
+    gpd_pars <- fit_conditional_gpd_deprecated(object, wi_x0, t_xi, lambda)
   } else if (param_est == "Hill") {
     gpd_pars <- fit_param_hill(object, wi_x0, t_xi, t_x0, t_x0_2, threshold)
   }
@@ -567,7 +567,7 @@ compute_thresholds <- function(object, threshold, X, out_of_bag = FALSE) {
   return(q_hat)
 }
 
-fit_conditional_gpd <- function(object, wi_x0, t_xi, lambda) {
+fit_conditional_gpd_deprecated <- function(object, wi_x0, t_xi, lambda) {
   ## quantile_forest numeric_matrix numeric_vector numeric -> matrix
   ## produce matrix with MLE GPD scale and shape parameter for each test point
 

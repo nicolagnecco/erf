@@ -44,8 +44,8 @@ intermediate_estimator_2 <- "neural_nets"
 
 
 #' `intermediate_threshold` is one of
-#' - `"quantile_forest"`, if `intermediate_threshold = "grf"`.
-#' - `"..."`, if `intermediate_threshold = "neural_nets"`.
+#' - `"quantile_forest"`, if `intermediate_estimator = "grf"`.
+#' - `"???"`, if `intermediate_estimator = "neural_nets"`.
 #' interp. a fitted object to predict intermediate thresholds.
 intermediate_threshold_1 <- grf::quantile_forest(X, Y)
 intermediate_threshold_2 <- fit_intermediate_threshold(X_small, Y_small,
