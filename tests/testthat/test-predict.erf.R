@@ -1,0 +1,89 @@
+test_that("predict.erf works", {
+  # !!!
+  # cnd <- rlang::catch_cnd(predict.erf(object = erf_1, quantiles = 0.1))
+  #
+  # expect_s3_class(cnd, "error_quantile_too_low")
+
+  # Check that predict.erf works when newdata is supplied
+  Q_x <- predict_intermediate_threshold(
+    erf_1$intermediate_threshold,
+    newdata = X_test,
+    quantile_intermediate = quantile_intermediate
+  )
+
+  Q_X <- predict_intermediate_threshold(
+    erf_1$intermediate_threshold,
+    quantile_intermediate = quantile_intermediate
+  )
+
+  expect_equal(
+    predict.erf(
+      object = erf_1,
+      newdata = X_test,
+      quantiles = quantiles,
+      quantile_intermediate = quantile_intermediate),
+    predict_erf_internal(
+      object = erf_1$quantile_forest,
+      quantiles =  quantiles,
+      threshold = quantile_intermediate,
+      newdata = X_test,
+      t_xi = Q_X,
+      t_x0 = Q_x,
+      lambda = erf_1$lambda)$predictions
+  )
+
+  # Check that predict.erf works when newdata is NULL
+  W <- as.matrix(grf::get_sample_weights(erf_1$quantile_forest))
+
+  expect_equal(
+    predict.erf(
+      object = erf_1,
+      quantiles = quantiles,
+      quantile_intermediate = quantile_intermediate),
+    predict_erf_internal(
+      object = erf_1$quantile_forest,
+      quantiles =  quantiles,
+      threshold = quantile_intermediate,
+      wi_x0 = W,
+      t_xi = Q_X,
+      t_x0 = Q_X,
+      lambda = erf_1$lambda)$predictions
+  )
+
+  # Check that predict.erf works with another dataset
+  Q_x <- predict_intermediate_threshold(
+    erf_2$intermediate_threshold,
+    newdata = X_test_small,
+    quantile_intermediate = quantile_intermediate
+  )
+
+  Q_X <- predict_intermediate_threshold(
+    erf_2$intermediate_threshold,
+    quantile_intermediate = quantile_intermediate
+  )
+
+  expect_equal(
+    predict.erf(
+      object = erf_2,
+      newdata = X_test_small,
+      quantiles = quantiles,
+      quantile_intermediate = quantile_intermediate),
+    predict_erf_internal(
+      object = erf_2$quantile_forest,
+      quantiles =  quantiles,
+      threshold = quantile_intermediate,
+      newdata = X_test_small,
+      t_xi = Q_X,
+      t_x0 = Q_x,
+      lambda = erf_2$lambda)$predictions
+  )
+
+  # Check that predict.erf works when quantile_forest == intermediate_threshold
+  expect_equal(
+    predict.erf(erf_3, newdata = X_test_small),
+    predict_erf(object = erf_3$quantile_forest, newdata = X_test_small,
+                lambda = erf_3$lambda, out_of_bag = TRUE)$predictions
+  )
+
+
+})

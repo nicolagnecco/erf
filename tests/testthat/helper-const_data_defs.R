@@ -1,15 +1,15 @@
 #' Constants:
 
-n <- 1e3
-n_small <- 500
+n <- 200
+n_small <- 70
 p_small <- 2
-p <- 10
-n_test <- 1e3
+p <- 6
+n_test <- 150
 min.node.size <- 40
 lambda <- 0.001
 df <- 4
-quantile_intermediate <- 0.8
-quantiles <- c(0.8, 0.9, 0.99, 0.995, 0.999, 0.9995, 0.9999)
+quantile_intermediate <- 0.85
+quantiles <- c(0.85, 0.9, 0.99, 0.995, 0.999, 0.9995, 0.9999)
 
 
 
@@ -76,6 +76,15 @@ class = "erf"
 )
 
 erf_2 <- erf(X_small, Y_small, intermediate_estimator = "grf")
+
+erf_3 <- structure(list(
+  "quantile_forest" = erf_2$quantile_forest,
+  "min.node.size" = erf_2$min.node.size,
+  "lambda" = erf_2$lambda,
+  "intermediate_threshold" = erf_2$quantile_forest
+),
+class = "erf"
+)
 
 
 structure(list(), class = "erf_cv")
