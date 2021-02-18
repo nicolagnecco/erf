@@ -1,43 +1,67 @@
-fit_conditional_gpd <- function(erf, newdata) {
-  ## erf numeric_matrix -> numeric_matrix
+fit_conditional_gpd <- function(erf, newdata, quantile_intermediate) {
+  ## erf numeric_matrix|NULL numeric -> numeric_matrix
   ## produce matrix with MLE GPD scale and shape parameter for each test point
   ## each row corresponds to a test point, each column to a GPD parameter,
   ## namely, scale and shape
 
   # check size for similarity weights
 
+  # extract response vector
+  Y <- erf$quantile_forest$Y.orig
+
   # compute similarity weights
+  W <- as.matrix(grf::get_sample_weights(
+    forest = erf$quantile_forest,
+    newdata = newdata
+  ))
 
-  # compute intermediate quantile
+  # compute intermediate quantile on training data
+  Q <- predict_intermediate_threshold(
+    intermediate_threshold = erf$intermediate_threshold,
+     quantile_intermediate = quantile_intermediate
+    )
 
-  # fit gpd parameters
-  fit_conditional_gpd_helper(Wi_x, Y, Q_X, lambda)
+  # compute optimal GPD parameters
+  fit_conditional_gpd_helper(W, Y, Q, lambda)
 
 }
 
 
 fit_conditional_gpd_helper <- function(W, Y, Q, lambda) {
-  ## numeric_matrix numeric_vector numeric_vector numeric -> numeric_matrix
-  ## produce matrix with MLE GPD scale and shape parameter for each test point
+  ## numeric_matrix numeric_vector numeric_vector numeric -> tibble
+  ## produce a tibble with MLE GPD scale and shape parameter for each test point
   ## each row corresponds to a test point, each column to a GPD parameter,
-  ## namely, scale and shape
+  ## namely, `scale` and `shape`
 
-  ntest <- nrow(wi_x0)
-  Y <- object$Y.orig
-  exc_idx <- which(Y - t_xi > 0)
-  exc_data <- (Y - t_xi)[exc_idx]
-  init_par <- ismev::gpd.fit(exc_data, 0, show = FALSE)$mle
+  # compute exceedances
+  exc_ind <- which(Y > Q)
+  Z <- (Y - Q)[exc_ind]
+  W <- W[, exc_ind]
+  ntest <- nrow(W)
 
-  wi_x0 <- wi_x0[, exc_idx]
-  EVT_par <- purrr::map_dfr(
-    1:ntest, optim_wrap, init_par, weighted_llh,
-    exc_data, wi_x0, lambda, init_par[2]
-  )
+  # initial guess for GPD parameters
+  init_pars <- ismev::gpd.fit(Z, 0, show = FALSE)$mle
 
-  return(as.matrix(EVT_par))
-
+  # GPD parameters for each test observation
+  purrr::map_dfr(seq_len(ntest), function(i) {
+    wi_x <- W[i, ]
+    optim_wrapper(wi_x, init_pars, Z, lambda, init_pars[2])
+  })
 }
 
-
-
+optim_wrapper <- function(wi_x, init_pars, Z, lambda, xi_prior) {
+  ## numeric_vector numeric_vector function numeric_vector numeric numeric
+  ## -> numeric_vector
+  ## return optimal scale and shape parameters of the weighted log-likelihood
+  res <- stats::optim(
+    par = init_pars,
+    fn = weighted_llh,
+    data = Z,
+    weights = wi_x,
+    lambda = lambda,
+    xi_prior = xi_prior
+  )$par
+  names(res) <- c("sigma", "xi")
+  return(res)
+}
 
