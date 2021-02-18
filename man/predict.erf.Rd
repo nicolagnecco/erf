@@ -2,13 +2,7 @@
 % Please edit documentation in R/predict.erf.R
 \name{predict.erf}
 \alias{predict.erf}
-\title{!!! code \code{predict.erf(object, newdata = NULL, quantiles = NULL, quantile_intermediate = NULL)}
-handle errors for
-\itemize{
-\item \code{object} that is not \code{erf}
-\item \code{...}
-@export
-}}
+\title{Predict extreme random forest (ERF)}
 \usage{
 \method{predict}{erf}(
   object,
@@ -18,12 +12,41 @@ handle errors for
   ...
 )
 }
-\description{
-!!! code \code{predict.erf(object, newdata = NULL, quantiles = NULL, quantile_intermediate = NULL)}
-handle errors for
-\itemize{
-\item \code{object} that is not \code{erf}
-\item \code{...}
-@export
+\arguments{
+\item{object}{Fitted "\code{erf}" object.}
+
+\item{newdata}{Numeric matrix (!!!) or \code{data.frame} of test predictor values
+at which predictions are to be made. If \code{NULL}, predictions are made on the
+training data insetead.
+!!! Talk about out-of-bag predictions?
+For further information see \code{\link[grf:quantile_forest]{grf::quantile_forest()}}.
+Default is \code{NULL}.}
+
+\item{quantiles}{Numeric vector of quantile levels at which estimates are
+to be made.
+Default is \code{c(0.95, 0.99)}.}
+
+\item{quantile_intermediate}{Numeric value for the intermediate quantile
+level, used to predict the intermediate threshold.
+For further information see \insertCite{merg2020;textual}{erf}.}
+
+\item{...}{Additional arguments passed to or from other methods.}
 }
+\value{
+Numeric matrix with predictions for each test point (rows)
+at the desired quantile levels (columns).
+}
+\description{
+Predicts ... !!! write description
+}
+\details{
+!!! write details
+}
+\examples{
+"!!! add examples"
+
+
+}
+\references{
+\insertAllCited{}
 }

@@ -326,7 +326,7 @@ isnt_out_z <- function(x, thres = 3, na.rm = TRUE) {
   ## produce a logical vector with TRUE if the corresponding element is within
   ## thres standard deviations from its mean
 
-  abs(x - mean(x, na.rm = na.rm)) <= thres * sd(x, na.rm = na.rm)
+  abs(x - mean(x, na.rm = na.rm)) <= thres * stats::sd(x, na.rm = na.rm)
 }
 
 
@@ -334,7 +334,7 @@ isnt_out_mad <- function(x, thres = 3, na.rm = TRUE) {
   ## numeric_vector numeric logical -> logical_vector
   ## produce a logical vector with TRUE if the corresponding element is within
   ## thres mad from its median
-  abs(x - median(x, na.rm = na.rm)) <= thres * mad(x, na.rm = na.rm)
+  abs(x - stats::median(x, na.rm = na.rm)) <= thres * stats::mad(x, na.rm = na.rm)
 }
 
 

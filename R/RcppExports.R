@@ -2,6 +2,6 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 weighted_llh <- function(par, data, weights, lambda, xi_prior) {
-    .Call(`_erf_weighted_llh`, par, data, weights, lambda, xi_prior)
+    .Call('_erf_weighted_llh', PACKAGE = 'erf', par, data, weights, lambda, xi_prior)
 }
 

@@ -27,6 +27,9 @@
 #'  of test predictors, e.g., `newdata`, as **second** argument.
 #'  For example, `predict(intermediate_threshold, newdata, ...)`
 #'  must execute with no errors.
+#'  Also, it is advisable that "`predict`" executes even if no test data
+#'  is provided, i.e.,
+#'  `predict(intermediate_threshold)` should execute with no errors.
 #'
 #'  This is a fitted object used to predict the intermediate thresholds.
 #'
@@ -44,7 +47,7 @@
 #'  \item{lambda}{Penalty for the shape parameter used in the weighted
 #'   log-likelihood.}
 #'
-#'  \item{intermediate_threshold}{An object with arbitraty S3 class, as
+#'  \item{intermediate_threshold}{An object with arbitrary S3 class, as
 #'   described in the **Arguments** section.
 #'   It is a fitted object used to predict the intermediate thresholds.}
 #'

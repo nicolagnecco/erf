@@ -22,7 +22,7 @@ fit_conditional_gpd <- function(erf, newdata, quantile_intermediate) {
     )
 
   # compute optimal GPD parameters
-  fit_conditional_gpd_helper(W, Y, Q, lambda)
+  fit_conditional_gpd_helper(W, Y, Q, erf$lambda)
 
 }
 

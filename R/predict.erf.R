@@ -1,12 +1,49 @@
-#' !!! code `predict.erf(object, newdata = NULL, quantiles = NULL, quantile_intermediate = NULL)`
-#'  handle errors for
-#'   - `object` that is not `erf`
-#'   - `...`
-#'   @export
+#' Predict extreme random forest (ERF)
+#'
+#'
+#' Predicts ... !!! write description
+#'
+#'
+#' !!! write details
+#'
+#'
+#' @param object Fitted "`erf`" object.
+#'
+#' @param newdata Numeric matrix (!!!) or `data.frame` of test predictor values
+#'  at which predictions are to be made. If `NULL`, predictions are made on the
+#'  training data insetead.
+#'  !!! Talk about out-of-bag predictions?
+#'  For further information see [grf::quantile_forest()].
+#'  Default is `NULL`.
+#'
+#' @param quantiles Numeric vector of quantile levels at which estimates are
+#'  to be made.
+#'  Default is `c(0.95, 0.99)`.
+#'
+#' @param quantile_intermediate Numeric value for the intermediate quantile
+#'  level, used to predict the intermediate threshold.
+#'  For further information see \insertCite{merg2020;textual}{erf}.
+#'
+#' @param ... Additional arguments passed to or from other methods.
+#'
+#'
+#' @return Numeric matrix with predictions for each test point (rows)
+#'  at the desired quantile levels (columns).
+#'
+#'
+#' @examples
+#' "!!! add examples"
+#'
+#'
+#' @references
+#'  \insertAllCited{}
+#'
+#'
+#' @export
 predict.erf <- function(object, newdata = NULL,
-                                   quantiles = c(0.95, 0.99),
-                                   quantile_intermediate = 0.8,
-                                   ...) {
+                        quantiles = c(0.95, 0.99),
+                        quantile_intermediate = 0.8,
+                        ...) {
 
   # validate object
   validate_erf(object)

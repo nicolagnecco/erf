@@ -27,7 +27,9 @@ Imports:
     foreach,
     magrittr,
     utils,
-    stats
+    stats,
+    rlang,
+    glue
 URL: https://github.com/nicolagnecco/erf
 BugReports: https://github.com/nicolagnecco/erf/issues
 RdMacros: Rdpack

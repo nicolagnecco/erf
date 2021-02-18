@@ -1,12 +1,12 @@
 predict_intermediate_threshold <- function(intermediate_threshold,
-                                          newdata = NULL,
-                                          quantile_intermediate,
-                                          ...) {
+                                           newdata = NULL,
+                                           quantile_intermediate,
+                                           ...) {
   ## intermediate_threshold numeric_matrix numeric dots -> numeric_matrix
   ## predict intermediate quantiles given an intermediate_threshold object
   if (inherits(intermediate_threshold, "quantile_forest")) {
 
-    predict(
+    stats::predict(
       object = intermediate_threshold,
       newdata = newdata,
       quantiles = quantile_intermediate
@@ -14,11 +14,12 @@ predict_intermediate_threshold <- function(intermediate_threshold,
 
   } else {
 
-    as.matrix(predict(
-      object = intermediate_threshold,
-      newdata = newdata,
-      ...
-    ))
+    as.matrix(
+      stats::predict(
+        object = intermediate_threshold,
+        newdata = newdata,
+        ...
+      ))
 
   }
 }

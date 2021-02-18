@@ -27,6 +27,9 @@ Such "\code{predict}" method must accept a numeric matrix (or \code{data.frame})
 of test predictors, e.g., \code{newdata}, as \strong{second} argument.
 For example, \code{predict(intermediate_threshold, newdata, ...)}
 must execute with no errors.
+Also, it is advisable that "\code{predict}" executes even if no test data
+is provided, i.e.,
+\code{predict(intermediate_threshold)} should execute with no errors.
 
 This is a fitted object used to predict the intermediate thresholds.}
 }
@@ -44,7 +47,7 @@ to fit the \code{quantile_forest}.}
 \item{lambda}{Penalty for the shape parameter used in the weighted
 log-likelihood.}
 
-\item{intermediate_threshold}{An object with arbitraty S3 class, as
+\item{intermediate_threshold}{An object with arbitrary S3 class, as
 described in the \strong{Arguments} section.
 It is a fitted object used to predict the intermediate thresholds.}
 }

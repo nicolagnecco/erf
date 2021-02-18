@@ -50,7 +50,6 @@
 #'
 #'  This is a fitted object used to predict the intermediate thresholds.}
 #'
-
 #'
 #'
 #' @examples

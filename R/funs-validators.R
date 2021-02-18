@@ -99,7 +99,7 @@ has_method <- function(object, generic) {
     sapply(
       class(object),
       function(cl) {
-        methods("class" = cl)
+        utils::methods("class" = cl)
       }
     )
   ))
