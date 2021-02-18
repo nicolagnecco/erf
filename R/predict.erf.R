@@ -14,12 +14,11 @@ predict.erf <- function(object, newdata = NULL,
   # validate newdata
   validate_newdata(newdata, object)
 
-  # validate quantiles
+  # validate quantile_intermediate !!! between 0-1, scalar
+  # validate quantiles !!! between 0-1, numeric_vector, none less than quantile_intermediate
 
-  # validate intermediate_quantiles
-
-  # predict intermediate quantile
-  t_x0 <- predict_intermediate_quantile(
+  # predict intermediate quantile on test data
+  Q_x <- predict_intermediate_threshold(
     object$intermediate_threshold,
     newdata,
     quantile_intermediate,
@@ -27,9 +26,17 @@ predict.erf <- function(object, newdata = NULL,
   )
 
   # compute optimal GPD parameters
-  gpd_pars <- fit_conditional_gpd(object, newdata) # !!! recode this
+  gpd_pars <- fit_conditional_gpd(
+    object,
+    newdata,
+    quantile_intermediate
+  )
 
   # predict quantiles
-  compute_extreme_quantiles(gpd_pars, t_x0, quantiles, quantile_intermediate) # !!! recode this
-
+  compute_extreme_quantiles(
+    gpd_pars,
+    Q_x,
+    quantiles,
+    quantile_intermediate
+  )
 }
