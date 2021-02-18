@@ -32,6 +32,10 @@ test_that("validata_newdata works", {
   cnd <- rlang::catch_cnd(validate_newdata(X_test, erf_2))
   expect_s3_class(cnd, "error_wrong_columns")
 
+  cnd <- rlang::catch_cnd(validate_newdata(X_test[integer(0), ], erf_1))
+  expect_s3_class(cnd, "error_zero_rows")
+
+
 })
 
 

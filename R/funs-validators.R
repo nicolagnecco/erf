@@ -69,7 +69,12 @@ validate_newdata <- function(newdata, ef) {
                        not = as.character(length(dim)))
   }
 
-  # check it has right columns
+  # check it has at least 1 row
+  if (nrow(newdata) == 0) {
+    abort_zero_rows(arg = "newdata")
+  }
+
+  # check it has right # of columns
   p <- ncol(newdata)
   p_expect <- ncol(ef$quantile_forest$X.orig)
 
