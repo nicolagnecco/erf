@@ -21,6 +21,8 @@ test_that("validate_intermediate_estimator works", {
 
 
 test_that("validata_newdata works", {
+  expect_equal(validate_newdata(NULL, extreme_forest_2), NULL)
+
   expect_equal(validate_newdata(X_test_small, extreme_forest_2),
                 X_test_small)
 

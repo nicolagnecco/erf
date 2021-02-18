@@ -58,6 +58,11 @@ validate_newdata <- function(newdata, ef) {
   ## numeric_matrix extreme_forest -> numeric_matrix
   ## produce newdata if it is well formed, throws an error if not
 
+  # if NULL exit
+  if (is.null(newdata)) {
+    return(invisible(newdata))
+  }
+
   # check it is tabular
   if (length(dim(newdata)) != 2){
     abort_wrong_dimension("newdata", must = "have 2 dimensions",
