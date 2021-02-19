@@ -97,3 +97,107 @@ weighted_LLH(data = data, weights = weights, par = par, lambda = 1,
 library(randtoolbox)
 set.seed(3)
 halton(30, 4)
+
+
+# Speed
+library(tidyverse)
+
+fun1 <- function(i, dat, z) {
+  x <- dat[i, ]
+
+  x[[1]] + x[[2]] - z
+}
+
+fun2 <- function(x, y, z){
+  x + y - z
+}
+
+n <- 1e4
+
+tbl <- tibble::tibble(
+  x = rnorm(n),
+  y = rexp(n)
+)
+
+res1 <- function() {
+  # rowwise
+  # speed: good
+  # memory allocation: bad
+  tbl %>%
+    rowwise() %>%
+    mutate(r = fun2(x, y, z)) %>%
+    select(r) %>% unlist() %>% unname()
+}
+
+res2 <- function() {
+  # pmap
+  # speed: very good
+  # memory allocation: very good
+  purrr::pmap_dbl(tbl, fun2, 3)
+}
+
+res3 <- function() {
+  # map
+  # speed: bad
+  # memory allocation: very good
+  purrr::map_dbl(1:n, function(i)  {
+    x <- tbl[i, ]
+
+    x[[1]] + x[[2]] - 3
+  })
+}
+
+
+bb <- bench::mark(
+  res1(),
+  res2(),
+  res3(),
+  filter_gc = FALSE
+)
+
+
+# Array to lists
+W <- grf::get_sample_weights(
+  forest = erf_1$quantile_forest,
+  newdata = X_test)
+
+
+bench::mark(
+as.matrix(W),
+purrr::array_branch(W, 1),
+check = FALSE
+)
+
+# compare speed of fit_conditional_gpd_helper vs fit_conditional_gpd_helper2
+fit_conditional_gpd_helper2 <- function(W, Y, Q, lambda) {
+  ## numeric_matrix numeric_vector numeric_vector numeric -> tibble
+  ## produce a tibble with MLE GPD scale and shape parameter for each test point
+  ## each row corresponds to a test point, each column to a GPD parameter,
+  ## namely, `scale` and `shape`
+
+  # compute exceedances
+  exc_ind <- which(Y > Q)
+  Z <- (Y - Q)[exc_ind]
+  W <- W[, exc_ind]
+  W <- purrr::array_branch(W, 1)
+
+  # initial guess for GPD parameters
+  init_pars <- ismev::gpd.fit(Z, 0, show = FALSE)$mle
+
+  # GPD parameters for each test observation
+  purrr::map_dfr(W, optim_wrapper, init_pars, Z, lambda, init_pars[2])
+}
+
+W <- as.matrix(grf::get_sample_weights(
+  forest = erf_1$quantile_forest,
+  newdata = X_test), 1)
+
+Q <- predict_intermediate_threshold(
+  erf_1$intermediate_threshold,
+  quantile_intermediate = 0.8
+)
+
+bench::mark(
+fit_conditional_gpd_helper(W, Y, Q, erf_1$lambda),
+fit_conditional_gpd_helper2(W, Y, Q, erf_1$lambda)
+)
