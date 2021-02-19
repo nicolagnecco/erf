@@ -57,8 +57,8 @@
 #'
 #' @export
 erf <- function(X, Y, min.node.size = 5, lambda = 0.001,
-                           intermediate_estimator = c("grf", "neural_nets"),
-                           ...) {
+                intermediate_estimator = c("grf", "neural_nets"),
+                ...) {
 
   # validate inputs
   validate_data(X, Y)
