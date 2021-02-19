@@ -195,7 +195,7 @@ predict_erf_internal <- function(object, quantiles = c(0.95, 0.99),
 #'
 #' @importFrom foreach foreach %dopar%
 #' @importFrom magrittr %>%
-erf_cv <- function(X, Y, t_xi, threshold, min.node.size = 5, lambda = 0,
+erf_cv_deprecated <- function(X, Y, t_xi, threshold, min.node.size = 5, lambda = 0,
                    K = 5, n_rep = 1,
                    args_grf = list(), args_erf = list(),
                    rng = NULL, verbose = FALSE, log_file = "./log.txt") {
@@ -379,23 +379,7 @@ split_data <- function(X, Y, t_xi, fold, K) {
   return(ll)
 }
 
-create_folds <- function(n, n_rep, K, seed) {
-  ## integer (4x) -> list
-  ## produce a list with n_rep splits for K-fold CV
 
-  rows_id <- 1:n
-
-  rngtools::setRNG(seed)
-  lapply(X = rep(1, n_rep), FUN = function(x) {
-    chunk(sample(rows_id), K)
-  })
-}
-
-chunk <- function(x, K) {
-  ## numeric_vector integer -> list
-  ## split x into K chunks
-  unname(split(x, factor(sort(rank(x) %% K))))
-}
 
 validate_inputs <- function(object, quantiles, threshold, newdata,
                             model_assessment, Y.test, out_of_bag,

@@ -14,8 +14,8 @@
 #
 #
 # test_that("multiplication works", {
-#   debugonce(erf_cv)
-#   res <- erf_cv(X, Y, t_xi, threshold = 0.8, min.node.size = min.node.size,
+#   debugonce(erf_cv_deprecated)
+#   res <- erf_cv_deprecated(X, Y, t_xi, threshold = 0.8, min.node.size = min.node.size,
 #                 lambda = lambda,
 #                 K = 5, n_rep = 1, args_grf = args_grf, verbose = TRUE)
 #
