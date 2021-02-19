@@ -1,6 +1,6 @@
 fit_intermediate_threshold <- function(X, Y, estimator, ...) {
   ## numeric_matrix numeric_vector intermediate_estimator dots ->
-  ## intermediate_estimator
+  ## intermediate_threshold
   ## return intermediate_threshold
 
   if (estimator == "grf") {

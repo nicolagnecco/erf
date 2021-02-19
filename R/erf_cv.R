@@ -3,25 +3,71 @@ erf_cv <- function(X,
                    min.node.size = c(5, 40, 100),
                    lambda = c(0, 0.001, 0.01),
                    intermediate_estimator = c("grf", "neural_nets"),
+                   quantile_intermediate = 0.8,
                    nfolds = 5, nrep = 3, seed = NULL,
                    ...) {
 
   # validate stuff ...
 
-  # fit intermediate estimator
+  # fit and predict intermediate estimator
+  intermediate_threshold <- fit_intermediate_threshold(
+    X, Y,
+    intermediate_estimator,
+    ...
+  )
 
-  # split data
+  Q_X <- predict_intermediate_threshold(
+    intermediate_threshold,
+    quantile_intermediate = quantile_intermediate,
+
+  )
+
+  # call constructor for erf_cv
+  new_erf_cv(...)
+
+}
+
+new_erf_cv <- function(...){
+  # create splits
+  splits <- repeated_k_folds(n, nfolds, nrep, seed)
+
+  # create parameter grid
+  params <- param_grid(splits, min.node.size, lambda, nfolds, nrep)
+
   # call fit_and_score for each fold and each parameter setting
+  evaluate_candidates(X, Y, Q_X, params)
+}
 
-  # for each fold call: fit_and_score(X, Y, train, test, fit_params, ...)
-  # 1. split X and Y
-  # 2. estimator <- fit(X_train, Y_train, fit_params)
-  # 3. test_scores <- score(estimator, X_test, Y_test)
+evaluate_candidates <- function(X, Y, intermediate_threshold, params) {
+  ## numeric_matrix numeric_vector numeric_matrix tibble -> tibble
+  ## return tibble with scores !!!
 
-  # Run jobs
-  # args: X, Y, train, test, min.node.size, ...
+  fit_and_score_partial <- purrr::partial(
+    fit_and_score,
+    X = X,
+    Y = Y,
+    intermediate_threshold = intermediate_threshold
+  )
+
+  purrr::pmap(params, fit_and_score_partial)
+}
 
 
+fit_and_score <- function(X, Y, Q_X, folds,
+                          min.node.size, lambda){
+  # split X and Y
+  X_test <-  Y_test <-  ... <- ...
+
+  # estimator <- fit(X_train, Y_train, fit_params)
+  fit_erf <- new_erf(
+    X = X_train,
+    Y = Y_train,
+    min.node.size = min.node.size,
+    lambda = lambda,
+    num.trees = 50)
+
+  # score estimator
+  test_scores <- score(fit_erf, X_test, Y_test)
 
 }
 
