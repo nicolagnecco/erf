@@ -52,6 +52,35 @@ evaluate_candidates <- function(X, Y, intermediate_threshold, params) {
   purrr::pmap(params, fit_and_score_partial)
 }
 
+fit_mini_grf <- function(X, Y, min.node.size) {
+  ## numeric_matrix numeric_vector numeric -> mini_forest (grf + Q_X)
+  ## fits a small quantile forest with 50 trees
+
+  grf::quantile_forest(X, Y, min.node.size = min.node.size, num.trees = 50)
+}
+
+score_mini_grf <- function(mini_forest, X_test, Y_test, Q_X_test, lambda) {
+  ## mini_forest numeric_matrix numeric_vector numeric_matrix numeric
+  ## -> numeric
+  ## evaluate deviance score for fitted quantile_forest
+
+  # predict parameters
+  gpd_pars <- fit_conditional_gpd(
+    quantile_forest = mini_forest$quantile_forest,
+    newdata = X_test, # !!! only on exceedances, i.e., Y_test > Q_X_test
+    Q = mini_forest$Q_X,
+    lambda = lambda
+  )
+
+  # compute deviance
+  evaluate_deviance(
+    gpd_pars,
+    Y_test,
+    Q_X_test
+  )
+
+
+}
 
 fit_and_score <- function(X, Y, Q_X, folds,
                           min.node.size, lambda){
