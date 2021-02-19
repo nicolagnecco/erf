@@ -2,7 +2,6 @@
 % Please edit documentation in R/erf-package.R
 \docType{package}
 \name{erf-package}
-\alias{erf}
 \alias{erf-package}
 \title{erf: Extreme Random Forest}
 \description{
