@@ -6,10 +6,16 @@ test_that("compute_extreme_quantiles works", {
     quantile_intermediate = quantile_intermediate
   )
 
-  gpd_pars <- fit_conditional_gpd(
-    erf_1,
-    newdata = X_test,
+  Q_X <- predict_intermediate_threshold(
+    intermediate_threshold = erf_1$intermediate_threshold,
     quantile_intermediate = quantile_intermediate
+  )
+
+  gpd_pars <- fit_conditional_gpd(
+    erf_1$quantile_forest,
+    newdata = X_test,
+    Q_X = Q_X,
+    lambda = erf_1$lambda
   )
 
   my_extreme_quantile <- function() {

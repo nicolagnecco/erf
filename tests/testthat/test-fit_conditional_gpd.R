@@ -1,17 +1,22 @@
 test_that("fit_conditional_gpd works", {
+
+  # compare to the deprecated version for large dataset
+  Q <- predict_intermediate_threshold(
+    erf_1$intermediate_threshold,
+    quantile_intermediate = 0.8
+  )
+
   expect_equal(
     {
       fit_conditional_gpd(
-        erf = erf_1,
+        quantile_forest = erf_1$quantile_forest,
         newdata = X_test,
-        quantile_intermediate = 0.8
+        Q_X = Q,
+        lambda = erf_1$lambda
       )
     },
     {
-      Q <- predict_intermediate_threshold(
-        erf_1$intermediate_threshold,
-        quantile_intermediate = 0.8
-      )
+
       W <- as.matrix(
         grf::get_sample_weights(
           forest = erf_1$quantile_forest,
@@ -20,20 +25,23 @@ test_that("fit_conditional_gpd works", {
       fit_conditional_gpd_helper(W, Y, Q, erf_1$lambda)
     })
 
+  # compare to the deprecated version for small dataset
+  Q_small <- predict_intermediate_threshold(
+    erf_2$intermediate_threshold,
+    quantile_intermediate = 0.8
+  )
 
   expect_equal(
     {
       fit_conditional_gpd(
-        erf = erf_2,
+        quantile_forest = erf_2$quantile_forest,
         newdata = NULL,
-        quantile_intermediate = 0.8
+        Q_X = Q_small,
+        lambda = erf_2$lambda
       )
     },
     {
-      Q_small <- predict_intermediate_threshold(
-        erf_2$intermediate_threshold,
-        quantile_intermediate = 0.8
-      )
+
       W_small <- as.matrix(
         grf::get_sample_weights(
           forest = erf_2$quantile_forest)

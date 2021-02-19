@@ -11,7 +11,7 @@
 #'
 #' @param newdata Numeric matrix (!!!) or `data.frame` of test predictor values
 #'  at which predictions are to be made. If `NULL`, predictions are made on the
-#'  training data insetead.
+#'  training data instead.
 #'  !!! Talk about out-of-bag predictions?
 #'  For further information see [grf::quantile_forest()].
 #'  Default is `NULL`.
@@ -24,7 +24,10 @@
 #'  level, used to predict the intermediate threshold.
 #'  For further information see \insertCite{merg2020;textual}{erf}.
 #'
-#' @param ... Additional arguments passed to or from other methods.
+#' @param ... Additional arguments used to predict the intermediate_threshold,
+#'  for example, used when evaluating
+#'  `predict(object$intermediate_threshold, newdata, ...)` for estimators other
+#'  than `quantile_forest` class.
 #'
 #'
 #' @return Numeric matrix with predictions for each test point (rows)
@@ -56,17 +59,25 @@ predict.erf <- function(object, newdata = NULL,
 
   # predict intermediate quantile on test data
   Q_x <- predict_intermediate_threshold(
-    object$intermediate_threshold,
-    newdata,
-    quantile_intermediate,
+    intermediate_threshold = object$intermediate_threshold,
+    newdata = newdata,
+    quantile_intermediate = quantile_intermediate,
+    ...
+  )
+
+  # predict intermediate quantile on training data
+  Q_X <- predict_intermediate_threshold(
+    intermediate_threshold = object$intermediate_threshold,
+    quantile_intermediate = quantile_intermediate,
     ...
   )
 
   # compute optimal GPD parameters
   gpd_pars <- fit_conditional_gpd(
-    object,
+    object$quantile_forest,
     newdata,
-    quantile_intermediate
+    Q_X,
+    lambda = object$lambda
   )
 
   # predict quantiles
