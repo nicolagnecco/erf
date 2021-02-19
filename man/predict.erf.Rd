@@ -2,7 +2,7 @@
 % Please edit documentation in R/predict.erf.R
 \name{predict.erf}
 \alias{predict.erf}
-\title{Predict extreme random forest (ERF)}
+\title{Predict an extremal random forest (ERF)}
 \usage{
 \method{predict}{erf}(
   object,
@@ -26,7 +26,7 @@ Default is \code{NULL}.}
 to be made.
 Default is \code{c(0.95, 0.99)}.}
 
-\item{quantile_intermediate}{Numeric value for the intermediate quantile
+\item{quantile_intermediate}{Intermediate quantile
 level, used to predict the intermediate threshold.
 For further information see \insertCite{merg2020;textual}{erf}.}
 

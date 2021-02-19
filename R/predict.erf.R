@@ -1,4 +1,4 @@
-#' Predict extreme random forest (ERF)
+#' Predict an extremal random forest (ERF)
 #'
 #'
 #' Predicts ... !!! write description
@@ -20,7 +20,7 @@
 #'  to be made.
 #'  Default is `c(0.95, 0.99)`.
 #'
-#' @param quantile_intermediate Numeric value for the intermediate quantile
+#' @param quantile_intermediate Intermediate quantile
 #'  level, used to predict the intermediate threshold.
 #'  For further information see \insertCite{merg2020;textual}{erf}.
 #'
