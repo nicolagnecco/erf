@@ -27,6 +27,12 @@ test_that("erf_cv works", {
       tidyr::unnest(folds) %>%
       dplyr::mutate(fold_id = rep(seq_len(K), n_rep))
 
+    params <- tidyr::expand_grid(
+      min.node.size = min.node.size,
+      lambda = lambda
+    )
+
+    a <- tidyr::crossing(splits, params)
 
     params <- tidyr::expand_grid(
       fold_id = seq_len(K),
