@@ -10,7 +10,7 @@ erf(
   min.node.size = 5,
   lambda = 0.001,
   intermediate_estimator = c("grf", "neural_nets"),
-  ...
+  intermediate_quantile = 0.8
 )
 }
 \arguments{
@@ -36,7 +36,9 @@ Options available are:
 \item \code{neural_nets}, (coming soon).
 }}
 
-\item{...}{Additional arguments used by the \code{intermediate_estimator}.}
+\item{intermediate_quantile}{Intermediate quantile
+level, used to predict the intermediate threshold.
+For further information see \insertCite{merg2020;textual}{erf}.}
 }
 \value{
 An object with S3 class "\code{erf}".
@@ -59,6 +61,12 @@ log-likelihood.}
 }
 
 This is a fitted object used to predict the intermediate thresholds.}
+
+\item{intermediate_quantile}{Intermediate quantile
+level, used to predict the intermediate threshold.}
+
+\item{Q_X}{Vector with intermediate quantile predicted on the training data
+\code{X}.}
 }
 \description{
 Fit an extremal random forest ... !!! write description

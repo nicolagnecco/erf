@@ -48,7 +48,8 @@ abort_not_implemented <- function(chr) {
   )
 
   rlang::abort(
-    message = full_msg
+    message = full_msg,
+    class = "error_not_implemented"
   )
 }
 

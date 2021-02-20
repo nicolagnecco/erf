@@ -1,6 +1,6 @@
 predict_intermediate_threshold <- function(intermediate_threshold,
                                            newdata = NULL,
-                                           quantile_intermediate,
+                                           intermediate_quantile,
                                            ...) {
   ## intermediate_threshold numeric_matrix numeric dots -> numeric_matrix
   ## predict intermediate quantiles given an intermediate_threshold object
@@ -9,7 +9,7 @@ predict_intermediate_threshold <- function(intermediate_threshold,
     stats::predict(
       object = intermediate_threshold,
       newdata = newdata,
-      quantiles = quantile_intermediate
+      quantiles = intermediate_quantile
     )
 
   } else {

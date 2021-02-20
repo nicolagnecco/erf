@@ -194,10 +194,51 @@ W <- as.matrix(grf::get_sample_weights(
 
 Q <- predict_intermediate_threshold(
   erf_1$intermediate_threshold,
-  quantile_intermediate = 0.8
+  intermediate_quantile = 0.8
 )
 
 bench::mark(
 fit_conditional_gpd_helper(W, Y, Q, erf_1$lambda),
 fit_conditional_gpd_helper2(W, Y, Q, erf_1$lambda)
 )
+
+
+# check accuracy of cv with non data-leakage
+bench::mark(grf::quantile_forest(X, Y))
+bench::mark(grf::quantile_forest(X, Y, num.trees = 50))
+plot(X[, 1], predict(intermediate_threshold_1,
+                     quantile = .8), ylim = c(0, 3))
+plot(X[, 1], predict(intermediate_threshold_1_small,
+                     quantile = .8), ylim = c(0, 3))
+
+quantile_forest <- grf::quantile_forest(
+  X, Y, min.node.size = 40
+)
+
+Q_X <- predict_intermediate_threshold(
+  intermediate_threshold_1,
+  intermediate_quantile = .8
+)
+pars1 <- fit_conditional_gpd(
+  quantile_forest = quantile_forest,
+  newdata = X_test,
+  Q_X = Q_X,
+  lambda = 0
+)
+
+Q_X_small <- predict_intermediate_threshold(
+  intermediate_threshold_1_small,
+  intermediate_quantile = .8
+)
+pars2 <- fit_conditional_gpd(
+  quantile_forest = quantile_forest,
+  newdata = X_test,
+  Q_X = Q_X_small,
+  lambda = 0)
+
+
+plot(X_test[, 1], pars1$sigma, ylim = c(0.6, 2.2))
+plot(X_test[, 1], pars2$sigma, ylim = c(0.6, 2.2))
+
+summary(pars1)
+summary(pars2)

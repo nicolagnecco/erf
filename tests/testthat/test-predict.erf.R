@@ -8,12 +8,12 @@ test_that("predict.erf works", {
   Q_x <- predict_intermediate_threshold(
     erf_1$intermediate_threshold,
     newdata = X_test,
-    quantile_intermediate = quantile_intermediate
+    intermediate_quantile = intermediate_quantile
   )
 
   Q_X <- predict_intermediate_threshold(
     erf_1$intermediate_threshold,
-    quantile_intermediate = quantile_intermediate
+    intermediate_quantile = intermediate_quantile
   )
 
   expect_equal(
@@ -21,11 +21,11 @@ test_that("predict.erf works", {
       object = erf_1,
       newdata = X_test,
       quantiles = quantiles,
-      quantile_intermediate = quantile_intermediate),
+      intermediate_quantile = intermediate_quantile),
     predict_erf_internal(
       object = erf_1$quantile_forest,
       quantiles =  quantiles,
-      threshold = quantile_intermediate,
+      threshold = intermediate_quantile,
       newdata = X_test,
       t_xi = Q_X,
       t_x0 = Q_x,
@@ -39,11 +39,11 @@ test_that("predict.erf works", {
     predict.erf(
       object = erf_1,
       quantiles = quantiles,
-      quantile_intermediate = quantile_intermediate),
+      intermediate_quantile = intermediate_quantile),
     predict_erf_internal(
       object = erf_1$quantile_forest,
       quantiles =  quantiles,
-      threshold = quantile_intermediate,
+      threshold = intermediate_quantile,
       wi_x0 = W,
       t_xi = Q_X,
       t_x0 = Q_X,
@@ -54,12 +54,12 @@ test_that("predict.erf works", {
   Q_x <- predict_intermediate_threshold(
     erf_2$intermediate_threshold,
     newdata = X_test_small,
-    quantile_intermediate = quantile_intermediate
+    intermediate_quantile = intermediate_quantile
   )
 
   Q_X <- predict_intermediate_threshold(
     erf_2$intermediate_threshold,
-    quantile_intermediate = quantile_intermediate
+    intermediate_quantile = intermediate_quantile
   )
 
   expect_equal(
@@ -67,11 +67,11 @@ test_that("predict.erf works", {
       object = erf_2,
       newdata = X_test_small,
       quantiles = quantiles,
-      quantile_intermediate = quantile_intermediate),
+      intermediate_quantile = intermediate_quantile),
     predict_erf_internal(
       object = erf_2$quantile_forest,
       quantiles =  quantiles,
-      threshold = quantile_intermediate,
+      threshold = intermediate_quantile,
       newdata = X_test_small,
       t_xi = Q_X,
       t_x0 = Q_x,

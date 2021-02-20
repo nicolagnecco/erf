@@ -20,7 +20,7 @@
 #'  to be made.
 #'  Default is `c(0.95, 0.99)`.
 #'
-#' @param quantile_intermediate Intermediate quantile
+#' @param intermediate_quantile Intermediate quantile
 #'  level, used to predict the intermediate threshold.
 #'  For further information see \insertCite{merg2020;textual}{erf}.
 #'
@@ -45,7 +45,7 @@
 #' @export
 predict.erf <- function(object, newdata = NULL,
                         quantiles = c(0.95, 0.99),
-                        quantile_intermediate = 0.8,
+                        intermediate_quantile = 0.8,
                         ...) {
 
   # validate object
@@ -54,21 +54,21 @@ predict.erf <- function(object, newdata = NULL,
   # validate newdata
   validate_newdata(newdata, object)
 
-  # validate quantile_intermediate !!! between 0-1, scalar
-  # validate quantiles !!! between 0-1, numeric_vector, none less than quantile_intermediate
+  # validate intermediate_quantile !!! between 0-1, scalar
+  # validate quantiles !!! between 0-1, numeric_vector, none less than intermediate_quantile
 
   # predict intermediate quantile on test data
   Q_x <- predict_intermediate_threshold(
     intermediate_threshold = object$intermediate_threshold,
     newdata = newdata,
-    quantile_intermediate = quantile_intermediate,
+    intermediate_quantile = intermediate_quantile,
     ...
   )
 
   # predict intermediate quantile on training data
   Q_X <- predict_intermediate_threshold(
     intermediate_threshold = object$intermediate_threshold,
-    quantile_intermediate = quantile_intermediate,
+    intermediate_quantile = intermediate_quantile,
     ...
   )
 
@@ -85,6 +85,6 @@ predict.erf <- function(object, newdata = NULL,
     gpd_pars,
     Q_x,
     quantiles,
-    quantile_intermediate
+    intermediate_quantile
   )
 }

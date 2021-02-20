@@ -3,7 +3,7 @@ test_that("fit_conditional_gpd works", {
   # compare to the deprecated version for large dataset
   Q <- predict_intermediate_threshold(
     erf_1$intermediate_threshold,
-    quantile_intermediate = 0.8
+    intermediate_quantile = 0.8
   )
 
   expect_equal(
@@ -28,7 +28,7 @@ test_that("fit_conditional_gpd works", {
   # compare to the deprecated version for small dataset
   Q_small <- predict_intermediate_threshold(
     erf_2$intermediate_threshold,
-    quantile_intermediate = 0.8
+    intermediate_quantile = 0.8
   )
 
   expect_equal(
@@ -59,7 +59,7 @@ test_that("fit_conditional_gpd_helper works", {
   ## namely, `scale` and `shape
 
   Q <- predict_intermediate_threshold(erf_1$intermediate_threshold,
-                                     quantile_intermediate = 0.8)
+                                     intermediate_quantile = 0.8)
 
   W <- as.matrix(grf::get_sample_weights(erf_1$quantile_forest))
 
@@ -81,7 +81,7 @@ test_that("fit_conditional_gpd_helper works", {
 test_that("optim_wrapper works", {
 
   Q <- predict_intermediate_threshold(intermediate_threshold_1,
-                                     quantile_intermediate = 0.8)
+                                     intermediate_quantile = 0.8)
   exc_ind <- which(Y > Q)
   Z <- (Y - Q)[exc_ind]
   W <- as.matrix(grf::get_sample_weights(intermediate_threshold_1))[, exc_ind]

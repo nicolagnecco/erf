@@ -27,7 +27,9 @@
 #'  - `grf`, see [grf::quantile_forest()].
 #'  - `neural_nets`, (coming soon).
 #'
-#' @param ... Additional arguments used by the `intermediate_estimator`.
+#' @param intermediate_quantile Intermediate quantile
+#'  level, used to predict the intermediate threshold.
+#'  For further information see \insertCite{merg2020;textual}{erf}.
 #'
 #'
 #' @return An object with S3 class "`erf`".
@@ -50,6 +52,11 @@
 #'
 #'  This is a fitted object used to predict the intermediate thresholds.}
 #'
+#'  \item{intermediate_quantile}{Intermediate quantile
+#'  level, used to predict the intermediate threshold.}
+#'
+#'  \item{Q_X}{Vector with intermediate quantile predicted on the training data
+#'  `X`.}
 #'
 #'
 #' @examples
@@ -58,7 +65,7 @@
 #' @export
 erf <- function(X, Y, min.node.size = 5, lambda = 0.001,
                 intermediate_estimator = c("grf", "neural_nets"),
-                ...) {
+                intermediate_quantile = 0.8) {
 
   # validate inputs
   validate_data(X, Y)
@@ -67,16 +74,10 @@ erf <- function(X, Y, min.node.size = 5, lambda = 0.001,
 
   validate_intermediate_estimator(intermediate_estimator)
 
-  # fit intermediate quantile estimator
-  intermediate_threshold <- fit_intermediate_threshold(
-    X, Y,
-    intermediate_estimator,
-    ...
-  )
-
   # return erf object
   validate_erf(new_erf(
     X, Y, min.node.size, lambda,
-    intermediate_threshold
+    intermediate_estimator,
+    intermediate_quantile
   ))
 }

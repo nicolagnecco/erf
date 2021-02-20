@@ -2,7 +2,7 @@
 
 S3method(predict,erf)
 export(erf)
-export(erf_cv)
+export(erf_cv_deprecated)
 export(predict_erf)
 importFrom(Rcpp,sourceCpp)
 importFrom(Rdpack,reprompt)

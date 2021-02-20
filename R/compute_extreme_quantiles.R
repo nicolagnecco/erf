@@ -1,7 +1,7 @@
 compute_extreme_quantiles <- function(gpd_pars,
                                       Q_x,
                                       quantiles,
-                                      quantile_intermediate) {
+                                      intermediate_quantile) {
   ## tibble numeric_matrix numeric_vector(0, 1) numeric(0, 1) -> numeric_matrix
   ## produce matrix with estimated extremes quantiles. The value at (i, j) gives
   ## the estimated quantiles[j] for test sample i
@@ -10,7 +10,7 @@ compute_extreme_quantiles <- function(gpd_pars,
 
   for (j in seq_along(quantiles)) {
     res[, j] <- q_GPD(
-      p = quantiles[j], p0 = quantile_intermediate, t_x0 = Q_x,
+      p = quantiles[j], p0 = intermediate_quantile, t_x0 = Q_x,
       sigma = gpd_pars[[1]], xi = gpd_pars[[2]]
     )
   }

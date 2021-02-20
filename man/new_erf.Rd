@@ -4,7 +4,14 @@
 \alias{new_erf}
 \title{Fit an extremal random forest (ERF)}
 \usage{
-new_erf(X, Y, min.node.size, lambda, intermediate_threshold)
+new_erf(
+  X,
+  Y,
+  min.node.size,
+  lambda,
+  intermediate_estimator,
+  intermediate_quantile
+)
 }
 \arguments{
 \item{X}{Numeric matrix (or \code{data.frame}) of predictors, where each row
@@ -21,17 +28,17 @@ Default is 5.}
 \item{lambda}{Penalty for the shape parameter used in the weighted likelihood.
 Default is 0.001.}
 
-\item{intermediate_threshold}{An object with arbitrary S3 class that
-possesses a \code{predict} method.
-Such "\code{predict}" method must accept a numeric matrix (or \code{data.frame})
-of test predictors, e.g., \code{newdata}, as \strong{second} argument.
-For example, \code{predict(intermediate_threshold, newdata, ...)}
-must execute with no errors.
-Also, it is advisable that "\code{predict}" executes even if no test data
-is provided, i.e.,
-\code{predict(intermediate_threshold)} should execute with no errors.
+\item{intermediate_estimator}{A character specifying the estimator used to
+fit the intermediate threshold.
+Options available are:
+\itemize{
+\item \code{grf}, see \code{\link[grf:quantile_forest]{grf::quantile_forest()}}.
+\item \code{neural_nets}, (coming soon).
+}
 
-This is a fitted object used to predict the intermediate thresholds.}
+@param intermediate_quantile Intermediate quantile
+level, used to predict the intermediate threshold.
+For further information see \insertCite{merg2020;textual}{erf}.}
 }
 \value{
 An object with S3 class "\code{erf}".
@@ -47,9 +54,19 @@ to fit the \code{quantile_forest}.}
 \item{lambda}{Penalty for the shape parameter used in the weighted
 log-likelihood.}
 
-\item{intermediate_threshold}{An object with arbitrary S3 class, as
-described in the \strong{Arguments} section.
-It is a fitted object used to predict the intermediate thresholds.}
+\item{intermediate_threshold}{An object with S3 class:
+\itemize{
+\item "\code{quantile_forest}", if \code{intermediate_estimator = "grf"}.
+\item "\verb{???}", if \verb{intermediate_estimator = "neural_nets}.
+}
+
+This is a fitted object used to predict the intermediate thresholds.}
+
+\item{intermediate_quantile}{Intermediate quantile
+level, used to predict the intermediate threshold.}
+
+\item{Q_X}{Vector with intermediate quantile predicted on the training data
+\code{X}.}
 }
 \description{
 Internal function to fit an extremal random forest ... !!! write description

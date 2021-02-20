@@ -8,7 +8,7 @@
   object,
   newdata = NULL,
   quantiles = c(0.95, 0.99),
-  quantile_intermediate = 0.8,
+  intermediate_quantile = 0.8,
   ...
 )
 }
@@ -17,7 +17,7 @@
 
 \item{newdata}{Numeric matrix (!!!) or \code{data.frame} of test predictor values
 at which predictions are to be made. If \code{NULL}, predictions are made on the
-training data insetead.
+training data instead.
 !!! Talk about out-of-bag predictions?
 For further information see \code{\link[grf:quantile_forest]{grf::quantile_forest()}}.
 Default is \code{NULL}.}
@@ -26,11 +26,14 @@ Default is \code{NULL}.}
 to be made.
 Default is \code{c(0.95, 0.99)}.}
 
-\item{quantile_intermediate}{Intermediate quantile
+\item{intermediate_quantile}{Intermediate quantile
 level, used to predict the intermediate threshold.
 For further information see \insertCite{merg2020;textual}{erf}.}
 
-\item{...}{Additional arguments passed to or from other methods.}
+\item{...}{Additional arguments used to predict the intermediate_threshold,
+for example, used when evaluating
+\code{predict(object$intermediate_threshold, newdata, ...)} for estimators other
+than \code{quantile_forest} class.}
 }
 \value{
 Numeric matrix with predictions for each test point (rows)

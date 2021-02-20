@@ -3,12 +3,12 @@ test_that("compute_extreme_quantiles works", {
   Q_x <- predict_intermediate_threshold(
     intermediate_threshold = erf_1$intermediate_threshold,
     newdata = X_test,
-    quantile_intermediate = quantile_intermediate
+    intermediate_quantile = intermediate_quantile
   )
 
   Q_X <- predict_intermediate_threshold(
     intermediate_threshold = erf_1$intermediate_threshold,
-    quantile_intermediate = quantile_intermediate
+    intermediate_quantile = intermediate_quantile
   )
 
   gpd_pars <- fit_conditional_gpd(
@@ -22,7 +22,7 @@ test_that("compute_extreme_quantiles works", {
     res <- matrix(nrow = length(Q_x), ncol = length(quantiles))
     for (j in seq_along(quantiles)) {
       res[, j] <- q_GPD(
-        p = quantiles[j], p0 = quantile_intermediate, t_x0 = Q_x,
+        p = quantiles[j], p0 = intermediate_quantile, t_x0 = Q_x,
         sigma = gpd_pars$sigma, xi = gpd_pars$xi
       )
     }
@@ -34,7 +34,7 @@ test_that("compute_extreme_quantiles works", {
       gpd_pars,
       Q_x,
       quantiles,
-      quantile_intermediate),
+      intermediate_quantile),
     my_extreme_quantile()
   )
 })

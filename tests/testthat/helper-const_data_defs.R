@@ -1,14 +1,14 @@
 #' Constants:
 
 n <- 200
+p <- 6
 n_small <- 70
 p_small <- 2
-p <- 6
 n_test <- 150
 min.node.size <- 40
 lambda <- 0.001
 df <- 4
-quantile_intermediate <- 0.85
+intermediate_quantile <- 0.85
 quantiles <- c(0.85, 0.9, 0.99, 0.995, 0.999, 0.9995, 0.9999)
 
 
@@ -18,9 +18,10 @@ quantiles <- c(0.85, 0.9, 0.99, 0.995, 0.999, 0.9995, 0.9999)
 #' `X` is `numeric_matrix` with `n` rows and `p` columns
 #' interp. matrix with `n` observations with `p` predictors
 X <- matrix(runif(n * p, min = -1, max = 1), nrow = n, ncol = p)
-X_test <- matrix(runif(n_test * p, min = -1, max = 1), nrow = n_test, ncol = p)
+X_test <- matrix(runif(n_test * p, min = -1, max = 1),
+                 nrow = n_test, ncol = p)
 X_small <- matrix(runif(n_small * p_small, min = -1, max = 1),
-  nrow = n_small, ncol = p_small
+                  nrow = n_small, ncol = p_small
 )
 X_test_small <- matrix(runif(n_test * p_small, min = -1, max = 1),
                        nrow = n_test, ncol = p_small)
@@ -49,14 +50,26 @@ intermediate_estimator_2 <- "neural_nets"
 #' `intermediate_threshold` is one of
 #' - `"quantile_forest"`, if `intermediate_estimator = "grf"`.
 #' - `"???"`, if `intermediate_estimator = "neural_nets"`.
+#' - other S3 class with `predict` method.
 #' interp. a fitted object to predict intermediate thresholds.
 intermediate_threshold_1 <- grf::quantile_forest(X, Y)
+intermediate_threshold_1_small <- grf::quantile_forest(X, Y, num.trees = 50)
 intermediate_threshold_2 <- fit_intermediate_threshold(X_small, Y_small,
                                                        estimator = "grf")
 intermediate_threshold_3 <- structure(list(), class = "quantile_forest")
 intermediate_threshold_4 <- lm(Y ~ ., data = data.frame(X_small,
                                                         Y = Y_small))
 
+#' `Q_X` is numeric vector
+#' interp. predicted quantile at some intermediate level
+Q_X <- predict_intermediate_threshold(
+  intermediate_threshold_1,
+  intermediate_quantile = .8
+)
+Q_X_small <- predict_intermediate_threshold(
+  intermediate_threshold_2,
+  intermediate_quantile = .8
+)
 
 
 structure(list(), class = "erf")
@@ -65,12 +78,16 @@ structure(list(), class = "erf")
 #' - `min.node.size` is numeric.
 #' - `lambda` is numeric.
 #' - `intermediate_threshold` is `intermediate_threshold`.
+#' - `intermediate_quantile` is numeric.
+#' - `Q_X` is numeric vector.
 #' interp. an extreme forest.
 erf_1 <- structure(list(
   "quantile_forest" = quantile_forest_1,
   "min.node.size" = min.node.size,
   "lambda" = lambda,
-  "intermediate_threshold" = intermediate_threshold_1
+  "intermediate_threshold" = intermediate_threshold_1,
+  "intermediate_quantile" = 0.8,
+  "Q_X" = Q_X
 ),
 class = "erf"
 )
@@ -81,7 +98,9 @@ erf_3 <- structure(list(
   "quantile_forest" = erf_2$quantile_forest,
   "min.node.size" = erf_2$min.node.size,
   "lambda" = erf_2$lambda,
-  "intermediate_threshold" = erf_2$quantile_forest
+  "intermediate_threshold" = erf_2$quantile_forest,
+  "intermediate_quantile" = 0.8,
+  "Q_X" = Q_X_small
 ),
 class = "erf"
 )

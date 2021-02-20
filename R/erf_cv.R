@@ -3,7 +3,7 @@ erf_cv <- function(X,
                    min.node.size = c(5, 40, 100),
                    lambda = c(0, 0.001, 0.01),
                    intermediate_estimator = c("grf", "neural_nets"),
-                   quantile_intermediate = 0.8,
+                   intermediate_quantile = 0.8,
                    nfolds = 5, nrep = 3, seed = NULL,
                    ...) {
 
@@ -18,7 +18,7 @@ erf_cv <- function(X,
 
   Q_X <- predict_intermediate_threshold(
     intermediate_threshold,
-    quantile_intermediate = quantile_intermediate,
+    intermediate_quantile = intermediate_quantile,
 
   )
 
