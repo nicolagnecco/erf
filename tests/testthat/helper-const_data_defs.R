@@ -62,7 +62,7 @@ intermediate_threshold_4 <- lm(Y ~ ., data = data.frame(X_small,
 
 #' `Q_X` is numeric vector
 #' interp. predicted quantile at some intermediate level
-Q_X <- predict_intermediate_threshold(
+Q_X <- predict_intermediate_quantile(
   intermediate_threshold_1,
   intermediate_quantile = intermediate_quantile
 )
@@ -92,7 +92,7 @@ erf_2 <- erf(X_small, Y_small,
              intermediate_estimator = "grf",
              intermediate_quantile = intermediate_quantile)
 
-Q_X_small <- predict_intermediate_threshold(
+Q_X_small <- predict_intermediate_quantile(
   intermediate_threshold = erf_2$quantile_forest,
   intermediate_quantile = erf_2$intermediate_quantile
 )

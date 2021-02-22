@@ -12,7 +12,7 @@ validate_data <- function(X, Y) {
 }
 
 
-validate_params <- function(min.node.size, lambda) {
+validate_params <- function(min.node.size, lambda, intermediate_quantile) {
   ## numeric numeric -> list
   ## produce list(min.node.size, lambda) if the parameters are well formed,
   ## throws error if not
@@ -86,6 +86,8 @@ validate_newdata <- function(newdata, ef) {
   invisible(newdata)
 
 }
+
+validate_quantiles <- function(quantiles, ef) {}
 
 
 has_method <- function(object, generic) {

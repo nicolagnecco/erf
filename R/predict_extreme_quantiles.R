@@ -1,4 +1,4 @@
-compute_extreme_quantiles <- function(gpd_pars,
+predict_extreme_quantiles <- function(gpd_pars,
                                       Q_x,
                                       quantiles,
                                       intermediate_quantile) {

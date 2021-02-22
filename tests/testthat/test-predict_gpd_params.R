@@ -1,7 +1,7 @@
 test_that("predict_gpd_params works", {
 
   # compare to helper function for large dataset
-  Q <- predict_intermediate_threshold(
+  Q <- predict_intermediate_quantile(
     erf_1$intermediate_threshold,
     intermediate_quantile = intermediate_quantile
   )
@@ -24,7 +24,7 @@ test_that("predict_gpd_params works", {
     })
 
   # compare to helper function for small dataset
-  Q_small <- predict_intermediate_threshold(
+  Q_small <- predict_intermediate_quantile(
     erf_2$intermediate_threshold,
     intermediate_quantile = intermediate_quantile
   )
@@ -54,7 +54,7 @@ test_that("predict_gpd_params_helper works", {
   ## each row corresponds to a test point, each column to a GPD parameter,
   ## namely, `scale` and `shape
 
-  Q <- predict_intermediate_threshold(erf_1$intermediate_threshold,
+  Q <- predict_intermediate_quantile(erf_1$intermediate_threshold,
                                      intermediate_quantile = 0.8)
 
   W <- as.matrix(grf::get_sample_weights(erf_1$quantile_forest))
@@ -76,7 +76,7 @@ test_that("predict_gpd_params_helper works", {
 
 test_that("optim_wrapper works", {
 
-  Q <- predict_intermediate_threshold(intermediate_threshold_1,
+  Q <- predict_intermediate_quantile(intermediate_threshold_1,
                                      intermediate_quantile = 0.8)
   exc_ind <- which(Y > Q)
   Z <- (Y - Q)[exc_ind]

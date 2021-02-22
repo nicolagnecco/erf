@@ -12,7 +12,7 @@ test_that("fit_erf works", {
       intermediate_threshold_5 <- grf::quantile_forest(X_small, Y_small)
       quant_forest <- grf::quantile_forest(X_small, Y_small,
                                            min.node.size = min.node.size)
-      Q_X <- predict_intermediate_threshold(intermediate_threshold_5,
+      Q_X <- predict_intermediate_quantile(intermediate_threshold_5,
                      intermediate_quantile = intermediate_quantile)
       structure(list(
         "quantile_forest" = quant_forest,

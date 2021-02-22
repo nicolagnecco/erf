@@ -48,7 +48,7 @@ predict.erf <- function(object,
   # validate quantiles !!! between 0-1, numeric_vector, none less than intermediate_quantile
 
   # predict intermediate quantile
-  Q_x <- predict_intermediate_threshold(
+  Q_x <- predict_intermediate_quantile(
     intermediate_threshold = object$intermediate_threshold,
     newdata = newdata,
     intermediate_quantile = object$intermediate_quantile
@@ -61,7 +61,7 @@ predict.erf <- function(object,
   )
 
   # predict quantiles
-  compute_extreme_quantiles(
+  predict_extreme_quantiles(
     gpd_pars,
     Q_x,
     quantiles,

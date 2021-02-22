@@ -1,12 +1,12 @@
-test_that("compute_extreme_quantiles works", {
+test_that("predict_extreme_quantiles works", {
 
-  Q_x <- predict_intermediate_threshold(
+  Q_x <- predict_intermediate_quantile(
     intermediate_threshold = erf_1$intermediate_threshold,
     newdata = X_test,
     intermediate_quantile = intermediate_quantile
   )
 
-  Q_X <- predict_intermediate_threshold(
+  Q_X <- predict_intermediate_quantile(
     intermediate_threshold = erf_1$intermediate_threshold,
     intermediate_quantile = intermediate_quantile
   )
@@ -28,7 +28,7 @@ test_that("compute_extreme_quantiles works", {
   }
 
   expect_equivalent(
-    compute_extreme_quantiles(
+    predict_extreme_quantiles(
       gpd_pars,
       Q_x,
       quantiles,

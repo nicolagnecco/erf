@@ -16,7 +16,7 @@ erf_cv <- function(X,
     ...
   )
 
-  Q_X <- predict_intermediate_threshold(
+  Q_X <- predict_intermediate_quantile(
     intermediate_threshold,
     intermediate_quantile = intermediate_quantile,
 

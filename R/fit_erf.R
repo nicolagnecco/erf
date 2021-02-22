@@ -76,7 +76,7 @@ fit_erf <- function(X, Y, min.node.size, lambda,
     intermediate_estimator)
 
   # predict intermediate_threshold Q_X
-  Q_X <- predict_intermediate_threshold(
+  Q_X <- predict_intermediate_quantile(
     intermediate_threshold = intermediate_threshold,
     intermediate_quantile = intermediate_quantile
   )

@@ -192,7 +192,7 @@ W <- as.matrix(grf::get_sample_weights(
   forest = erf_1$quantile_forest,
   newdata = X_test), 1)
 
-Q <- predict_intermediate_threshold(
+Q <- predict_intermediate_quantile(
   erf_1$intermediate_threshold,
   intermediate_quantile = 0.8
 )
@@ -215,7 +215,7 @@ quantile_forest <- grf::quantile_forest(
   X, Y, min.node.size = 40
 )
 
-Q_X <- predict_intermediate_threshold(
+Q_X <- predict_intermediate_quantile(
   intermediate_threshold_1,
   intermediate_quantile = .8
 )
@@ -226,7 +226,7 @@ pars1 <- predict_gpd_params(
   lambda = 0
 )
 
-Q_X_small <- predict_intermediate_threshold(
+Q_X_small <- predict_intermediate_quantile(
   intermediate_threshold_1_small,
   intermediate_quantile = .8
 )

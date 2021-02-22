@@ -1,36 +1,42 @@
-test_that("predict_intermediate_threshold works", {
+test_that("predict_intermediate_quantile works", {
 
   # intermediate threshold is `quantile_forest`
   expect_equal(
-    predict_intermediate_threshold(
+    predict_intermediate_quantile(
       intermediate_threshold = intermediate_threshold_2,
       newdata = X_test_small,
       intermediate_quantile = 0.8
     ),
-    grf:::predict.quantile_forest(intermediate_threshold_2, X_test_small,
-                                  quantiles = .8)
+    as.numeric(
+      grf:::predict.quantile_forest(intermediate_threshold_2, X_test_small,
+                                    quantiles = .8)
+    )
   )
 
   expect_equal(
-    predict_intermediate_threshold(
+    predict_intermediate_quantile(
       intermediate_threshold = intermediate_threshold_1,
       newdata = NULL,
       intermediate_quantile = 0.8
     ),
-    grf:::predict.quantile_forest(intermediate_threshold_1, quantiles = .8)
+    as.numeric(
+      grf:::predict.quantile_forest(intermediate_threshold_1, quantiles = .8)
+    )
   )
 
   expect_equal(
-    predict_intermediate_threshold(
+    predict_intermediate_quantile(
       intermediate_threshold = intermediate_threshold_2,
       intermediate_quantile = 0.8
     ),
-    grf:::predict.quantile_forest(intermediate_threshold_2, quantiles = .8)
+    as.numeric(
+      grf:::predict.quantile_forest(intermediate_threshold_2, quantiles = .8)
+    )
   )
 
   # intermediate threshold is another S3 class
   cnd <- rlang::catch_cnd(
-    predict_intermediate_threshold(
+    predict_intermediate_quantile(
       intermediate_threshold = intermediate_threshold_4,
       newdata = data.frame(X_test_small),
       intermediate_quantile = 0.8

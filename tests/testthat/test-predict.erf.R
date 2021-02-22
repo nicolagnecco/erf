@@ -5,14 +5,13 @@ test_that("predict.erf works", {
   # expect_s3_class(cnd, "error_quantile_too_low")
 
   # Check that predict.erf works when newdata is supplied
-  Q_x <- predict_intermediate_threshold(
+  Q_x <- predict_intermediate_quantile(
     erf_1$intermediate_threshold,
     newdata = X_test,
     intermediate_quantile = erf_1$intermediate_quantile
   )
 
   expect_equal({
-    debugonce(predict.erf)
     predict.erf(
       object = erf_1,
       newdata = X_test,
@@ -48,7 +47,7 @@ test_that("predict.erf works", {
   )
 
   # Check that predict.erf works with another dataset
-  Q_x <- predict_intermediate_threshold(
+  Q_x <- predict_intermediate_quantile(
     erf_2$intermediate_threshold,
     newdata = X_test_small,
     intermediate_quantile = intermediate_quantile

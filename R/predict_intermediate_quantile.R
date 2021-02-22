@@ -1,16 +1,18 @@
-predict_intermediate_threshold <- function(intermediate_threshold,
+predict_intermediate_quantile <- function(intermediate_threshold,
                                            newdata = NULL,
                                            intermediate_quantile,
                                            ...) {
-  ## intermediate_threshold numeric_matrix numeric dots -> numeric_matrix
+  ## intermediate_threshold numeric_matrix numeric dots -> numeric_vector
   ## predict intermediate quantiles given an intermediate_threshold object
 
   if (inherits(intermediate_threshold, "quantile_forest")) {
 
-    stats::predict(
-      object = intermediate_threshold,
-      newdata = newdata,
-      quantiles = intermediate_quantile
+    as.numeric(
+      stats::predict(
+        object = intermediate_threshold,
+        newdata = newdata,
+        quantiles = intermediate_quantile
+      )
     )
 
   } else if (inherits(intermediate_threshold, "neural_nets")) {
