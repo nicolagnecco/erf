@@ -61,7 +61,7 @@
 #'
 #' @examples
 #' "!!! add examples"
-new_erf <- function(X, Y, min.node.size, lambda,
+fit_erf <- function(X, Y, min.node.size, lambda,
                     intermediate_estimator,
                     intermediate_quantile) {
   # !!!

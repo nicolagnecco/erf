@@ -168,8 +168,8 @@ purrr::array_branch(W, 1),
 check = FALSE
 )
 
-# compare speed of fit_conditional_gpd_helper vs fit_conditional_gpd_helper2
-fit_conditional_gpd_helper2 <- function(W, Y, Q, lambda) {
+# compare speed of predict_gpd_params vs predict_gpd_params2
+predict_gpd_params2 <- function(W, Y, Q, lambda) {
   ## numeric_matrix numeric_vector numeric_vector numeric -> tibble
   ## produce a tibble with MLE GPD scale and shape parameter for each test point
   ## each row corresponds to a test point, each column to a GPD parameter,
@@ -198,8 +198,8 @@ Q <- predict_intermediate_threshold(
 )
 
 bench::mark(
-fit_conditional_gpd_helper(W, Y, Q, erf_1$lambda),
-fit_conditional_gpd_helper2(W, Y, Q, erf_1$lambda)
+predict_gpd_params(W, Y, Q, erf_1$lambda),
+predict_gpd_params2(W, Y, Q, erf_1$lambda)
 )
 
 
@@ -219,7 +219,7 @@ Q_X <- predict_intermediate_threshold(
   intermediate_threshold_1,
   intermediate_quantile = .8
 )
-pars1 <- fit_conditional_gpd(
+pars1 <- predict_gpd_params(
   quantile_forest = quantile_forest,
   newdata = X_test,
   Q_X = Q_X,
@@ -230,7 +230,7 @@ Q_X_small <- predict_intermediate_threshold(
   intermediate_threshold_1_small,
   intermediate_quantile = .8
 )
-pars2 <- fit_conditional_gpd(
+pars2 <- predict_gpd_params(
   quantile_forest = quantile_forest,
   newdata = X_test,
   Q_X = Q_X_small,

@@ -39,12 +39,20 @@ abort_wrong_columns <- function(arg, must_have, columns_not){
 
 }
 
-abort_not_implemented <- function(chr) {
-  ## character -> error_condition
+abort_not_implemented <- function(type, name, fun_name = character(0)) {
+  ## character character character -> error_condition
   ## produce error condition
 
+  error_msg <- glue::glue("The {type} `{name}` is not implemented")
+
+  if (rlang::is_empty(fun_name)){
+    error_msg <- glue::glue(error_msg, ".")
+  } else {
+    error_msg <- glue::glue(error_msg, " in the function {fun_name}.")
+  }
+
   full_msg <- c(glue::glue("Not-implemented problem."),
-    x = glue::glue("The method `{chr}` is not implemented yet.")
+    x = error_msg
   )
 
   rlang::abort(

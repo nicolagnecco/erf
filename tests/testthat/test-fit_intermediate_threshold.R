@@ -22,7 +22,9 @@ test_that("fit_intermediate_threshold works", {
   )
 
 
-  expect_error(fit_intermediate_threshold(X_small, Y_small, "neural_nets"))
+  cnd <- rlang::catch_cnd(fit_intermediate_threshold(X_small, Y_small, "neural_nets"))
+  expect_s3_class(cnd, "error_not_implemented")
 
-  expect_error(fit_intermediate_threshold(X_small, Y_small, "foo"))
+  cnd <- rlang::catch_cnd(fit_intermediate_threshold(X_small, Y_small, "foo"))
+  expect_s3_class(cnd, "error_not_implemented")
 })

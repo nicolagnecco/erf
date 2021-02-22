@@ -1,18 +1,16 @@
-test_that("fit_conditional_gpd works", {
+test_that("predict_gpd_params works", {
 
-  # compare to the deprecated version for large dataset
+  # compare to helper function for large dataset
   Q <- predict_intermediate_threshold(
     erf_1$intermediate_threshold,
-    intermediate_quantile = 0.8
+    intermediate_quantile = intermediate_quantile
   )
 
   expect_equal(
     {
-      fit_conditional_gpd(
-        quantile_forest = erf_1$quantile_forest,
-        newdata = X_test,
-        Q_X = Q,
-        lambda = erf_1$lambda
+      predict_gpd_params(
+        object = erf_1,
+        newdata = X_test
       )
     },
     {
@@ -22,22 +20,20 @@ test_that("fit_conditional_gpd works", {
           forest = erf_1$quantile_forest,
           newdata = X_test)
       )
-      fit_conditional_gpd_helper(W, Y, Q, erf_1$lambda)
+      predict_gpd_params_helper(W, Y, Q, erf_1$lambda)
     })
 
-  # compare to the deprecated version for small dataset
+  # compare to helper function for small dataset
   Q_small <- predict_intermediate_threshold(
     erf_2$intermediate_threshold,
-    intermediate_quantile = 0.8
+    intermediate_quantile = intermediate_quantile
   )
 
   expect_equal(
     {
-      fit_conditional_gpd(
-        quantile_forest = erf_2$quantile_forest,
-        newdata = NULL,
-        Q_X = Q_small,
-        lambda = erf_2$lambda
+      predict_gpd_params(
+        object = erf_2,
+        newdata = NULL
       )
     },
     {
@@ -46,13 +42,13 @@ test_that("fit_conditional_gpd works", {
         grf::get_sample_weights(
           forest = erf_2$quantile_forest)
       )
-      fit_conditional_gpd_helper(W_small, Y_small, Q_small, erf_2$lambda)
+      predict_gpd_params_helper(W_small, Y_small, Q_small, erf_2$lambda)
     })
 
 })
 
 
-test_that("fit_conditional_gpd_helper works", {
+test_that("predict_gpd_params_helper works", {
   ## numeric_matrix numeric_vector numeric_vector numeric -> tibble
   ## produce a tibble with MLE GPD scale and shape parameter for each test point
   ## each row corresponds to a test point, each column to a GPD parameter,
@@ -63,18 +59,18 @@ test_that("fit_conditional_gpd_helper works", {
 
   W <- as.matrix(grf::get_sample_weights(erf_1$quantile_forest))
 
-  expect_s3_class(fit_conditional_gpd_helper(W, Y, Q, 0.01), "tbl_df")
-  expect_equal(dim(fit_conditional_gpd_helper(W, Y, Q, 0.01)), c(nrow(W), 2))
+  expect_s3_class(predict_gpd_params_helper(W, Y, Q, 0.01), "tbl_df")
+  expect_equal(dim(predict_gpd_params_helper(W, Y, Q, 0.01)), c(nrow(W), 2))
 
   W <- as.matrix(grf::get_sample_weights(
     forest = erf_1$quantile_forest,
     newdata = X_test
   ))
 
-  expect_equal(dim(fit_conditional_gpd_helper(W, Y, Q, 0)), c(nrow(W), 2))
+  expect_equal(dim(predict_gpd_params_helper(W, Y, Q, 0)), c(nrow(W), 2))
 
   W <- W[integer(0), ]
-  expect_equal(dim(fit_conditional_gpd_helper(W, Y, Q, 0)), c(nrow(W), 0))
+  expect_equal(dim(predict_gpd_params_helper(W, Y, Q, 0)), c(nrow(W), 0))
 
 })
 

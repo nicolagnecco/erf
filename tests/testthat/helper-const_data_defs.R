@@ -64,11 +64,7 @@ intermediate_threshold_4 <- lm(Y ~ ., data = data.frame(X_small,
 #' interp. predicted quantile at some intermediate level
 Q_X <- predict_intermediate_threshold(
   intermediate_threshold_1,
-  intermediate_quantile = .8
-)
-Q_X_small <- predict_intermediate_threshold(
-  intermediate_threshold_2,
-  intermediate_quantile = .8
+  intermediate_quantile = intermediate_quantile
 )
 
 
@@ -86,20 +82,27 @@ erf_1 <- structure(list(
   "min.node.size" = min.node.size,
   "lambda" = lambda,
   "intermediate_threshold" = intermediate_threshold_1,
-  "intermediate_quantile" = 0.8,
+  "intermediate_quantile" = intermediate_quantile,
   "Q_X" = Q_X
 ),
 class = "erf"
 )
 
-erf_2 <- erf(X_small, Y_small, intermediate_estimator = "grf")
+erf_2 <- erf(X_small, Y_small,
+             intermediate_estimator = "grf",
+             intermediate_quantile = intermediate_quantile)
+
+Q_X_small <- predict_intermediate_threshold(
+  intermediate_threshold = erf_2$quantile_forest,
+  intermediate_quantile = erf_2$intermediate_quantile
+)
 
 erf_3 <- structure(list(
   "quantile_forest" = erf_2$quantile_forest,
   "min.node.size" = erf_2$min.node.size,
   "lambda" = erf_2$lambda,
   "intermediate_threshold" = erf_2$quantile_forest,
-  "intermediate_quantile" = 0.8,
+  "intermediate_quantile" = erf_2$intermediate_quantile,
   "Q_X" = Q_X_small
 ),
 class = "erf"
@@ -120,3 +123,23 @@ erf_cv_1 <- list(
   ),
   "erf.fit" = erf_1
 )
+
+
+structure(list(), class = "erf_lw")
+#' `erf_lw` is a named list made of:
+#' - `quantile_forest` is `quantile_forest`.
+#' - `min.node.size` is numeric.
+#' - `lambda` is numeric.
+#' - `intermediate_quantile` is numeric.
+#' - `Q_X` is numeric vector.
+#' interp. a light-weight extreme forest, without the `intermediate_threshold`.
+erf_lw_1 <- structure(list(
+  "quantile_forest" = quantile_forest_1,
+  "min.node.size" = min.node.size,
+  "lambda" = lambda,
+  "intermediate_quantile" = 0.8,
+  "Q_X" = Q_X
+),
+class = "erf_lw"
+)
+

@@ -1,8 +1,8 @@
-test_that("new_erf works", {
+test_that("fit_erf works", {
 
   expect_equal({
     set.seed(42)
-    new_erf(X_small, Y_small,
+    fit_erf(X_small, Y_small,
             min.node.size, lambda, "grf",
             intermediate_quantile = intermediate_quantile)
     },
@@ -25,7 +25,7 @@ test_that("new_erf works", {
   class = "erf")
   })
 
-  cnd <- rlang::catch_cnd(new_erf(X, Y,
+  cnd <- rlang::catch_cnd(fit_erf(X, Y,
                                   min.node.size, lambda,
                                   "foo_estimator", intermediate_quantile))
 

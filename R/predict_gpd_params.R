@@ -1,27 +1,28 @@
-fit_conditional_gpd <- function(quantile_forest, newdata, Q_X, lambda) {
-  ## quantile_forest numeric_matrix|NULL numeric_matrix numeric -> tibble
+predict_gpd_params <- function(object, newdata) {
+  ## erf|erf_lw numeric_matrix|NULL -> tibble
   ## produce a tibble with MLE GPD scale and shape parameter for each test point
   ## each row corresponds to a test point, each column to a GPD parameter,
   ## namely, `scale` and `shape`
 
   # check size for similarity weights
 
-  # extract response vector
-  Y <- quantile_forest$Y.orig
+  # extract response and intermediate quantile vector
+  Y <- object$quantile_forest$Y.orig
+  Q_X <- object$Q_X
 
   # compute similarity weights
   W <- as.matrix(grf::get_sample_weights(
-    forest = quantile_forest,
+    forest = object$quantile_forest,
     newdata = newdata
   ))
 
   # compute optimal GPD parameters
-  fit_conditional_gpd_helper(W, Y, Q_X, lambda)
+  predict_gpd_params_helper(W, Y, Q_X, object$lambda)
 
 }
 
 
-fit_conditional_gpd_helper <- function(W, Y, Q, lambda) {
+predict_gpd_params_helper <- function(W, Y, Q, lambda) {
   ## numeric_matrix numeric_vector numeric_vector numeric -> tibble
   ## produce a tibble with MLE GPD scale and shape parameter for each test point
   ## each row corresponds to a test point, each column to a GPD parameter,

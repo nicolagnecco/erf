@@ -75,7 +75,7 @@ erf <- function(X, Y, min.node.size = 5, lambda = 0.001,
   validate_intermediate_estimator(intermediate_estimator)
 
   # return erf object
-  validate_erf(new_erf(
+  validate_erf(fit_erf(
     X, Y, min.node.size, lambda,
     intermediate_estimator,
     intermediate_quantile

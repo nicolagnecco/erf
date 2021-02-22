@@ -23,11 +23,11 @@ erf_cv <- function(X,
   )
 
   # call constructor for erf_cv
-  new_erf_cv(...)
+  fit_erf_cv(...)
 
 }
 
-new_erf_cv <- function(...){
+fit_erf_cv <- function(...){
   # create splits
   splits <- repeated_k_folds(n, nfolds, nrep, seed)
 
@@ -65,7 +65,7 @@ score_mini_grf <- function(mini_forest, X_test, Y_test, Q_X_test, lambda) {
   ## evaluate deviance score for fitted quantile_forest
 
   # predict parameters
-  gpd_pars <- fit_conditional_gpd(
+  gpd_pars <- predict_gpd_params(
     quantile_forest = mini_forest$quantile_forest,
     newdata = X_test, # !!! only on exceedances, i.e., Y_test > Q_X_test
     Q = mini_forest$Q_X,
@@ -88,7 +88,7 @@ fit_and_score <- function(X, Y, Q_X, folds,
   X_test <-  Y_test <-  ... <- ...
 
   # estimator <- fit(X_train, Y_train, fit_params)
-  fit_erf <- new_erf(
+  erf_obj <- fit_erf(
     X = X_train,
     Y = Y_train,
     min.node.size = min.node.size,
@@ -96,7 +96,7 @@ fit_and_score <- function(X, Y, Q_X, folds,
     num.trees = 50)
 
   # score estimator
-  test_scores <- score(fit_erf, X_test, Y_test)
+  test_scores <- score(erf_obj, X_test, Y_test)
 
 }
 
