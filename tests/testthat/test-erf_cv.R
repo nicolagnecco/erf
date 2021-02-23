@@ -20,104 +20,68 @@ test_that("erf_cv works", {
     glue::glue("min.node.size = {min.node.size}; lambda = {lambda}.")
   }
 
+  splits <- myfolds
+
+  params <- tidyr::expand_grid(
+    min.node.size = min.node.size,
+    lambda = lambda
+  )
+
+  a <- tidyr::crossing(splits, params)
+
+  params <- tidyr::expand_grid(
+    fold_id = seq_len(K),
+    rep_id = seq_len(n_rep),
+    min.node.size = min.node.size,
+    lambda = lambda
+  )
+
+  full_grid <- splits %>%
+    dplyr::left_join(params, by = c("rep_id", "fold_id"))
+
+  fun_args <- full_grid %>%
+    dplyr::select(-rep_id, -fold_id)
+
+  all.equal(a, full_grid)
+
+  fit_and_score_partial <- purrr::partial(fit_and_score, X = X, Y = Y)
 
   res1 <- function() {
-    splits <- myfolds
-
-    params <- tidyr::expand_grid(
-      min.node.size = min.node.size,
-      lambda = lambda
-    )
-
-    a <- tidyr::crossing(splits, params)
-
-    params <- tidyr::expand_grid(
-      fold_id = seq_len(K),
-      rep_id = seq_len(n_rep),
-      min.node.size = min.node.size,
-      lambda = lambda
-    )
-
-    full_grid <- splits %>%
-      dplyr::left_join(params, by = c("rep_id", "fold_id"))
-
-    fun_args <- full_grid %>%
-      dplyr::select(-rep_id, -fold_id)
-
-    all.equal(a, full_grid)
-
-    fit_and_score_partial <- purrr::partial(fit_and_score, X = X, Y = Y)
-
     purrr::pmap(fun_args, fit_and_score_partial)
   }
 
   res2 <- function() {
-    splits <- myfolds
-
-    params <- tidyr::expand_grid(
-      fold_id = seq_len(K),
-      rep_id = seq_len(n_rep),
-      min.node.size = min.node.size,
-      lambda = lambda
-    )
-
-    full_grid <- splits %>%
-      dplyr::left_join(params, by = c("rep_id", "fold_id")) %>%
-      dplyr::select(-rep_id, -fold_id)
-
-    fit_and_score_partial <- purrr::partial(fit_and_score, X = X, Y = Y)
-
-    purrr::map(1:nrow(full_grid), function(i) {
-      x <- full_grid[i, ]
+    purrr::map(1:nrow(fun_args), function(i) {
+      x <- fun_args[i, ]
       fit_and_score_partial(x$folds[[1]], x$min.node.size, x$lambda)
     })
   }
 
   res3 <- function() {
-    grid <- tidyr::expand_grid(
-      rep_id = 1:n_rep, fold_id = 1:K,
-      min.node.size = min.node.size,
-      lambda = lambda
-    ) %>%
-    dplyr::left_join(myfolds, by = c("rep_id", "fold_id"))
+    purrr::map(1:nrow(fun_args), function(i) {
 
-    fit_and_score_partial <- purrr::partial(fit_and_score, X = X, Y = Y)
+      folds <- fun_args$folds[[i]]
+      min.node.size <- fun_args$min.node.size[i]
+      lambda <- fun_args$lambda[i]
 
-    purrr::map(1:nrow(grid), function(i) {
-
-      rep_id <- grid$rep_id[i]
-      fold_id <- grid$fold_id[i]
-      min.node.size <- grid$min.node.size[i]
-      lambda <- grid$lambda[i]
-
-      fit_and_score_partial(grid$folds[[i]], min.node.size, lambda)
+      fit_and_score_partial(folds, min.node.size, lambda)
 
     })
   }
 
-
   res4 <- function() {
-
-    grid <- tidyr::expand_grid(
-      rep_id = 1:n_rep, fold_id = 1:K,
-      min.node.size = min.node.size,
-      lambda = lambda
-    ) %>%
-      dplyr::left_join(myfolds, by = c("rep_id", "fold_id"))
-
     foreach(
-      i = 1:nrow(grid),
+      i = 1:nrow(fun_args),
       .options.future = list(scheduling = FALSE)
     ) %dopar% {
 
       fit_and_score_partial <- purrr::partial(fit_and_score, X = X, Y = Y)
 
-      rep_id <- grid$rep_id[i]
-      fold_id <- grid$fold_id[i]
-      min.node.size <- grid$min.node.size[i]
-      lambda <- grid$lambda[i]
+      folds <- fun_args$folds[[i]]
+      min.node.size <- fun_args$min.node.size[i]
+      lambda <- fun_args$lambda[i]
 
-      fit_and_score_partial(grid$folds[[i]], min.node.size, lambda)
+      fit_and_score_partial(folds, min.node.size, lambda)
 
     }
   }
