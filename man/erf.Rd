@@ -19,14 +19,15 @@ corresponds to an observation and each column to a predictor.}
 
 \item{Y}{Numeric vector of responses.}
 
-\item{min.node.size}{Minimum number of observations in each tree leaf used
-in \code{\link[grf:quantile_forest]{grf::quantile_forest()}}.
+\item{min.node.size}{Minimum number of observations in each tree
+leaf used to fit the similarity weights
+(see also \code{\link[grf:quantile_forest]{grf::quantile_forest()}}).
 Nodes with size smaller than \code{min.node.size} can occur,
 as in the original \pkg{randomForest} package.
-Default is 5.}
+Default is \code{5}.}
 
 \item{lambda}{Penalty for the shape parameter used in the weighted likelihood.
-Default is 0.001.}
+Default is \code{0.001}.}
 
 \item{intermediate_estimator}{A character specifying the estimator used to
 fit the intermediate threshold.
@@ -38,7 +39,8 @@ Options available are:
 
 \item{intermediate_quantile}{Intermediate quantile
 level, used to predict the intermediate threshold.
-For further information see \insertCite{merg2020;textual}{erf}.}
+For further information see \insertCite{merg2020;textual}{erf}.
+Default is \code{0.8}.}
 }
 \value{
 An object with S3 class "\code{erf}".

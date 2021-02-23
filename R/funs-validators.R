@@ -1,3 +1,16 @@
+validate_intermediate_quantile <- function(quantile) {
+  ## numeric -> invisible(numeric)
+  ## produce quantile if the parameters are well formed, throws error if not
+
+  # !!!
+  # examples
+  # template / inventory
+  # body
+  # run test and debug until correct
+
+  invisible(quantile)
+}
+
 validate_data <- function(X, Y) {
   ## numeric_matrix numeric_vector -> invisible(list)
   ## produce list(X, Y) if the parameters are well formed, throws error if not

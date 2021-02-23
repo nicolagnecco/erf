@@ -6,7 +6,7 @@ test_that("erf_cv works", {
   min.node.size <- c(5, 40, 100)
   lambda <- c(0, 0.001, 0.01)
 
-  myfolds <- create_folds(n, n_rep, K)
+  myfolds <- get_repeated_k_folds(n, K, n_rep)
 
   fit_and_score <- function(X, Y, folds, ...){
 
@@ -22,10 +22,7 @@ test_that("erf_cv works", {
 
 
   res1 <- function() {
-    splits <- tibble::tibble(folds = myfolds) %>%
-      dplyr::mutate(rep_id = seq_len(n_rep)) %>%
-      tidyr::unnest(folds) %>%
-      dplyr::mutate(fold_id = rep(seq_len(K), n_rep))
+    splits <- myfolds
 
     params <- tidyr::expand_grid(
       min.node.size = min.node.size,
@@ -42,20 +39,20 @@ test_that("erf_cv works", {
     )
 
     full_grid <- splits %>%
-      dplyr::left_join(params, by = c("rep_id", "fold_id")) %>%
+      dplyr::left_join(params, by = c("rep_id", "fold_id"))
+
+    fun_args <- full_grid %>%
       dplyr::select(-rep_id, -fold_id)
+
+    all.equal(a, full_grid)
 
     fit_and_score_partial <- purrr::partial(fit_and_score, X = X, Y = Y)
 
-    purrr::pmap(full_grid, fit_and_score_partial)
+    purrr::pmap(fun_args, fit_and_score_partial)
   }
 
   res2 <- function() {
-    splits <- tibble::tibble(folds = myfolds) %>%
-      dplyr::mutate(rep_id = seq_len(n_rep)) %>%
-      tidyr::unnest(folds) %>%
-      dplyr::mutate(fold_id = rep(seq_len(K), n_rep))
-
+    splits <- myfolds
 
     params <- tidyr::expand_grid(
       fold_id = seq_len(K),
@@ -81,7 +78,8 @@ test_that("erf_cv works", {
       rep_id = 1:n_rep, fold_id = 1:K,
       min.node.size = min.node.size,
       lambda = lambda
-    )
+    ) %>%
+    dplyr::left_join(myfolds, by = c("rep_id", "fold_id"))
 
     fit_and_score_partial <- purrr::partial(fit_and_score, X = X, Y = Y)
 
@@ -92,7 +90,7 @@ test_that("erf_cv works", {
       min.node.size <- grid$min.node.size[i]
       lambda <- grid$lambda[i]
 
-      fit_and_score_partial(myfolds[[rep_id]][[fold_id]], min.node.size, lambda)
+      fit_and_score_partial(grid$folds[[i]], min.node.size, lambda)
 
     })
   }
@@ -104,7 +102,8 @@ test_that("erf_cv works", {
       rep_id = 1:n_rep, fold_id = 1:K,
       min.node.size = min.node.size,
       lambda = lambda
-    )
+    ) %>%
+      dplyr::left_join(myfolds, by = c("rep_id", "fold_id"))
 
     foreach(
       i = 1:nrow(grid),
@@ -118,7 +117,7 @@ test_that("erf_cv works", {
       min.node.size <- grid$min.node.size[i]
       lambda <- grid$lambda[i]
 
-      fit_and_score_partial(myfolds[[rep_id]][[fold_id]], min.node.size, lambda)
+      fit_and_score_partial(grid$folds[[i]], min.node.size, lambda)
 
     }
   }

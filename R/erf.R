@@ -12,14 +12,15 @@
 #'
 #' @param Y Numeric vector of responses.
 #'
-#' @param min.node.size Minimum number of observations in each tree leaf used
-#'  in [grf::quantile_forest()].
+#' @param min.node.size Minimum number of observations in each tree
+#'  leaf used to fit the similarity weights
+#'  (see also [grf::quantile_forest()]).
 #'  Nodes with size smaller than `min.node.size` can occur,
 #'  as in the original \pkg{randomForest} package.
-#'  Default is 5.
+#'  Default is `5`.
 #'
 #' @param lambda Penalty for the shape parameter used in the weighted likelihood.
-#'  Default is 0.001.
+#'  Default is `0.001`.
 #'
 #' @param intermediate_estimator A character specifying the estimator used to
 #'  fit the intermediate threshold.
@@ -30,6 +31,7 @@
 #' @param intermediate_quantile Intermediate quantile
 #'  level, used to predict the intermediate threshold.
 #'  For further information see \insertCite{merg2020;textual}{erf}.
+#'  Default is `0.8`.
 #'
 #'
 #' @return An object with S3 class "`erf`".
@@ -73,6 +75,8 @@ erf <- function(X, Y, min.node.size = 5, lambda = 0.001,
   validate_params(min.node.size, lambda)
 
   validate_intermediate_estimator(intermediate_estimator)
+
+  validate_intermediate_quantile(intermediate_quantile)
 
   # return erf object
   validate_erf(fit_erf(
