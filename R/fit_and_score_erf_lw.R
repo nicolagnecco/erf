@@ -1,12 +1,12 @@
-fit_and_score_erf_lw <- function(X, Y, Q_X, test_id,
+fit_and_score_erf_lw <- function(X, Y, Q_X, folds,
                           min.node.size, lambda, intermediate_quantile){
   ## numeric_matrix numeric_vector numeric_vector numeric (3x) -> numeric
   ## fit a light-weight erf and computes its cross validation error
 
   # split X, Y, Q_X
-  X <- split_data(X, test_id)
-  Y <- split_data(Y, test_id)
-  Q_X <- split_data(Q_X, test_id)
+  X <- split_data(X, folds)
+  Y <- split_data(Y, folds)
+  Q_X <- split_data(Q_X, folds)
 
   # fit light-weight erf
   fitted_erf_lw <- fit_mini_erf_lw(X$train, Y$train, Q_X$train,
