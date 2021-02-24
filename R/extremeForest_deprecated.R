@@ -253,7 +253,7 @@ erf_cv_deprecated <- function(X, Y, t_xi, threshold, min.node.size = 5, lambda =
       )
     }
 
-    dat <- split_data(X, Y, t_xi, folds[[n_rep]], K)
+    dat <- split_data_deprecated(X, Y, t_xi, folds[[n_rep]], K)
 
     # rngtools::setRNG(rng_curr)
 
@@ -274,7 +274,7 @@ erf_cv_deprecated <- function(X, Y, t_xi, threshold, min.node.size = 5, lambda =
 
     n_valid <- length(dat$valid$Y)
 
-    evaluate_deviance_deprecated_deprecated(
+    evaluate_deviance_deprecated(
       gpd_pars,
       dat$valid$Y[exc_id],
       dat$valid$t_xi[exc_id]
@@ -359,7 +359,7 @@ evaluate_deviance_deprecated <- function(gpd_pars, Y, t_xi) {
   }
 }
 
-split_data <- function(X, Y, t_xi, fold, K) {
+split_data_deprecated <- function(X, Y, t_xi, fold, K) {
   ## numeric_matrix numeric_vector (2x) list integer -> list
   ## produce a list made of:
   ## train (contains all rows not in fold[[K]])
@@ -875,4 +875,16 @@ optim_wrap2 <- function(i, init_par, obj_fun, exc_data, wi_x0, lambda, xi_prior,
   )$par
   names(res) <- c("sigma", "csi")
   return(res)
+}
+
+create_folds <- function(n, n_rep, K, seed){
+  ## integer (4x) -> list
+  ## produce a list with n_rep splits for K-fold CV
+
+  rows_id <- 1:n
+
+  rngtools::setRNG(seed)
+  lapply(X = rep(1, n_rep), FUN = function(x){
+    chunk(sample(rows_id), K)
+  })
 }

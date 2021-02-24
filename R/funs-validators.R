@@ -66,6 +66,20 @@ validate_erf <- function(ef) {
   return(ef)
 }
 
+validate_erf_cv <- function(erf_cv){
+  ## erf_cv -> erf_cv
+  ## produce erf_cv if it is well formed, throws error if not
+
+  # !!!
+  # examples
+  # template / inventory
+  # body
+  # run test and debug until correct
+
+  return(erf_cv)
+
+}
+
 
 validate_newdata <- function(newdata, ef) {
   ## numeric_matrix erf -> numeric_matrix
@@ -109,7 +123,7 @@ validate_quantiles <- function(quantiles, ef) {
   # template / inventory
   # body
   # run test and debug until correct
-  invisble(quantiles)
+  invisible(quantiles)
 }
 
 

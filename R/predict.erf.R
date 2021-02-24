@@ -20,6 +20,8 @@
 #'  to be made.
 #'  Default is `c(0.95, 0.99)`.
 #'
+#' @param ... Dots. Currently ignored.
+#'
 #'
 #' @return Numeric matrix with predictions for each test point (rows)
 #'  at the desired quantile levels (columns).
@@ -36,7 +38,8 @@
 #' @export
 predict.erf <- function(object,
                         newdata = NULL,
-                        quantiles = c(0.95, 0.99)) {
+                        quantiles = c(0.95, 0.99),
+                        ...) {
 
   # validate object
   validate_erf(object)

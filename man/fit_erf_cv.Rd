@@ -74,5 +74,4 @@ Internal function to fit an extremal random forest with cross-validation ...
 \examples{
 "!!! add examples"
 
-
 }

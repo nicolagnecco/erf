@@ -4,7 +4,7 @@
 \alias{predict.erf}
 \title{Predict an extremal random forest (ERF)}
 \usage{
-\method{predict}{erf}(object, newdata = NULL, quantiles = c(0.95, 0.99))
+\method{predict}{erf}(object, newdata = NULL, quantiles = c(0.95, 0.99), ...)
 }
 \arguments{
 \item{object}{Fitted "\code{erf}" object.}
@@ -19,6 +19,8 @@ Default is \code{NULL}.}
 \item{quantiles}{Numeric vector of quantile levels at which estimates are
 to be made.
 Default is \code{c(0.95, 0.99)}.}
+
+\item{...}{Dots. Currently ignored.}
 }
 \value{
 Numeric matrix with predictions for each test point (rows)

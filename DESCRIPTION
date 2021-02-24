@@ -29,7 +29,8 @@ Imports:
     utils,
     stats,
     rlang,
-    glue
+    glue,
+    tidyr
 URL: https://github.com/nicolagnecco/erf
 BugReports: https://github.com/nicolagnecco/erf/issues
 RdMacros: Rdpack

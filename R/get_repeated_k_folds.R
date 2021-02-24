@@ -12,7 +12,7 @@ get_repeated_k_folds <- function(n, K, nreps, seed = NULL) {
 
   tibble::tibble(folds = lst) %>%
     dplyr::mutate(rep_id = seq_len(nreps)) %>%
-    tidyr::unnest(folds) %>%
+    tidyr::unnest(.data$folds) %>%
     dplyr::mutate(fold_id = rep(seq_len(K), nreps))
 }
 

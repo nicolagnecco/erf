@@ -17,6 +17,7 @@
 #' @examples
 #' "!!! add examples"
 #'
+#' @importFrom rlang .data
 #'
 fit_erf_cv <- function(X,
                        Y,
@@ -46,7 +47,7 @@ fit_erf_cv <- function(X,
   # create full grid with parameters and splits
   full_grid <- tidyr::crossing(splits, params)
   fun_args <- full_grid %>%
-    dplyr::select(-rep_id, -fold_id)
+    dplyr::select(- .data$rep_id, - .data$fold_id)
 
   # partialise fit_and_score_erf_lw
   fit_and_score_partial <- purrr::partial(
@@ -62,7 +63,7 @@ fit_erf_cv <- function(X,
 
   # compute optimal parameters
   opt_params <- scores %>%
-    dplyr::filter(cvm == min(cvm))
+    dplyr::filter(.data$cvm == min(.data$cvm))
 
   # refit `erf` on full dataset
   fit.erf <- fit_erf(X, Y, opt_params$min.node.size, opt_params$lambda,
