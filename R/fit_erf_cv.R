@@ -59,12 +59,13 @@ fit_erf_cv <- function(X,
 
   # sweep through folds and parameters
   scores <- full_grid %>%
-    dplyr::mutate(cvm = purrr::pmap_dbl(fun_args, fit_and_score_partial))
+    dplyr::mutate(cv_err = purrr::pmap_dbl(fun_args, fit_and_score_partial))
 
   # compute optimal parameters
   opt_params <- scores %>%
     dplyr::group_by(.data$min.node.size, .data$lambda) %>%
-    dplyr::summarise(cvm = mean(cvm)) %>%
+    dplyr::summarise(cvm = mean(cv_err)) %>%
+    dplyr::ungroup() %>%
     dplyr::filter(.data$cvm == min(.data$cvm))
 
   # refit `erf` on full dataset
