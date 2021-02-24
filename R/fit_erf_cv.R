@@ -63,6 +63,8 @@ fit_erf_cv <- function(X,
 
   # compute optimal parameters
   opt_params <- scores %>%
+    dplyr::group_by(.data$min.node.size, .data$lambda) %>%
+    dplyr::summarise(cvm = mean(cvm)) %>%
     dplyr::filter(.data$cvm == min(.data$cvm))
 
   # refit `erf` on full dataset
