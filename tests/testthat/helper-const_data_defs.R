@@ -123,7 +123,7 @@ erf_cv_1 <- list(
   ),
   "erf.fit" = erf_1
 )
-
+# !!! to decide
 
 structure(list(), class = "erf_lw")
 #' `erf_lw` is a named list made of:
