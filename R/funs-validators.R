@@ -100,7 +100,17 @@ validate_newdata <- function(newdata, ef) {
 
 }
 
-validate_quantiles <- function(quantiles, ef) {}
+validate_quantiles <- function(quantiles, ef) {
+  ## numeric_vector erf -> numeric_vector
+  ## produce quantiles if they are well formed, throws error if not
+
+  # !!!
+  # examples
+  # template / inventory
+  # body
+  # run test and debug until correct
+  invisble(quantiles)
+}
 
 
 has_method <- function(object, generic) {
