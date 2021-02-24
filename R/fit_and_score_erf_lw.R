@@ -1,47 +1,30 @@
-fit_mini_grf <- function(X, Y, min.node.size) {
-  ## numeric_matrix numeric_vector numeric -> mini_forest (grf + Q_X)
-  ## fits a small quantile forest with 50 trees
+fit_and_score_erf_lw <- function(X, Y, Q_X, test_id,
+                          min.node.size, lambda, intermediate_quantile){
+  ## numeric_matrix numeric_vector numeric_vector numeric (3x) -> numeric
+  ## fit a light-weight erf and computes its cross validation error
 
-  grf::quantile_forest(X, Y, min.node.size = min.node.size, num.trees = 50)
-}
+  # split X, Y, Q_X
+  X <- split_data(X, test_id)
+  Y <- split_data(Y, test_id)
+  Q_X <- split_data(Q_X, test_id)
 
-score_mini_grf <- function(mini_forest, X_test, Y_test, Q_X_test, lambda) {
-  ## mini_forest numeric_matrix numeric_vector numeric_matrix numeric
-  ## -> numeric
-  ## evaluate deviance score for fitted quantile_forest
+  # fit light-weight erf
+  fitted_erf_lw <- fit_mini_erf_lw(X$train, Y$train, Q_X$train,
+                              min.node.size, lambda, intermediate_quantile)
 
-  # predict parameters
-  gpd_pars <- predict_gpd_params(
-    quantile_forest = mini_forest$quantile_forest,
-    newdata = X_test, # !!! only on exceedances, i.e., Y_test > Q_X_test
-    Q = mini_forest$Q_X,
-    lambda = lambda
-  )
+  # keep only test observations where Y > Q_X
+  exc_id <- Y$test > Q_X$test
+  X$test <- X$test[exc_id, , drop = FALSE]
+  Y$test <- Y$test[exc_id]
+  Q_X$test <- Q_X$test[exc_id]
 
-  # compute deviance
-  evaluate_deviance(
-    gpd_pars,
-    Y_test,
-    Q_X_test
-  )
+  # predict gpd parameters
+  gpd_params <- predict_gpd_params(fitted_erf_lw, X$test)
 
-
-}
-
-fit_and_score <- function(X, Y, Q_X, folds,
-                          min.node.size, lambda){
-  # split X and Y
-  X_test <-  Y_test <-  ... <- ...
-
-  # estimator <- fit(X_train, Y_train, fit_params)
-  erf_obj <- fit_erf(
-    X = X_train,
-    Y = Y_train,
-    min.node.size = min.node.size,
-    lambda = lambda,
-    num.trees = 50)
-
-  # score estimator
-  test_scores <- score(erf_obj, X_test, Y_test)
-
+  # evaluate deviance
+  if (length(Y$test) == 0){
+    return(10 ^ 6) # !!! ask Seb
+  } else {
+    evaluate_deviance(gpd_params, Y$test, Q_X$test)
+  }
 }

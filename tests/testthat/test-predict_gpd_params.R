@@ -45,15 +45,21 @@ test_that("predict_gpd_params works", {
       predict_gpd_params_helper(W_small, Y_small, Q_small, erf_2$lambda)
     })
 
+  # what happens if X_test is empty
+  X_test_empty <- X_test[FALSE, , drop = FALSE]
+
+  expect_equal(
+    predict_gpd_params(
+      object = erf_1,
+      newdata = X_test_empty
+    ),
+    tibble::tibble("sigma" = numeric(0), "xi" = numeric(0))
+  )
+
 })
 
 
 test_that("predict_gpd_params_helper works", {
-  ## numeric_matrix numeric_vector numeric_vector numeric -> tibble
-  ## produce a tibble with MLE GPD scale and shape parameter for each test point
-  ## each row corresponds to a test point, each column to a GPD parameter,
-  ## namely, `scale` and `shape
-
   Q <- predict_intermediate_quantile(erf_1$intermediate_threshold,
                                      intermediate_quantile = 0.8)
 
@@ -69,8 +75,12 @@ test_that("predict_gpd_params_helper works", {
 
   expect_equal(dim(predict_gpd_params_helper(W, Y, Q, 0)), c(nrow(W), 2))
 
+  # What happens if there are no test observations?
   W <- W[integer(0), ]
-  expect_equal(dim(predict_gpd_params_helper(W, Y, Q, 0)), c(nrow(W), 0))
+  gpd_params <- predict_gpd_params_helper(W, Y, Q, 0)
+  expect_equal(dim(gpd_params), c(nrow(W), 2))
+  expect_equal(gpd_params,
+               tibble::tibble("sigma" = numeric(0), "xi" = numeric(0)))
 
 })
 

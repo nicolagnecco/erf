@@ -41,8 +41,8 @@ fit_erf <- function(X, Y, min.node.size = 5, lambda = 0.001,
   # return erf object
   structure(list(
     "quantile_forest" = extreme_quantile_fit,
-    min.node.size = min.node.size,
-    lambda = lambda,
+    "min.node.size" = min.node.size,
+    "lambda" = lambda,
     "intermediate_threshold" = intermediate_threshold,
     "intermediate_quantile" = intermediate_quantile,
     "Q_X" = Q_X

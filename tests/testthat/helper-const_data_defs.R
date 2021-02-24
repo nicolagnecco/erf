@@ -117,9 +117,9 @@ structure(list(), class = "erf_cv")
 #' interp. a cross-validated extreme forest.
 erf_cv_1 <- list(
   "scores" = tibble::tibble(
-    min.node.size = c(5, 40),
-    lambda = c(0, 0.001),
-    cvm = c(40, 36)
+    "min.node.size" = c(5, 40),
+    "lambda" = c(0, 0.001),
+    "cvm" = c(40, 36)
   ),
   "erf.fit" = erf_1
 )

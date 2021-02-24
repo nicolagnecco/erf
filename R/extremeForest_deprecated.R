@@ -274,7 +274,7 @@ erf_cv_deprecated <- function(X, Y, t_xi, threshold, min.node.size = 5, lambda =
 
     n_valid <- length(dat$valid$Y)
 
-    evaluate_deviance(
+    evaluate_deviance_deprecated_deprecated(
       gpd_pars,
       dat$valid$Y[exc_id],
       dat$valid$t_xi[exc_id]
@@ -338,7 +338,7 @@ isnt_out_mad <- function(x, thres = 3, na.rm = TRUE) {
 }
 
 
-evaluate_deviance <- function(gpd_pars, Y, t_xi) {
+evaluate_deviance_deprecated <- function(gpd_pars, Y, t_xi) {
   ## numeric_matrix numeric_vector (2x) -> numeric
   ## evaluate the GDP deviance
 
