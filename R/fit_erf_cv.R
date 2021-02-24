@@ -17,7 +17,7 @@
 #' @examples
 #' "!!! add examples"
 #'
-#' @export
+#'
 fit_erf_cv <- function(X,
                        Y,
                        min.node.size = c(5, 40, 100),

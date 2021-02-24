@@ -58,7 +58,7 @@
 #' @references
 #'  \insertAllCited{}
 #'
-#' @export
+#'
 predict_erf <- function(object, quantiles = c(0.95, 0.99), threshold = 0.8,
                         newdata = NULL, model_assessment = FALSE,
                         Y.test = NULL, out_of_bag = FALSE,
@@ -191,7 +191,7 @@ predict_erf_internal <- function(object, quantiles = c(0.95, 0.99),
 #' @references
 #'  \insertAllCited{}
 #'
-#' @export
+#'
 #'
 #' @importFrom foreach foreach %dopar%
 #' @importFrom magrittr %>%

@@ -12,7 +12,7 @@ erf_cv(
   intermediate_estimator = c("grf", "neural_nets"),
   intermediate_quantile = 0.8,
   nfolds = 5,
-  nrep = 3,
+  nreps = 3,
   seed = NULL
 )
 }
@@ -48,7 +48,7 @@ Default is \code{0.8}.}
 \item{nfolds}{Number of folds in the cross-validation scheme.
 Default is \code{5}.}
 
-\item{nrep}{Number of times \code{nfolds} cross-validation is repeated.
+\item{nreps}{Number of times \code{nfolds} cross-validation is repeated.
 Default is \code{3}.}
 
 \item{seed}{Random seed to reproduce the fold splits.
