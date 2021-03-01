@@ -30,11 +30,11 @@ compute_model_assessment <- function(object,
   )
 
   # compute model assessment
-  compute_model_assessment_helper(gpd_params, newdata_Y, Q_x)
+  compute_model_assessment_helper(gpd_pars, newdata_Y, Q_x)
 
 }
 
-compute_model_assessment_helper <- function(gpd_params, Y, Q) {
+compute_model_assessment_helper <- function(gpd_pars, Y, Q) {
   ## tibble numeric_vector numeric_vector -> tibble
   ## produce a tibble with columns `observed_quantiles` and `theoretical_quantiles`
 
