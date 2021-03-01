@@ -1,4 +1,4 @@
-diagnostic_plot <- function(object,
+compute_model_assessment <- function(object,
                             newdata_X = NULL,
                             newdata_Y = NULL){
 
@@ -27,6 +27,6 @@ diagnostic_plot <- function(object,
   )
 
   # compute model assessment
-  compute_model_assessment(gpd_params, newdata_Y, Q_x)
+  compute_model_assessment_helper(gpd_params, newdata_Y, Q_x)
 
 }
