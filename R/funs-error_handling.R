@@ -1,3 +1,20 @@
+warning_obs_outside_support <- function(idx) {
+  ## numeric_vector -> warning_condition
+  ## produce warning condition
+
+  full_msg <- c(glue::glue("Problem with support of the data."),
+                glue::glue("Observation `{idx}` is not plotted because it exceeds its upper end point."))
+
+  names(full_msg) <- rep("i", length(full_msg))
+  names(full_msg)[1] <- ""
+
+  rlang::warn(
+    message = full_msg,
+    class = "warn_outside_support"
+  )
+
+}
+
 abort_different_n_observations <- function(X, Y) {
   ## character character -> error_condition
   ## produce error condition

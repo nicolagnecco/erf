@@ -47,7 +47,7 @@ compute_model_assessment_helper <- function(gpd_pars, Y, Q) {
 
   tibble::tibble(
     "observed_quantiles" = sort(pseudo_obs),
-    "theoretical_quantiles" = stats::qexp((1:n) / (n + 1))
+    "theoretical_quantiles" = stats::qexp(seq_len(n) / (n + 1))
   )
 }
 
@@ -59,11 +59,7 @@ compute_pseudo_observations <- function(exc_data, sigma, xi) {
   idx <- which(tmp_res <= 0)
 
   if (length(idx) >= 1) {
-    msg <- paste(
-      "Observation", idx, "is not plotted because",
-      "it exceeds its upper end point.\n"
-    )
-    warning(msg)
+    warning_obs_outside_support(idx)
   }
 
   pseudo_obs <- 1 / xi[tmp_res > 0] * log(tmp_res[tmp_res > 0])
