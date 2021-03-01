@@ -132,7 +132,7 @@ predict_erf_internal <- function(object, quantiles = c(0.95, 0.99),
   q_hat <- compute_extreme_quantiles_deprecated(gpd_pars, t_x0, quantiles, threshold)
 
   if (model_assessment) {
-    p <- compute_model_assessment(t_x0, Y.test, gpd_pars)
+    p <- compute_model_assessment_deprecated(t_x0, Y.test, gpd_pars)
     return(list(
       predictions = q_hat, pars = gpd_pars, threshold = t_x0,
       plot = p
@@ -611,7 +611,7 @@ compute_extreme_quantiles_deprecated <- function(gpd_pars, t_x0, quantiles, thre
   return(res)
 }
 
-compute_model_assessment <- function(t_x0, Y.test, gpd_pars) {
+compute_model_assessment_deprecated <- function(t_x0, Y.test, gpd_pars) {
   ## numeric_vector numeric_vector numeric_matrix -> plot
   ## produce QQ-plot of standardized estimated quantiles vs exponential data
 
@@ -833,7 +833,7 @@ predict_erf_internal2 <- function(object, quantiles = c(0.95, 0.99),
   q_hat <- compute_extreme_quantiles_deprecated(gpd_pars, t_x0, quantiles, threshold)
 
   if (model_assessment) {
-    p <- compute_model_assessment(t_x0, Y.test, gpd_pars)
+    p <- compute_model_assessment_deprecated(t_x0, Y.test, gpd_pars)
     return(list(
       predictions = q_hat, pars = gpd_pars, threshold = t_x0,
       plot = p
