@@ -21,18 +21,18 @@ test_that("validate_intermediate_estimator works", {
 
 
 test_that("validata_newdata works", {
-  expect_equal(validate_newdata(NULL, erf_2), NULL)
+  expect_equal(validate_newdata_X(NULL, erf_2), NULL)
 
-  expect_equal(validate_newdata(X_test_small, erf_2),
+  expect_equal(validate_newdata_X(X_test_small, erf_2),
                 X_test_small)
 
-  cnd <- rlang::catch_cnd(validate_newdata(X_test_small[, 1], erf_2))
+  cnd <- rlang::catch_cnd(validate_newdata_X(X_test_small[, 1], erf_2))
   expect_s3_class(cnd, "error_wrong_dimension")
 
-  cnd <- rlang::catch_cnd(validate_newdata(X_test, erf_2))
+  cnd <- rlang::catch_cnd(validate_newdata_X(X_test, erf_2))
   expect_s3_class(cnd, "error_wrong_columns")
 
-  cnd <- rlang::catch_cnd(validate_newdata(X_test[integer(0), ], erf_1))
+  cnd <- rlang::catch_cnd(validate_newdata_X(X_test[integer(0), ], erf_1))
   expect_s3_class(cnd, "error_zero_rows")
 
 

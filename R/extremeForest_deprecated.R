@@ -630,32 +630,6 @@ compute_model_assessment_deprecated <- function(t_x0, Y.test, gpd_pars) {
   plot_model_assessment(theoretical_quantiles, observed_quantiles)
 }
 
-compute_pseudo_observations <- function(exc_data, sigma, xi) {
-  ## numeric_vector numeric numeric -> numeric_vector
-  ## compute pseudo observation on exponential margin
-
-  tmp_res <- 1 + xi * exc_data / sigma
-  idx <- which(tmp_res <= 0)
-
-  if (length(idx) == 1) {
-    msg <- paste(
-      "Observation", idx, "is not plotted because",
-      "it exceeds its upper end point"
-    )
-    warning(msg)
-  } else if (length(idx) > 1) {
-    msg <- paste(
-      "Observations", paste(idx, collapse = ", "),
-      "are not plotted because",
-      "they exceed their upper end points"
-    )
-    warning(msg)
-  }
-
-  pseudo_obs <- 1 / xi[tmp_res > 0] * log(tmp_res[tmp_res > 0])
-  return(pseudo_obs)
-}
-
 plot_model_assessment <- function(x, y) {
   ## numeric_vector numeric_vector -> plot
   ## produce QQ-plot

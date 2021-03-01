@@ -1,13 +1,16 @@
 compute_model_assessment <- function(object,
                             newdata_X = NULL,
                             newdata_Y = NULL){
+  ## erf numeric_matrix numeric_vector -> tibble
+  ## produce a tibble with columns `observed_quantiles` and `theoretical_quantiles`
 
   # validate object
   validate_erf(object)
 
-  # validate newdata
-  validate_newdata(newdata_X, object)
-  # and newdata_Y
+  # validate newdata_X and newdata_Y
+  lst <- validate_newdata_X_and_Y(newdata_X, newdata_Y, object)
+  newdata_X <- lst$newdata_X
+  newdata_Y <- lst$newdata_Y
 
   # validate intermediate_quantile !!! between 0-1, scalar
   # validate quantiles !!! between 0-1, numeric_vector, none less than intermediate_quantile
@@ -29,4 +32,40 @@ compute_model_assessment <- function(object,
   # compute model assessment
   compute_model_assessment_helper(gpd_params, newdata_Y, Q_x)
 
+}
+
+compute_model_assessment_helper <- function(gpd_params, Y, Q) {
+  ## tibble numeric_vector numeric_vector -> tibble
+  ## produce a tibble with columns `observed_quantiles` and `theoretical_quantiles`
+
+  exc_ind <- which(Y > Q)
+  Z <- (Y - Q)[exc_ind]
+  sigma <- gpd_pars[[1]][exc_ind]
+  xi <- gpd_pars[[2]][exc_ind]
+  pseudo_obs <- compute_pseudo_observations(Z, sigma, xi)
+  n <- length(pseudo_obs)
+
+  tibble::tibble(
+    "observed_quantiles" = sort(pseudo_obs),
+    "theoretical_quantiles" = stats::qexp((1:n) / (n + 1))
+  )
+}
+
+compute_pseudo_observations <- function(exc_data, sigma, xi) {
+  ## numeric_vector numeric numeric -> numeric_vector
+  ## compute pseudo observations on exponential margin
+
+  tmp_res <- 1 + xi * exc_data / sigma
+  idx <- which(tmp_res <= 0)
+
+  if (length(idx) >= 1) {
+    msg <- paste(
+      "Observation", idx, "is not plotted because",
+      "it exceeds its upper end point.\n"
+    )
+    warning(msg)
+  }
+
+  pseudo_obs <- 1 / xi[tmp_res > 0] * log(tmp_res[tmp_res > 0])
+  return(pseudo_obs)
 }

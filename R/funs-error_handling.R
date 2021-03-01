@@ -1,3 +1,33 @@
+abort_different_n_observations <- function(X, Y) {
+  ## character character -> error_condition
+  ## produce error condition
+
+
+  full_msg <- c(glue::glue("Problem with `{X}` and `{Y}`."),
+                x = glue::glue("`{X}` and `{Y}` must have the same number of observations."))
+
+  rlang::abort(
+    message = full_msg,
+    class = "error_different_n_observations"
+  )
+
+
+}
+
+abort_both_null_or_viceversa <- function(X, Y) {
+  ## character character -> error_condition
+  ## produce error condition
+
+  full_msg <- c(glue::glue("Problem with `{X}` and `{Y}`."),
+                x = glue::glue("`{X}` and `{Y}` must be both `NULL` or both not `NULL`."))
+
+  rlang::abort(
+    message = full_msg,
+    class = "error_both_null"
+  )
+
+}
+
 abort_wrong_dimension <- function(arg, must, not){
   ## character character character -> error_condition
   ## produce error condition

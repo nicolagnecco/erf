@@ -45,7 +45,7 @@ predict.erf <- function(object,
   validate_erf(object)
 
   # validate newdata
-  validate_newdata(newdata, object)
+  validate_newdata_X(newdata, object)
 
   # validate intermediate_quantile !!! between 0-1, scalar
   # validate quantiles !!! between 0-1, numeric_vector, none less than intermediate_quantile
