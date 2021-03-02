@@ -74,7 +74,9 @@ erf <- function(X, Y, min.node.size = 5, lambda = 0.001,
 
   validate_params(min.node.size, lambda)
 
-  validate_intermediate_estimator(intermediate_estimator)
+  intermediate_estimator <- validate_intermediate_estimator(
+    intermediate_estimator
+  )
 
   validate_intermediate_quantile(intermediate_quantile)
 

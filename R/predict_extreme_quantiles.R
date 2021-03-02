@@ -2,7 +2,7 @@ predict_extreme_quantiles <- function(gpd_pars,
                                       Q_x,
                                       quantiles,
                                       intermediate_quantile) {
-  ## tibble numeric_matrix numeric_vector(0, 1) numeric(0, 1) -> numeric_matrix
+  ## tibble numeric_vector numeric_vector(0, 1) numeric(0, 1) -> numeric_matrix
   ## produce matrix with estimated extremes quantiles. The value at (i, j) gives
   ## the estimated quantiles[j] for test sample i
 
