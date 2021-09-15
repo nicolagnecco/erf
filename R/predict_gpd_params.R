@@ -34,7 +34,7 @@ predict_gpd_params_helper <- function(W, Y, Q, lambda) {
   # compute exceedances
   exc_ind <- which(Y > Q)
   Z <- (Y - Q)[exc_ind]
-  W <- W[, exc_ind]
+  W <- W[, exc_ind, drop = FALSE]
   ntest <- nrow(W)
 
   # initial guess for GPD parameters
