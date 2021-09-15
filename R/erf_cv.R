@@ -55,6 +55,7 @@ erf_cv <- function(X,
 
   validate_params(min.node.size, lambda)
 
+  intermediate_estimator <- match.arg(intermediate_estimator)
   validate_intermediate_estimator(intermediate_estimator)
 
   validate_intermediate_quantile(intermediate_quantile)
