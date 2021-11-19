@@ -168,7 +168,7 @@ extreme_forest <- function(X.train, Y, X.test, alpha, alpha.new, Y.test=NULL, gr
 
 
   # Obtaining weights (dimension is ntest x n)
-  qrf.weights = get_sample_weights(fit.grf, newdata = X.test, num.threads = NULL)
+  qrf.weights = get_forest_weights(fit.grf, newdata = X.test, num.threads = NULL)
 
 
   #plot(X.train[,1],qrf.weights[24,])

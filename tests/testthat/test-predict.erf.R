@@ -30,7 +30,7 @@ test_that("predict.erf works", {
   )
 
   # Check that predict.erf works when newdata is NULL
-  W <- as.matrix(grf::get_sample_weights(erf_1$quantile_forest))
+  W <- as.matrix(grf::get_forest_weights(erf_1$quantile_forest))
 
   expect_equal(
     predict.erf(

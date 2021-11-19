@@ -7,7 +7,7 @@ predict_intermediate_quantile <- function(intermediate_threshold,
 
   if (inherits(intermediate_threshold, "quantile_forest")) {
 
-    as.numeric(
+    unlist(
       stats::predict(
         object = intermediate_threshold,
         newdata = newdata,

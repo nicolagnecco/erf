@@ -16,7 +16,7 @@ test_that("predict_gpd_params works", {
     {
 
       W <- as.matrix(
-        grf::get_sample_weights(
+        grf::get_forest_weights(
           forest = erf_1$quantile_forest,
           newdata = X_test)
       )
@@ -39,7 +39,7 @@ test_that("predict_gpd_params works", {
     {
 
       W_small <- as.matrix(
-        grf::get_sample_weights(
+        grf::get_forest_weights(
           forest = erf_2$quantile_forest)
       )
       predict_gpd_params_helper(W_small, Y_small, Q_small, erf_2$lambda)
@@ -63,12 +63,12 @@ test_that("predict_gpd_params_helper works", {
   Q <- predict_intermediate_quantile(erf_1$intermediate_threshold,
                                      intermediate_quantile = 0.8)
 
-  W <- as.matrix(grf::get_sample_weights(erf_1$quantile_forest))
+  W <- as.matrix(grf::get_forest_weights(erf_1$quantile_forest))
 
   expect_s3_class(predict_gpd_params_helper(W, Y, Q, 0.01), "tbl_df")
   expect_equal(dim(predict_gpd_params_helper(W, Y, Q, 0.01)), c(nrow(W), 2))
 
-  W <- as.matrix(grf::get_sample_weights(
+  W <- as.matrix(grf::get_forest_weights(
     forest = erf_1$quantile_forest,
     newdata = X_test
   ))
@@ -90,7 +90,7 @@ test_that("optim_wrapper works", {
                                      intermediate_quantile = 0.8)
   exc_ind <- which(Y > Q)
   Z <- (Y - Q)[exc_ind]
-  W <- as.matrix(grf::get_sample_weights(intermediate_threshold_1))[, exc_ind]
+  W <- as.matrix(grf::get_forest_weights(intermediate_threshold_1))[, exc_ind]
 
   ntest <- nrow(W)
 

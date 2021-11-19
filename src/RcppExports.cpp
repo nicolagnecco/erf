@@ -6,6 +6,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // weighted_llh
 double weighted_llh(const arma::vec& par, const arma::vec& data, const arma::vec& weights, double lambda, double xi_prior);
 RcppExport SEXP _erf_weighted_llh(SEXP parSEXP, SEXP dataSEXP, SEXP weightsSEXP, SEXP lambdaSEXP, SEXP xi_priorSEXP) {

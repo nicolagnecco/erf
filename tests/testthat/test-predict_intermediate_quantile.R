@@ -7,7 +7,7 @@ test_that("predict_intermediate_quantile works", {
       newdata = X_test_small,
       intermediate_quantile = 0.8
     ),
-    as.numeric(
+    unlist(
       grf:::predict.quantile_forest(intermediate_threshold_2, X_test_small,
                                     quantiles = .8)
     )
@@ -19,7 +19,7 @@ test_that("predict_intermediate_quantile works", {
       newdata = NULL,
       intermediate_quantile = 0.8
     ),
-    as.numeric(
+    unlist(
       grf:::predict.quantile_forest(intermediate_threshold_1, quantiles = .8)
     )
   )
@@ -29,7 +29,7 @@ test_that("predict_intermediate_quantile works", {
       intermediate_threshold = intermediate_threshold_2,
       intermediate_quantile = 0.8
     ),
-    as.numeric(
+    unlist(
       grf:::predict.quantile_forest(intermediate_threshold_2, quantiles = .8)
     )
   )

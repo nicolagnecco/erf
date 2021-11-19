@@ -101,7 +101,7 @@ predict_erf_internal <- function(object, quantiles = c(0.95, 0.99),
   X0 <- set_test_observations(object, newdata)
 
   if (is.null(wi_x0)) {
-    wi_x0 <- as.matrix(grf::get_sample_weights(object,
+    wi_x0 <- as.matrix(grf::get_forest_weights(object,
       newdata = X0,
       num.threads = NULL
     ))
@@ -535,9 +535,9 @@ compute_thresholds <- function(object, threshold, X, out_of_bag = FALSE) {
   ## compute conditional quantile based on quantile_forest object
 
   if (out_of_bag) {
-    q_hat <- stats::predict(object, quantiles = threshold)
+    q_hat <- unlist(stats::predict(object, quantiles = threshold))
   } else {
-    q_hat <- stats::predict(object, newdata = X, quantiles = threshold)
+    q_hat <- unlist(stats::predict(object, newdata = X, quantiles = threshold))
   }
 
   return(q_hat)
@@ -776,7 +776,7 @@ predict_erf_internal2 <- function(object, quantiles = c(0.95, 0.99),
   X0 <- set_test_observations(object, newdata)
 
   if (is.null(wi_x0)) {
-    wi_x0 <- as.matrix(grf::get_sample_weights(object,
+    wi_x0 <- as.matrix(grf::get_forest_weights(object,
       newdata = X0,
       num.threads = NULL
     ))

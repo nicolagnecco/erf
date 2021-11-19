@@ -157,7 +157,7 @@ bb <- bench::mark(
 
 
 # Array to lists
-W <- grf::get_sample_weights(
+W <- grf::get_forest_weights(
   forest = erf_1$quantile_forest,
   newdata = X_test)
 
@@ -188,7 +188,7 @@ predict_gpd_params2 <- function(W, Y, Q, lambda) {
   purrr::map_dfr(W, optim_wrapper, init_pars, Z, lambda, init_pars[2])
 }
 
-W <- as.matrix(grf::get_sample_weights(
+W <- as.matrix(grf::get_forest_weights(
   forest = erf_1$quantile_forest,
   newdata = X_test), 1)
 

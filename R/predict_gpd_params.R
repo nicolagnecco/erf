@@ -13,7 +13,7 @@ predict_gpd_params <- function(object, newdata) {
   Q_X <- object$Q_X
 
   # compute similarity weights
-  W <- as.matrix(grf::get_sample_weights(
+  W <- as.matrix(grf::get_forest_weights(
     forest = object$quantile_forest,
     newdata = newdata
   ))
