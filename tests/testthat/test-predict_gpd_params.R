@@ -20,7 +20,8 @@ test_that("predict_gpd_params works", {
           forest = erf_1$quantile_forest,
           newdata = X_test)
       )
-      predict_gpd_params_helper(W, Y, Q, erf_1$lambda)
+      predict_gpd_params_helper(W, Y, Q, erf_1$lambda,
+                                intermediate_quantile = erf_1$intermediate_quantile)
     })
 
   # compare to helper function for small dataset
@@ -42,7 +43,10 @@ test_that("predict_gpd_params works", {
         grf::get_forest_weights(
           forest = erf_2$quantile_forest)
       )
-      predict_gpd_params_helper(W_small, Y_small, Q_small, erf_2$lambda)
+      predict_gpd_params_helper(
+        W_small, Y_small, Q_small, erf_2$lambda,
+        intermediate_quantile = erf_2$intermediate_quantile
+      )
     })
 
   # what happens if X_test is empty
@@ -65,19 +69,25 @@ test_that("predict_gpd_params_helper works", {
 
   W <- as.matrix(grf::get_forest_weights(erf_1$quantile_forest))
 
-  expect_s3_class(predict_gpd_params_helper(W, Y, Q, 0.01), "tbl_df")
-  expect_equal(dim(predict_gpd_params_helper(W, Y, Q, 0.01)), c(nrow(W), 2))
+  expect_s3_class(
+    predict_gpd_params_helper(W, Y, Q, 0.01, intermediate_quantile = 0.8),
+    "tbl_df")
+  expect_equal(
+    dim(predict_gpd_params_helper(W, Y, Q, 0.01, intermediate_quantile = 0.8)),
+    c(nrow(W), 2))
 
   W <- as.matrix(grf::get_forest_weights(
     forest = erf_1$quantile_forest,
     newdata = X_test
   ))
 
-  expect_equal(dim(predict_gpd_params_helper(W, Y, Q, 0)), c(nrow(W), 2))
+  expect_equal(dim(predict_gpd_params_helper(W, Y, Q, 0,
+                                             intermediate_quantile = .8)), c(nrow(W), 2))
 
   # What happens if there are no test observations?
   W <- W[integer(0), ]
-  gpd_params <- predict_gpd_params_helper(W, Y, Q, 0)
+  gpd_params <- predict_gpd_params_helper(W, Y, Q, 0,
+                                          intermediate_quantile = 0.8)
   expect_equal(dim(gpd_params), c(nrow(W), 2))
   expect_equal(gpd_params,
                tibble::tibble("sigma" = numeric(0), "xi" = numeric(0)))
@@ -99,7 +109,7 @@ test_that("optim_wrapper works", {
   expect_lt(
     sum(optim_wrapper(rep(1, length = length(Z)),
                       init_pars, Z, lambda = 1e4,
-                      init_pars[2])[2] -init_pars[2]), 1e-4)
+                      init_pars[2], intermediate_quantile = .8)[2] -init_pars[2]), 1e-4)
 })
 
 

@@ -124,7 +124,8 @@ predict_erf_internal <- function(object, quantiles = c(0.95, 0.99),
   }
 
   if (param_est == "ML") {
-    gpd_pars <- fit_conditional_gpd_deprecated(object, wi_x0, t_xi, lambda)
+    gpd_pars <- fit_conditional_gpd_deprecated(object, wi_x0, t_xi, lambda,
+                                               intermediate_quantile = threshold)
   } else if (param_est == "Hill") {
     gpd_pars <- fit_param_hill(object, wi_x0, t_xi, t_x0, t_x0_2, threshold)
   }
@@ -543,8 +544,9 @@ compute_thresholds <- function(object, threshold, X, out_of_bag = FALSE) {
   return(q_hat)
 }
 
-fit_conditional_gpd_deprecated <- function(object, wi_x0, t_xi, lambda) {
-  ## quantile_forest numeric_matrix numeric_vector numeric -> matrix
+fit_conditional_gpd_deprecated <- function(object, wi_x0, t_xi, lambda,
+                                           intermediate_quantile) {
+  ## quantile_forest numeric_matrix numeric_vector numeric numeric(0, 1) -> matrix
   ## produce matrix with MLE GPD scale and shape parameter for each test point
 
   ntest <- nrow(wi_x0)
@@ -556,7 +558,8 @@ fit_conditional_gpd_deprecated <- function(object, wi_x0, t_xi, lambda) {
   wi_x0 <- wi_x0[, exc_idx]
   EVT_par <- purrr::map_dfr(
     1:ntest, optim_wrap, init_par, weighted_llh,
-    exc_data, wi_x0, lambda, init_par[2]
+    exc_data, wi_x0, lambda, init_par[2],
+    intermediate_quantile = intermediate_quantile
   )
 
   return(as.matrix(EVT_par))
@@ -580,12 +583,14 @@ fit_param_hill <- function(object, wi_x0, t_xi, t_x0, t_x0_2, threshold) {
   return(cbind(sigma, xi))
 }
 
-optim_wrap <- function(i, init_par, obj_fun, exc_data, wi_x0, lambda, xi_prior) {
+optim_wrap <- function(i, init_par, obj_fun, exc_data, wi_x0, lambda, xi_prior,
+                       intermediate_quantile) {
   curr_wi_x0 <- wi_x0[i, ]
   res <- stats::optim(
     par = init_par, fn = obj_fun, data = exc_data,
     weights = curr_wi_x0, lambda = lambda,
-    xi_prior = xi_prior
+    xi_prior = xi_prior,
+    intermediate_quantile = intermediate_quantile
   )$par
   names(res) <- c("sigma", "csi")
   return(res)

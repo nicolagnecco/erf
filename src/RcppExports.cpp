@@ -12,8 +12,8 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // weighted_llh
-double weighted_llh(const arma::vec& par, const arma::vec& data, const arma::vec& weights, double lambda, double xi_prior);
-RcppExport SEXP _erf_weighted_llh(SEXP parSEXP, SEXP dataSEXP, SEXP weightsSEXP, SEXP lambdaSEXP, SEXP xi_priorSEXP) {
+double weighted_llh(const arma::vec& par, const arma::vec& data, const arma::vec& weights, double lambda, double xi_prior, double intermediate_quantile);
+RcppExport SEXP _erf_weighted_llh(SEXP parSEXP, SEXP dataSEXP, SEXP weightsSEXP, SEXP lambdaSEXP, SEXP xi_priorSEXP, SEXP intermediate_quantileSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< const arma::vec& >::type par(parSEXP);
@@ -21,13 +21,14 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::vec& >::type weights(weightsSEXP);
     Rcpp::traits::input_parameter< double >::type lambda(lambdaSEXP);
     Rcpp::traits::input_parameter< double >::type xi_prior(xi_priorSEXP);
-    rcpp_result_gen = Rcpp::wrap(weighted_llh(par, data, weights, lambda, xi_prior));
+    Rcpp::traits::input_parameter< double >::type intermediate_quantile(intermediate_quantileSEXP);
+    rcpp_result_gen = Rcpp::wrap(weighted_llh(par, data, weights, lambda, xi_prior, intermediate_quantile));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_erf_weighted_llh", (DL_FUNC) &_erf_weighted_llh, 5},
+    {"_erf_weighted_llh", (DL_FUNC) &_erf_weighted_llh, 6},
     {NULL, NULL, 0}
 };
 

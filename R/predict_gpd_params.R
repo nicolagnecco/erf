@@ -11,6 +11,7 @@ predict_gpd_params <- function(object, newdata) {
   # extract response and intermediate quantile vector
   Y <- object$quantile_forest$Y.orig
   Q_X <- object$Q_X
+  tau_0 <- object$intermediate_quantile
 
   # compute similarity weights
   W <- as.matrix(grf::get_forest_weights(
@@ -19,13 +20,13 @@ predict_gpd_params <- function(object, newdata) {
   ))
 
   # compute optimal GPD parameters
-  predict_gpd_params_helper(W, Y, Q_X, object$lambda)
+  predict_gpd_params_helper(W, Y, Q_X, object$lambda, tau_0)
 
 }
 
 
-predict_gpd_params_helper <- function(W, Y, Q, lambda) {
-  ## numeric_matrix numeric_vector numeric_vector numeric -> tibble
+predict_gpd_params_helper <- function(W, Y, Q, lambda, intermediate_quantile) {
+  ## numeric_matrix numeric_vector numeric_vector numeric numeric(0, 1)-> tibble
   ## produce a tibble with MLE GPD scale (sigma) and shape (xi) parameter
   ## for each test point;
   ## each row corresponds to a test point, each column to a GPD parameter,
@@ -48,14 +49,17 @@ predict_gpd_params_helper <- function(W, Y, Q, lambda) {
     dplyr::bind_rows(
       purrr::map_dfr(seq_len(ntest), function(i) {
         wi_x <- W[i, ]
-        optim_wrapper(wi_x, init_pars, Z, lambda, init_pars[2])
+        optim_wrapper(wi_x, init_pars, Z, lambda, init_pars[2],
+                      intermediate_quantile)
       })
     )
 
 }
 
-optim_wrapper <- function(wi_x, init_pars, Z, lambda, xi_prior) {
+optim_wrapper <- function(wi_x, init_pars, Z, lambda, xi_prior,
+                          intermediate_quantile) {
   ## numeric_vector numeric_vector function numeric_vector numeric numeric
+  ## numeric(0, 1)
   ## -> numeric_vector
   ## return optimal scale and shape parameters of the weighted log-likelihood
   res <- stats::optim(
@@ -64,7 +68,8 @@ optim_wrapper <- function(wi_x, init_pars, Z, lambda, xi_prior) {
     data = Z,
     weights = wi_x,
     lambda = lambda,
-    xi_prior = xi_prior
+    xi_prior = xi_prior,
+    intermediate_quantile = intermediate_quantile
   )$par
   names(res) <- c("sigma", "xi")
   return(res)
