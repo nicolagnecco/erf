@@ -2,7 +2,7 @@
 // [[Rcpp::depends(RcppArmadillo)]]
 
 
-// [[Rcpp::export(rng = FALSE)]]
+// [[Rcpp::export]]
 double weighted_llh(const arma::vec & par,
                     const arma::vec & data,
                     const arma::vec & weights,

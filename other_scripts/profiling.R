@@ -242,3 +242,87 @@ plot(X_test[, 1], pars2$sigma, ylim = c(0.6, 2.2))
 
 summary(pars1)
 summary(pars2)
+
+
+# Optimization in C++
+library(Rcpp)
+library(bench)
+load("other_scripts/cpp_test_data.Rdata")
+
+sourceCpp("src/fastoptim.cpp")
+res <- bench::mark(
+  get_vmin_i(init_pars = par, weights = weights, data = data,
+             lambda = 0.1, xi_prior = par[2], intermediate_quantile = 0.8),
+  stats::optim(par = par, fn = weighted_llh_test, data = data,
+               weights = weights,
+               lambda = 0.1, xi_prior = par[2], intermediate_quantile = 0.8),
+  check = FALSE
+)
+
+View(res)
+
+get_vmin_i(init_pars = par, weights = weights, data = data,
+           lambda = 0.1, xi_prior = par[2], intermediate_quantile = 0.8)
+
+
+# Optimization in C++ loop
+library(Rcpp)
+library(bench)
+load("other_scripts/cpp_test_data2.Rdata")
+
+sourceCpp("src/fastoptim.cpp")
+
+W <- as.matrix(wi_x0)[1:1000, exc_idx, drop = FALSE]
+
+
+gpd_cpp <- predict_gpd_params_cpp(
+  init_pars = init_par, data = exc_data, weights_mat = t(W),
+  lambda = 10, xi_prior = .5, intermediate_quantile = 0.8
+)
+
+gpd_r <- purrr::map_dfr(seq_len(nrow(W)), function(i) {
+  wi_x <- W[i, ]
+  optim_wrapper(
+    wi_x = wi_x, init_pars = init_par, Z = exc_data,
+    lambda = 10, xi_prior = init_par[2], intermediate_quantile = 0.8)
+})
+
+
+plot((gpd_cpp[, 1] - gpd_r$sigma)/ gpd_r$sigma)
+plot((gpd_cpp[, 2] - gpd_r$xi) / abs(gpd_r$xi))
+plot(gpd_cpp[, 2])
+plot(gpd_r$xi)
+
+
+res <- bench::mark(
+  predict_gpd_params_cpp(
+    init_pars = init_par, data = exc_data, weights_mat = t(W),
+    lambda = 0.1, xi_prior = init_par[2], intermediate_quantile = 0.8
+  ),
+  purrr::map(seq_len(nrow(W)), function(i) {
+    wi_x <- W[i, ]
+    optim_wrapper(
+      wi_x = wi_x, init_pars = init_par, Z = exc_data,
+      lambda = 0.1, xi_prior = init_par[2], intermediate_quantile = 0.8)
+  }),
+  check = FALSE
+)
+
+# Test function
+predict_gpd_params_cpp(
+  init_pars = init_par, data = exc_data, weights_mat = t(W),
+  lambda = 0, xi_prior = init_par[2], intermediate_quantile = 0.8
+) %>%
+  as_tibble(.name_repair = ~c("sigma", "xi"))
+
+tibble::tibble(
+  "sigma" = numeric(0),
+  "xi" = numeric(0)
+) %>%
+  dplyr::bind_rows(
+    purrr::map_dfr(seq_len(nrow(W)), function(i) {
+      wi_x <- W[i, ]
+      optim_wrapper(wi_x, init_par, exc_data, .1, init_par[2],
+                    .8)
+    })
+  )

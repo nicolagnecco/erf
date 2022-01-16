@@ -36,6 +36,7 @@ BugReports: https://github.com/nicolagnecco/erf/issues
 RdMacros: Rdpack
 LinkingTo: 
     Rcpp,
-    RcppArmadillo
+    RcppArmadillo,
+    roptim
 Suggests: 
     testthat

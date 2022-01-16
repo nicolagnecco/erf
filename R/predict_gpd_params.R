@@ -36,42 +36,16 @@ predict_gpd_params_helper <- function(W, Y, Q, lambda, intermediate_quantile) {
   exc_ind <- which(Y > Q)
   Z <- (Y - Q)[exc_ind]
   W <- W[, exc_ind, drop = FALSE]
-  ntest <- nrow(W)
 
   # initial guess for GPD parameters
   init_pars <- ismev::gpd.fit(Z, 0, show = FALSE)$mle
 
   # GPD parameters for each test observation
-  tibble::tibble(
-    "sigma" = numeric(0),
-    "xi" = numeric(0)
-  ) %>%
-    dplyr::bind_rows(
-      purrr::map_dfr(seq_len(ntest), function(i) {
-        wi_x <- W[i, ]
-        optim_wrapper(wi_x, init_pars, Z, lambda, init_pars[2],
-                      intermediate_quantile)
-      })
-    )
-
-}
-
-optim_wrapper <- function(wi_x, init_pars, Z, lambda, xi_prior,
-                          intermediate_quantile) {
-  ## numeric_vector numeric_vector function numeric_vector numeric numeric
-  ## numeric(0, 1)
-  ## -> numeric_vector
-  ## return optimal scale and shape parameters of the weighted log-likelihood
-  res <- stats::optim(
-    par = init_pars,
-    fn = weighted_llh,
-    data = Z,
-    weights = wi_x,
-    lambda = lambda,
-    xi_prior = xi_prior,
+  predict_gpd_params_cpp(
+    init_pars = init_pars, data = Z, weights_mat = t(W),
+    lambda = lambda, xi_prior = init_pars[2],
     intermediate_quantile = intermediate_quantile
-  )$par
-  names(res) <- c("sigma", "xi")
-  return(res)
-}
+  ) %>%
+    dplyr::as_tibble(.name_repair = ~c("sigma", "xi"))
 
+}
