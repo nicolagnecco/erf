@@ -47,7 +47,7 @@ arma::rowvec get_vmin_i(arma::vec& init_pars,
 }
 
 
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = FALSE)]]
 arma::mat predict_gpd_params_cpp(arma::vec& init_pars,
                                  const arma::vec & data,
                                  const arma::mat & weights_mat,

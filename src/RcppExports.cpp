@@ -16,7 +16,6 @@ arma::mat predict_gpd_params_cpp(arma::vec& init_pars, const arma::vec& data, co
 RcppExport SEXP _erf_predict_gpd_params_cpp(SEXP init_parsSEXP, SEXP dataSEXP, SEXP weights_matSEXP, SEXP lambdaSEXP, SEXP xi_priorSEXP, SEXP intermediate_quantileSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::vec& >::type init_pars(init_parsSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type data(dataSEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type weights_mat(weights_matSEXP);
@@ -32,7 +31,6 @@ double weighted_llh(const arma::vec& par, const arma::vec& data, const arma::vec
 RcppExport SEXP _erf_weighted_llh(SEXP parSEXP, SEXP dataSEXP, SEXP weightsSEXP, SEXP lambdaSEXP, SEXP xi_priorSEXP, SEXP intermediate_quantileSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const arma::vec& >::type par(parSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type data(dataSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type weights(weightsSEXP);
