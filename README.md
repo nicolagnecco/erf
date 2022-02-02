@@ -10,7 +10,7 @@ status](https://github.com/nicolagnecco/erf/workflows/R-CMD-check/badge.svg)](ht
 <!-- badges: end -->
 
 The package `erf` implements the extremal random forests (ERF), an
-algorithm to perdict extreme conditoinal quantiles in high dimensions.
+algorithm to predict extreme conditional quantiles in large dimensions.
 
 ## Installation
 
