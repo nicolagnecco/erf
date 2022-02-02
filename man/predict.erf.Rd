@@ -9,10 +9,9 @@
 \arguments{
 \item{object}{Fitted \code{erf} object.}
 
-\item{newdata}{Numeric matrix (!!!) or \code{data.frame} of test predictor values
+\item{newdata}{Numeric matrix or \code{data.frame} of test predictor values
 at which predictions are to be made. If \code{NULL}, predictions are made on the
 training data instead.
-!!! Talk about out-of-bag predictions?
 For further information see \code{\link[grf:quantile_forest]{grf::quantile_forest()}}.
 Default is \code{NULL}.}
 
@@ -28,7 +27,4 @@ at the desired quantile levels (columns).
 }
 \description{
 Makes prediction using a fitted \code{erf} object.
-}
-\references{
-\insertAllCited{}
 }

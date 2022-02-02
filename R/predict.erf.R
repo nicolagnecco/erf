@@ -6,10 +6,9 @@
 #'
 #' @param object Fitted `erf` object.
 #'
-#' @param newdata Numeric matrix (!!!) or `data.frame` of test predictor values
+#' @param newdata Numeric matrix or `data.frame` of test predictor values
 #'  at which predictions are to be made. If `NULL`, predictions are made on the
 #'  training data instead.
-#'  !!! Talk about out-of-bag predictions?
 #'  For further information see [grf::quantile_forest()].
 #'  Default is `NULL`.
 #'
@@ -23,10 +22,6 @@
 #' @return Numeric matrix with predictions for each test point (rows)
 #'  at the desired quantile levels (columns).
 #'
-#'
-#'
-#' @references
-#'  \insertAllCited{}
 #'
 #'
 #' @export
