@@ -59,7 +59,8 @@ log-likelihood.}
 \item{intermediate_threshold}{An object with S3 class:
 \itemize{
 \item "\code{quantile_forest}", if \code{intermediate_estimator = "grf"}.
-\item "\verb{???}", if \verb{intermediate_estimator = "neural_nets}.
+\item "\code{neural_nets}", if \verb{intermediate_estimator = "neural_nets} (\emph{note}:
+this option is not yet implemented)
 }
 
 This is a fitted object used to predict the intermediate thresholds.}
@@ -71,12 +72,5 @@ level, used to predict the intermediate threshold.}
 \code{X}.}
 }
 \description{
-Fit an extremal random forest ... !!! write description
-}
-\details{
-!!! write details
-}
-\examples{
-"!!! add examples"
-
+Fits an extremal random forest (ERF).
 }

@@ -58,7 +58,7 @@
 #' @references
 #'  \insertAllCited{}
 #'
-#'
+#' @noRd
 predict_erf <- function(object, quantiles = c(0.95, 0.99), threshold = 0.8,
                         newdata = NULL, model_assessment = FALSE,
                         Y.test = NULL, out_of_bag = FALSE,
@@ -195,6 +195,8 @@ predict_erf_internal <- function(object, quantiles = c(0.95, 0.99),
 #'
 #' @importFrom foreach foreach %dopar%
 #' @importFrom magrittr %>%
+#'
+#' @noRd
 erf_cv_deprecated <- function(X, Y, t_xi, threshold, min.node.size = 5, lambda = 0,
                    K = 5, n_rep = 1,
                    args_grf = list(), args_erf = list(),

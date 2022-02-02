@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# extreme random forest
+# Extremal Random Forests
 
 <!-- badges: start -->
 
@@ -9,9 +9,8 @@
 status](https://github.com/nicolagnecco/erf/workflows/R-CMD-check/badge.svg)](https://github.com/nicolagnecco/erf/actions)
 <!-- badges: end -->
 
-The goal of erf is to predict extreme quantiles within the quantile
-forest framework of Athey, Tibshirani, and Wager (2019,
-https://doi.org/10.1214/18–AOS1709).
+The package `erf` implements the extremal random forests (ERF), an
+algorithm to perdict extreme conditoinal quantiles in high dimensions.
 
 ## Installation
 
@@ -31,60 +30,64 @@ devtools::install_github("nicolagnecco/erf")
 
 ## Example
 
-This is a basic example which shows you how to peform prediction with
-`erf`. Let us create some datasets and fit a `quantile_forest` from the
-`grf` package.
+This basic example shows how to fit and predict conditional quantiles
+with `erf`.
 
 ``` r
 library(erf)
-library(grf)
+library(ggplot2)
+library(dplyr)
+#> 
+#> Attaching package: 'dplyr'
+#> The following objects are masked from 'package:stats':
+#> 
+#>     filter, lag
+#> The following objects are masked from 'package:base':
+#> 
+#>     intersect, setdiff, setequal, union
+
+# Function to model scale
+scale_step <- function(X) {
+  ## numeric_vecotr -> numeric_vector
+  ## produce scale function: scale(X) = step function
+
+  sigma_x <- 1 + 1 * (X > 0)
+
+  return(sigma_x)
+}
+
+# Generate data
 set.seed(42)
 
-n <- 500
+n <- 2000
 p <- 10
-X <- matrix(rnorm(n * p), n, p)
-Y <- X[, 1] * rnorm(n)
-object <- quantile_forest(X, Y, quantiles = c(0.1, 0.5, 0.9))
+X <- matrix(runif(n * p, min = -1, max = 1), n, p)
+Y <- scale_step(X[, 1]) * rnorm(n)
+
+# Fit ERF
+fit_erf <- erf(X, Y, intermediate_quantile = 0.8)
+
+# Predict ERF
+quantiles <- c(0.9, 0.99)
+pred_erf <- predict(fit_erf, newdata = X, quantiles = quantiles)
+
+true_quantiles <- matrix(rep(qnorm(quantiles), n), 
+                         ncol = length(quantiles),
+                         byrow = TRUE) * scale_step(X[, 1])
+
+# Plot results
+my_palette <- list(
+  "red" = "#D55E00",
+  "blue" = "#0072B2"
+)
+
+ggplot() +
+  geom_point(aes(x = X[, 1], y = Y), alpha = .5, col = "grey") +
+  geom_point(aes(x = X[, 1], y = pred_erf[, 2]), alpha = .5, 
+             col = my_palette$blue) +
+  geom_line(aes(x = X[, 1], y = true_quantiles[, 2]), col = my_palette$red, 
+            linetype = "dashed", size = 1) +
+  theme_bw()
 ```
 
-Now we can create a test dataset and predict extreme quantiles with
-`predict_erf`.
-
-``` r
-n_test <- 20
-X.test <-  matrix(rnorm(n_test * p), n_test, p)
-Y.test <- X.test[, 1] * rnorm(n_test)
-
-quantiles <- c(.99, .999)
-threshold <- 0.8
-
-res <- predict_erf(object, quantiles = quantiles, threshold = threshold,
-                   newdata = X.test, model_assessment = TRUE,
-                   Y.test = Y.test, out_of_bag = FALSE)
-
-head(res$predictions)
-#>      quantile =  0.99 quantile =  0.999
-#> [1,]         1.325343          2.375495
-#> [2,]         1.325832          2.494542
-#> [3,]         1.653963          2.544473
-#> [4,]         1.169692          1.902427
-#> [5,]         1.188074          2.226763
-#> [6,]         2.631909          3.659733
-res$plot
-```
-
-<img src="man/figures/README-example2-1.png" width="100%" />
-
-## References
-
-<div id="refs" class="references">
-
-<div id="ref-athe2019">
-
-Athey, Susan, Julie Tibshirani, and Stefan Wager. 2019. “Generalized
-Random Forests.” *The Annals of Statistics* 47 (2): 1148–78.
-[&#9;https://doi.org/10.1214/18-AOS1709](%09https://doi.org/10.1214/18-AOS1709).
-
-</div>
-
-</div>
+<img src="man/figures/README-example1-1.png" width="100%" />

@@ -19,6 +19,7 @@
 #'
 #' @importFrom rlang .data
 #'
+#' @noRd
 fit_erf_cv <- function(X,
                        Y,
                        min.node.size = c(5, 40, 100),
@@ -64,7 +65,7 @@ fit_erf_cv <- function(X,
   # compute optimal parameters
   opt_params <- scores %>%
     dplyr::group_by(.data$min.node.size, .data$lambda) %>%
-    dplyr::summarise(cvm = mean(cv_err)) %>%
+    dplyr::summarise(cvm = mean(.data$cv_err)) %>%
     dplyr::ungroup() %>%
     dplyr::filter(.data$cvm == min(.data$cvm))
 

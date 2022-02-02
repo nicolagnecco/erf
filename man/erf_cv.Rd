@@ -65,12 +65,5 @@ It is a named list with the following elements:
 \code{min.node.size} and \code{lambda}.}
 }
 \description{
-Fit an extremal random forest with cross-validation ... !!! write description
-}
-\details{
-!!! write details
-}
-\examples{
-"!!! add examples"
-
+Fits an extremal random forest (ERF) with cross-validation.
 }

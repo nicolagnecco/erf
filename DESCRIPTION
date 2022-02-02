@@ -38,4 +38,5 @@ LinkingTo:
     Rcpp,
     RcppArmadillo
 Suggests: 
-    testthat
+    testthat,
+    bench

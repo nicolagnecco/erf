@@ -1,13 +1,10 @@
 #' Predict an extremal random forest (ERF)
 #'
 #'
-#' Predicts ... !!! write description
+#' Makes prediction using a fitted `erf` object.
 #'
 #'
-#' !!! write details
-#'
-#'
-#' @param object Fitted "`erf`" object.
+#' @param object Fitted `erf` object.
 #'
 #' @param newdata Numeric matrix (!!!) or `data.frame` of test predictor values
 #'  at which predictions are to be made. If `NULL`, predictions are made on the
@@ -26,9 +23,6 @@
 #' @return Numeric matrix with predictions for each test point (rows)
 #'  at the desired quantile levels (columns).
 #'
-#'
-#' @examples
-#' "!!! add examples"
 #'
 #'
 #' @references

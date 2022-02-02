@@ -1,10 +1,7 @@
 #' Fit an extremal random forest (ERF)
 #'
 #'
-#' Fit an extremal random forest ... !!! write description
-#'
-#'
-#' !!! write details
+#' Fits an extremal random forest (ERF).
 #'
 #'
 #' @param X Numeric matrix of predictors, where each row
@@ -50,7 +47,8 @@
 #'  \item{intermediate_threshold}{An object with S3 class:
 #'
 #'  - "`quantile_forest`", if `intermediate_estimator = "grf"`.
-#'  - "`???`", if `intermediate_estimator = "neural_nets`.
+#'  - "`neural_nets`", if `intermediate_estimator = "neural_nets` (*note*:
+#'      this option is not yet implemented)
 #'
 #'  This is a fitted object used to predict the intermediate thresholds.}
 #'
@@ -60,9 +58,6 @@
 #'  \item{Q_X}{Vector with intermediate quantile predicted on the training data
 #'  `X`.}
 #'
-#'
-#' @examples
-#' "!!! add examples"
 #'
 #' @export
 erf <- function(X, Y, min.node.size = 5, lambda = 0.001,

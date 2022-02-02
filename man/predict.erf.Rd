@@ -7,7 +7,7 @@
 \method{predict}{erf}(object, newdata = NULL, quantiles = c(0.95, 0.99), ...)
 }
 \arguments{
-\item{object}{Fitted "\code{erf}" object.}
+\item{object}{Fitted \code{erf} object.}
 
 \item{newdata}{Numeric matrix (!!!) or \code{data.frame} of test predictor values
 at which predictions are to be made. If \code{NULL}, predictions are made on the
@@ -27,15 +27,7 @@ Numeric matrix with predictions for each test point (rows)
 at the desired quantile levels (columns).
 }
 \description{
-Predicts ... !!! write description
-}
-\details{
-!!! write details
-}
-\examples{
-"!!! add examples"
-
-
+Makes prediction using a fitted \code{erf} object.
 }
 \references{
 \insertAllCited{}

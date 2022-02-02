@@ -1,10 +1,7 @@
 #' Cross-validation for an extremal random forest (ERF)
 #'
 #'
-#' Fit an extremal random forest with cross-validation ... !!! write description
-#'
-#'
-#' !!! write details
+#' Fits an extremal random forest (ERF) with cross-validation.
 #'
 #' @inheritParams erf
 #'
@@ -36,10 +33,6 @@
 #'
 #'  \item{erf}{A fitted "`erf`" object on the full data using the optimal
 #'  `min.node.size` and `lambda`.}
-#'
-#'
-#' @examples
-#' "!!! add examples"
 #'
 #' @export
 erf_cv <- function(X,
