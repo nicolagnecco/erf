@@ -3,8 +3,8 @@ Title: Extreme Random Forest
 Version: 0.0.1
 Authors@R: 
     as.person(c(
-    "Nicola Gnecco [aut, cre]",
-    "Edossa Terefe <edossamerga@gmail.com> [aut",
+    "Nicola Gnecco <nicola.gnecco@gmail.com> [aut, cre]",
+    "Edossa Terefe [aut]",
     "Sebastian Engelke [aut]"
     ))
 Description: Extreme quantile prediction in high-dimensions.

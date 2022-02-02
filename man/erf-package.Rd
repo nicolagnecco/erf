@@ -16,11 +16,11 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Edossa Merga \email{edossamerga@gmail.com}
+\strong{Maintainer}: Nicola Gnecco \email{nicola.gnecco@gmail.com}
 
 Authors:
 \itemize{
-  \item Nicola Gnecco
+  \item Edossa Terefe
   \item Sebastian Engelke
 }
 
