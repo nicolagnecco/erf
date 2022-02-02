@@ -12,7 +12,7 @@ q.forest$`_drawn_samples`[[1]]
 unlist(q.forest$`_leaf_samples`[[1]])
 unlist(q.forest$`_leaf_samples`[[1]]) %in% q.forest$`_drawn_samples`[[1]]
 x_0 <- matrix(rnorm(1 * p), 1, p)
-W2 <- get_sample_weights(q.forest, newdata = x_0) %>% as.matrix()
+W2 <- get_forest_weights(q.forest, newdata = x_0) %>% as.matrix()
 
 median(Y[which(W2 != 0)])
 predict(q.forest, newdata = x_0, quantile = 0.5)
@@ -37,7 +37,7 @@ sort(unique(unlist(apply(W2, 1, function(x){which(x !=0) - 1}))))
 
 
 
-W <- get_sample_weights(q.forest) %>% as.matrix()
+W <- get_forest_weights(q.forest) %>% as.matrix()
 all.equal(W, W2)
 W - W2
 W
@@ -116,7 +116,7 @@ extreme_forest <- function(X.train, Y, X.test, alpha, alpha.new, Y.test=NULL, gr
 
 
   # Obtaining weights (dimension is ntest x n)
-  qrf.weights = get_sample_weights(fit.grf, newdata = X.test, num.threads = NULL)
+  qrf.weights = get_forest_weights(fit.grf, newdata = X.test, num.threads = NULL)
 
 
   #plot(X.train[,1],qrf.weights[24,])

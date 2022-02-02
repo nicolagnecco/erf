@@ -2,11 +2,10 @@
 % Please edit documentation in R/erf-package.R
 \docType{package}
 \name{erf-package}
-\alias{erf}
 \alias{erf-package}
 \title{erf: Extreme Random Forest}
 \description{
-Extreme quantile prediction for quantile random forest.
+Extreme quantile prediction in high-dimensions.
 }
 \seealso{
 Useful links:
