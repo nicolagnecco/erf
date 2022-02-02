@@ -39,7 +39,7 @@ devtools::install_github("nicolagnecco/erf")
 
 This basic example shows how to fit and predict conditional quantiles with `erf`.
 
-```{r example1}
+```{r example1, message=FALSE}
 library(erf)
 library(ggplot2)
 library(dplyr)
