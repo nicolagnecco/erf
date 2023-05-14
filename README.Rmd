@@ -35,6 +35,7 @@ You can install the development version from [GitHub](https://github.com/) with:
 # install.packages("devtools")
 devtools::install_github("nicolagnecco/erf")
 ```
+
 ## Example
 
 This basic example shows how to fit and predict conditional quantiles with `erf`.

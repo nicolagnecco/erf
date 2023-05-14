@@ -80,6 +80,8 @@ ggplot() +
   geom_line(aes(x = X[, 1], y = true_quantiles[, 2]), col = my_palette$red, 
             linetype = "dashed", size = 1) +
   theme_bw()
+#> Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
+#> ℹ Please use `linewidth` instead.
 ```
 
 <img src="man/figures/README-example1-1.png" width="100%" />
