@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 <!-- badges: end -->
 
 The package `erf` implements the extremal random forests (ERF), an algorithm to 
-predict extreme conditional quantiles in large dimensions.
+predict extreme conditional quantiles in large dimensions. For more details see @merg2020     [https://arxiv.org/abs/2201.12865].
 
 ## Installation
 
@@ -89,3 +89,6 @@ ggplot() +
   theme_bw()
 
 ```
+
+
+## References

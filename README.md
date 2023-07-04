@@ -11,6 +11,8 @@ status](https://github.com/nicolagnecco/erf/workflows/R-CMD-check/badge.svg)](ht
 
 The package `erf` implements the extremal random forests (ERF), an
 algorithm to predict extreme conditional quantiles in large dimensions.
+For more details see Gnecco, Terefe, and Engelke (2023,
+https://arxiv.org/abs/2201.12865).
 
 ## Installation
 
@@ -85,3 +87,16 @@ ggplot() +
 ```
 
 <img src="man/figures/README-example1-1.png" width="100%" />
+
+## References
+
+<div id="refs" class="references csl-bib-body hanging-indent">
+
+<div id="ref-merg2020" class="csl-entry">
+
+Gnecco, Nicola, Edossa Merga Terefe, and Sebastian Engelke. 2023.
+“Extremal Random Forests.” <https://arxiv.org/abs/2201.12865>.
+
+</div>
+
+</div>
