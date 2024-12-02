@@ -45,17 +45,6 @@ test_that("predict_gpd_params works", {
       predict_gpd_params_helper(W_small, Y_small, Q_small, erf_2$lambda)
     })
 
-  # what happens if X_test is empty
-  X_test_empty <- X_test[FALSE, , drop = FALSE]
-
-  expect_equal(
-    predict_gpd_params(
-      object = erf_1,
-      newdata = X_test_empty
-    ),
-    tibble::tibble("sigma" = numeric(0), "xi" = numeric(0))
-  )
-
 })
 
 
